@@ -2,6 +2,8 @@
 
 # PR-AF
 
+<!-- runtime-capture-e2e-canary: 2026-08-27 -->
+
 ### Open-Source Agentic Code Review Built on [AgentField](https://github.com/Agent-Field/agentfield)
 
 [![Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-16a34a?style=for-the-badge)](LICENSE)
