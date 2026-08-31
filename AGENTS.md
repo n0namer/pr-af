@@ -205,9 +205,9 @@ Do not patch PR-AF business code while a reproduced failure is still explained b
 Do not create parallel `v2`, `final`, or sidecar status documents.
 
 Write back:
-- current project phase/progress/DoD/blockers/next move → `n0namer/universal-solver:main/PLAN.md`;
-- product North Star → `universal-solver/BRIEF.md`;
-- durable PR-AF architecture/usage contract → existing PR-AF `README.md` / `docs/ARCHITECTURE.md` / manifests as appropriate;
+- current PR-AF phase/progress/DoD/blockers/next move → this repo's `PLAN.md`;
+- product North Star / durable architecture/usage contract → existing PR-AF `README.md` / `docs/ARCHITECTURE.md` / manifests as appropriate;
+- permanent DEV topology / SourceLoop plumbing changes → their existing owners in `universal-solver`;
 - engineering operating rules → this `AGENTS.md`;
 - accepted PR-AF source delta → exact SourceLoop-captured `pr-af:dev` delta;
 - reusable verified error lesson → root `ERRORS.md` only when a canonical error ledger is required/created and the lesson is genuinely reusable.
