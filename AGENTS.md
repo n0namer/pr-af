@@ -21,9 +21,10 @@ Authority for the current PR-AF workstream:
 Before material mutation:
 1. read this file;
 2. read root `ERRORS.md` if it exists (currently absent on `dev`);
-2. resolve North Star → Phase Goal → current gate/DoD → next bounded move from the project SoT;
-4. observe exact source identity, dirty state, and target runtime identity;
-5. identify rollback/recovery and the evidence required for completion.
+3. for any LLM/provider/model/credential/fallback change, read `docs/LLM_PROVIDER_SECURITY_CONTRACT.md` and its cross-component contract before acting;
+4. resolve North Star → Phase Goal → current gate/DoD → next bounded move from the project SoT;
+5. observe exact source identity, dirty state, and target runtime identity;
+6. identify rollback/recovery and the evidence required for completion.
 
 Do not invent commands, targets, credentials, services, or acceptance evidence.
 
