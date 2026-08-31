@@ -114,8 +114,8 @@ DoD:
 - reasoner discoverable;
 - exact blocker recorded if any criterion cannot be executed.
 
-Status: `PARTIAL_CAPABILITY_BLOCKER`.
-Current blocker: no available typed execution capability can run the exact scoped `af install/run` operation in the existing workforce; shell bypass and full-stack redeploy are not accepted inner-loop substitutes.
+Status: `DEPLOYING_RUNTIME_BOOTSTRAP_FIX`.
+Current state: comparison with working SWE-AF proved that maintained package lifecycle belongs in the workforce bootstrap itself, not in a separate typed operator capability. Universal Solver target commit `99c45ce...` now installs `/src/pr-af/go` and starts `pr-af:8007` with explicit `opencode + openai/<Gonka>` selection. Deployment `jgqxk6jxe8krtxj9xzfqkr9u` is creating the new generation; B1 remains open until the new workforce readback proves install/start/registration.
 
 ### B2 — Provider path and minimal Go repair
 Goal: prove or repair the real provider/model path only after B1 starts the maintained node.
