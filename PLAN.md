@@ -52,14 +52,16 @@ Hard rules:
 
 | Claim | Evidence | Verdict |
 |---|---|---|
-| Canonical PR-AF branch | `n0namer/pr-af:dev` contains documentation-only `PLAN.md` / `AGENTS.md` commits after application-code commit `c2953a48792aed2bdf15fb31f38507e676f3fb41`; no PR-AF application-code delta is introduced by those documentation commits | FACT |
-| Live source identity | permanent workforce `/src/pr-af/.git/HEAD` = application-code commit `c2953a48792aed2bdf15fb31f38507e676f3fb41` | FACT |
-| Source/runtime code identity | live application code still matches the canonical application-code base at `c2953a...`, while repository HEAD is ahead by documentation-only commits; reconcile repository/base identity before SourceLoop code capture | DOC_ONLY_HEAD_DRIFT |
-| Current DEV topology target | Coolify app `edshqtkwskg3lrczekhcmd71` target is pinned to `universal-solver` commit `99c45ce7663b18ed717665d80150731631faec16`; currently loaded containers are still prior generation `b78866efd17cfdca232019e66e902e16c778c152` while deployment `jgqxk6jxe8krtxj9xzfqkr9u` is in progress | TRANSITION / FACT |
+| Canonical PR-AF branch | `n0namer/pr-af:dev` HEAD reconciled into the permanent workforce at `6245796a6c47a0f114dd0e8382f4abf63a89752f`; that HEAD advances the earlier application-code base mainly with canonical docs/contracts | FACT |
+| Live source identity | permanent workforce `/src/pr-af/.git/HEAD` = `6245796a6c47a0f114dd0e8382f4abf63a89752f` after clean exact reconcile | FACT |
+| Source/runtime identity | current PR-AF workspace was clean at reconcile and now matches the approved `dev` HEAD; future SourceLoop capture must still use fresh actual-HEAD/dirty readback | RESOLVED_FOR_CURRENT_GENERATION |
+| Current DEV topology target | Coolify app `edshqtkwskg3lrczekhcmd71` is loaded on `universal-solver` commit `8d852d1783fc0bb5f2fcb4037226967a08b9ba15`; current workforce `workforce-edshqtkwskg3lrczekhcmd71-174220777751` is healthy | FACT |
 | Maintained implementation | `go/` package; node id `pr-af`; default port `8007`; build `./cmd/pr-af`; start `bin/pr-af` | FACT |
 | Local install semantics | local-path install of repo root keeps legacy Python package; maintained Go local path is `/src/pr-af/go` | FACT |
-| Target orchestration install path | `universal-solver` commit `af605b10533268a20994023e6b1454b5cc4d91f6` changes workforce bootstrap to `af install /src/pr-af/go`; target commit `99c45ce...` includes this delta | TARGET_CONFIGURED / RUNTIME_PENDING |
-| Target orchestration start policy | `universal-solver` commit `99c45ce...` adds process-scoped PR-AF start on port `8007` with `PR_AF_PROVIDER=opencode`, explicit `openai/<Gonka model>` model selection, and a process-scoped dummy OpenRouter value only for the legacy package admission gate | TARGET_CONFIGURED / RUNTIME_PENDING |
+| Runtime install path | `/afhome/installed.yaml` shows `pr-af.source_path: /src/pr-af/go` | PASS |
+| Runtime process | `/afhome/installed.yaml` shows `status: running`, `desired_state: running`, port `8007`, pid `8058` | PASS |
+| Runtime registration | PR-AF log records `node.register.complete`; current control-plane log accepts explicit callback `http://workforce:8007` and creates DID for `pr-af` | PASS |
+| Reasoner surface | exact Go source registers one externally-driven `review` reasoner plus 16 internal review-DAG reasoners; current external AgentField connector has not refreshed this node and returns `target_not_found` for `pr-af.review` | SOURCE_PASS / CONNECTOR_VIEW_DRIFT |
 | Provider wiring in workforce | topology injects `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENROUTER_API_KEY`, and `GH_TOKEN` by name; secret values are not recorded here | FACT |
 | Go manifest provider contract | `go/agentfield-package.yaml` currently requires `OPENROUTER_API_KEY`; `GH_TOKEN` is optional | FACT |
 | Go provider env propagation | `go/internal/config/ai.go::ProviderEnv()` forwards `OPENAI_API_KEY` but not `OPENAI_BASE_URL` | SOURCE FACT / RUNTIME HYPOTHESIS |
