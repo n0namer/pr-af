@@ -9,11 +9,12 @@ Global standard: `n0namer/server-ops:main/docs/standards/FAST_VERIFIED_ENGINEERI
 
 Optimize for **time-to-verified-running-change**, not time-to-patch or time-to-merge.
 
-Authority for the current Universal Solver workstream:
-- Project North Star / product intent: `n0namer/universal-solver:main/BRIEF.md`.
-- Current phase, Phase Goal, bounded batches, DoD, blockers, anti-drift status: `n0namer/universal-solver:main/PLAN.md`.
+Authority for the current PR-AF workstream:
+- Project North Star / product intent: this repo's `README.md` and `docs/ARCHITECTURE.md`.
+- Current phase, Phase Goal, bounded batches, DoD, blockers, anti-drift status: this repo's `PLAN.md`.
 - Durable PR-AF architecture: this repo's `README.md`, `docs/ARCHITECTURE.md`, and component manifests.
 - PR-AF source owner: this repository.
+- Permanent AgentField DEV topology and SourceLoop plumbing owner: `n0namer/universal-solver`.
 - CURRENT runtime/readback overrides historical runtime-evidence documents for actual state.
 - `BMAD-MNNZ` is the workflow/skill rulebook, not project SoT.
 
