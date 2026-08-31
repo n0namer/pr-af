@@ -66,7 +66,7 @@ Hard rules:
 | CURRENT installed package state | `/afhome/installed.yaml` shows `pr-af` installed from legacy `source_path: /src/pr-af`, `status: stopped`, `desired_state: stopped`, `pid: null`, `port: null` | FACT |
 | CURRENT AgentField registration | current node inventory contains no `pr-af` node | FACT |
 | Native install/start route | exact desired operation is `af install /src/pr-af/go` then `af run pr-af --port 8007 --detach=true` | DECISION |
-| Current execution capability | DEV guidance allows the scoped operation, but `execContainer` rejects `af install` as `REVIEW_REQUIRED: opaque_or_unknown_mutation`; `prepareChange` returns `approval_capability_gap`; primary VPS terminal is healthy but the workforce container is not registered as a typed target (`unknown_target`) | CAPABILITY_GAP |
+| Current execution capability | DEV guidance allows the scoped install/start operation, but `execContainer` rejects `af install` as `REVIEW_REQUIRED: opaque_or_unknown_mutation`; `prepareChange` returns `approval_capability_gap`; primary VPS terminal is healthy but the workforce container is not registered as a typed target (`unknown_target`); a bounded direct `go build` canary was also rejected by the same mediator as `opaque_or_unknown_mutation`; AgentField capability discovery found no active coding/runtime operator (`swe-pro` and `swe-planner` are CURRENT inactive) | CAPABILITY_GAP |
 
 ## Design/runtime drift register
 
