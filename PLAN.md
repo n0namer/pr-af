@@ -65,10 +65,8 @@ Hard rules:
 | Provider wiring in workforce | topology injects `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENROUTER_API_KEY`, and `GH_TOKEN` by name; secret values are not recorded here | FACT |
 | Go manifest provider contract | `go/agentfield-package.yaml` currently requires `OPENROUTER_API_KEY`; `GH_TOKEN` is optional | FACT |
 | Go provider env propagation | `go/internal/config/ai.go::ProviderEnv()` forwards `OPENAI_API_KEY` but not `OPENAI_BASE_URL` | SOURCE FACT / RUNTIME HYPOTHESIS |
-| CURRENT installed package state | `/afhome/installed.yaml` shows `pr-af` installed from legacy `source_path: /src/pr-af`, `status: stopped`, `desired_state: stopped`, `pid: null`, `port: null` | FACT |
-| CURRENT AgentField registration | current node inventory contains no `pr-af` node | FACT |
-| Native install/start route | exact desired operation is `af install /src/pr-af/go` then `af run pr-af --port 8007 --detach=true` | DECISION |
-| Current execution capability | DEV guidance allows the scoped install/start operation, but `execContainer` rejects `af install` as `REVIEW_REQUIRED: opaque_or_unknown_mutation`; `prepareChange` returns `approval_capability_gap`; primary VPS terminal is healthy but the workforce container is not registered as a typed target (`unknown_target`); a bounded direct `go build` canary was also rejected by the same mediator as `opaque_or_unknown_mutation`; AgentField capability discovery found no active coding/runtime operator (`swe-pro` and `swe-planner` are CURRENT inactive) | CAPABILITY_GAP |
+| Bootstrap lifecycle route | working SWE-style workforce bootstrap now performs the maintained PR-AF install/start; no separate typed install capability is required for steady-state bootstrap | RESOLVED |
+| External connector view | `agentfield_actions` remains healthy but its node inventory omits the freshly registered `pr-af`; attempting `pr-af.review` through that connector returns `target_not_found` while current runtime/control-plane evidence proves registration | CONTROL_PLANE_VIEW_DRIFT |
 
 ## Design/runtime drift register
 
