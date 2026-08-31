@@ -55,11 +55,11 @@ Hard rules:
 | Canonical PR-AF branch | `n0namer/pr-af:dev` contains documentation-only `PLAN.md` / `AGENTS.md` commits after application-code commit `c2953a48792aed2bdf15fb31f38507e676f3fb41`; no PR-AF application-code delta is introduced by those documentation commits | FACT |
 | Live source identity | permanent workforce `/src/pr-af/.git/HEAD` = application-code commit `c2953a48792aed2bdf15fb31f38507e676f3fb41` | FACT |
 | Source/runtime code identity | live application code still matches the canonical application-code base at `c2953a...`, while repository HEAD is ahead by documentation-only commits; reconcile repository/base identity before SourceLoop code capture | DOC_ONLY_HEAD_DRIFT |
-| Current DEV topology target | Coolify app `edshqtkwskg3lrczekhcmd71` is pinned to `universal-solver` commit `b78866efd17cfdca232019e66e902e16c778c152` | FACT |
+| Current DEV topology target | Coolify app `edshqtkwskg3lrczekhcmd71` target is pinned to `universal-solver` commit `99c45ce7663b18ed717665d80150731631faec16`; currently loaded containers are still prior generation `b78866efd17cfdca232019e66e902e16c778c152` while deployment `jgqxk6jxe8krtxj9xzfqkr9u` is in progress | TRANSITION / FACT |
 | Maintained implementation | `go/` package; node id `pr-af`; default port `8007`; build `./cmd/pr-af`; start `bin/pr-af` | FACT |
 | Local install semantics | local-path install of repo root keeps legacy Python package; maintained Go local path is `/src/pr-af/go` | FACT |
-| Current orchestration install path | workforce Compose still runs `af install /src/pr-af` | DESIGN_RUNTIME_DRIFT |
-| Current orchestration start policy | PR-AF is intentionally not auto-started after install | FACT |
+| Target orchestration install path | `universal-solver` commit `af605b10533268a20994023e6b1454b5cc4d91f6` changes workforce bootstrap to `af install /src/pr-af/go`; target commit `99c45ce...` includes this delta | TARGET_CONFIGURED / RUNTIME_PENDING |
+| Target orchestration start policy | `universal-solver` commit `99c45ce...` adds process-scoped PR-AF start on port `8007` with `PR_AF_PROVIDER=opencode`, explicit `openai/<Gonka model>` model selection, and a process-scoped dummy OpenRouter value only for the legacy package admission gate | TARGET_CONFIGURED / RUNTIME_PENDING |
 | Provider wiring in workforce | topology injects `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENROUTER_API_KEY`, and `GH_TOKEN` by name; secret values are not recorded here | FACT |
 | Go manifest provider contract | `go/agentfield-package.yaml` currently requires `OPENROUTER_API_KEY`; `GH_TOKEN` is optional | FACT |
 | Go provider env propagation | `go/internal/config/ai.go::ProviderEnv()` forwards `OPENAI_API_KEY` but not `OPENAI_BASE_URL` | SOURCE FACT / RUNTIME HYPOTHESIS |
