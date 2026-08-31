@@ -183,15 +183,9 @@ A Healthy process or registered reasoner surface is necessary but not sufficient
 
 ## 7. Current permanent DEV facts and anti-drift rule
 
-Current project SoT (`universal-solver:main/PLAN.md`) records:
-- active PR-AF source/durable branch identity at `7901b5a41baf2ad46d23361ba80716d85883e485`;
-- the permanent workforce source mount `/src/pr-af`;
-- SourceLoop running over the shared `/src`;
-- no current active `pr-af` registration;
-- current orchestration installs `/src/pr-af` root, selecting the stopped legacy local-path package instead of the maintained Go package;
-- the nearest runtime action is to exercise the maintained Go install/start path without a full-stack redeploy.
+Use this repo's `PLAN.md` for CURRENT PR-AF source/runtime evidence, exact SHAs, drift, blockers, and the next bounded move. `universal-solver` remains the owner of the permanent DEV topology and SourceLoop plumbing, not PR-AF project status.
 
-Treat these as CURRENT only while confirmed by fresh readback. If actual state differs, record `DESIGN_RUNTIME_DRIFT` in the project SoT and replan from actual state.
+Treat every runtime fact as CURRENT only while confirmed by fresh readback. If actual state differs, record `DESIGN_RUNTIME_DRIFT` in `PLAN.md` and replan from actual state.
 
 Do not patch PR-AF business code while a reproduced failure is still explained by install/start/config/orchestration.
 
