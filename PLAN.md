@@ -12,6 +12,7 @@
 - This file owns PR-AF current phase, Phase Goal, bounded batches, DoD, progress, blockers, and ONE next move.
 - `README.md` and `docs/ARCHITECTURE.md` own product/architecture intent.
 - `AGENTS.md` owns repository engineering rules.
+- `docs/LLM_PROVIDER_SECURITY_CONTRACT.md` owns PR-AF-specific LLM/provider/security semantics and links to the cross-component contract in `universal-solver`.
 - CURRENT runtime/readback owns actual loaded state.
 - `universal-solver` owns the permanent AgentField DEV topology and SourceLoop plumbing; its project PLAN is not PR-AF current-state SoT.
 - `BMAD-MNNZ` is the workflow/skill rulebook, not project SoT.
