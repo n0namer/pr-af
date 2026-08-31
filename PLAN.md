@@ -77,7 +77,8 @@ Hard rules:
 
 - [x] Canonical `PLAN.md` exists in the PR-AF repo and owns current PR-AF status.
 - [x] Exact live `/src/pr-af` source identity read back.
-- [x] Durable `pr-af:dev` identity matches live source.
+- [x] Live application-code identity established at `c2953a...`; canonical `dev` is ahead only by documentation commits.
+- [ ] Repository/base HEAD reconciled before any SourceLoop code capture.
 - [x] Maintained Go package path and local-root escape-hatch semantics identified.
 - [x] Current orchestration install/start drift identified.
 - [x] Provider env/config source inspected without exposing secret values.
