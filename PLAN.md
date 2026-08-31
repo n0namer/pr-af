@@ -51,9 +51,9 @@ Hard rules:
 
 | Claim | Evidence | Verdict |
 |---|---|---|
-| Canonical PR-AF branch | `n0namer/pr-af:dev` HEAD = `c2953a48792aed2bdf15fb31f38507e676f3fb41` | FACT |
-| Live source identity | permanent workforce `/src/pr-af/.git/HEAD` = `c2953a48792aed2bdf15fb31f38507e676f3fb41` | FACT |
-| Source/runtime branch drift | live `/src/pr-af` and `pr-af:dev` match at `c2953a...` | RESOLVED |
+| Canonical PR-AF branch | `n0namer/pr-af:dev` contains documentation-only `PLAN.md` / `AGENTS.md` commits after application-code commit `c2953a48792aed2bdf15fb31f38507e676f3fb41`; no PR-AF application-code delta is introduced by those documentation commits | FACT |
+| Live source identity | permanent workforce `/src/pr-af/.git/HEAD` = application-code commit `c2953a48792aed2bdf15fb31f38507e676f3fb41` | FACT |
+| Source/runtime code identity | live application code still matches the canonical application-code base at `c2953a...`, while repository HEAD is ahead by documentation-only commits; reconcile repository/base identity before SourceLoop code capture | DOC_ONLY_HEAD_DRIFT |
 | Current DEV topology target | Coolify app `edshqtkwskg3lrczekhcmd71` is pinned to `universal-solver` commit `b78866efd17cfdca232019e66e902e16c778c152` | FACT |
 | Maintained implementation | `go/` package; node id `pr-af`; default port `8007`; build `./cmd/pr-af`; start `bin/pr-af` | FACT |
 | Local install semantics | local-path install of repo root keeps legacy Python package; maintained Go local path is `/src/pr-af/go` | FACT |
