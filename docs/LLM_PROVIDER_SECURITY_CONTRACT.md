@@ -60,6 +60,18 @@ Required minimal PR-AF implementation delta:
 
 This is now an approved design decision for PR-AF, not merely a naming preference. Runtime `BASE_URL_LOSS` remains unproven until a real provider call is observed, so semantic/runtime PASS still requires execution evidence.
 
+## Future SWE convergence map
+
+SWE is intentionally not modified by this PR-AF task. When SWE is migrated to the same fleet-wide contract, inspect and update these owners together:
+
+- `n0namer/swe-af:dev/docs/LLM_PROVIDER_SECURITY_CONTRACT.md` — change the public/canonical transport wording to `OPENAI_API_KEY + OPENAI_BASE_URL + openai/<model>` and mark `AI_BASE_URL` compatibility-only if still supported;
+- `n0namer/swe-af:dev/go/internal/node/node.go` — verify `resolveAIConfig()` still produces the intended key/base/model triple after the transport-name migration;
+- `n0namer/swe-af:dev/go/internal/node/aiconfig_test.go` — migrate/add regression coverage for `OPENAI_BASE_URL` as canonical input and explicitly test any temporary `AI_BASE_URL` compatibility fallback;
+- `n0namer/agentfield:main/sdk/go/ai/config.go` — current SDK-level `AI_BASE_URL` reader is the compatibility boundary. Preferred migration is `OPENAI_BASE_URL` first, optional `AI_BASE_URL` fallback for a bounded deprecation window, with tests proving precedence and no silent fallback;
+- `n0namer/universal-solver` AgentField DEV topology — ensure SWE receives only the canonical fleet transport values at the deployment boundary; avoid maintaining two independently configurable endpoint variables.
+
+SWE migration acceptance should use the same invariant as PR-AF/Deep Research: intended `openai/<model>` + intended `OPENAI_API_KEY` + intended `OPENAI_BASE_URL` reach the actual client together, and no unintended default OpenAI/OpenRouter fallback occurs.
+
 The current Go package manifest also remains OpenRouter-oriented at bootstrap/credential-contract level. If maintained PR-AF supports an OpenAI-compatible lane but package admission rejects it, classify that as `BOOTSTRAP_ADMISSION` drift rather than forcing a real OpenRouter dependency.
 
 ## GitHub vs LLM credentials
