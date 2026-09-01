@@ -1,6 +1,6 @@
 # PR-AF — Canonical Plan and Current State
 
-> Status: ACTIVE — B1 PASS / B2 RUNTIMEFILEACI-ACTIVATION + EXECUTION-BRIDGE BLOCKERS
+> Status: ACTIVE — B1 PASS / B2 PROVIDER-PATH + FUNCTIONAL CANARY PASS / B3 SEMANTIC ACCEPTANCE NEXT
 > Updated: 2026-09-01
 > Canonical owner: `n0namer/pr-af:dev/PLAN.md`
 > Active development branch: `dev`
