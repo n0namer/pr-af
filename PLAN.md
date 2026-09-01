@@ -48,25 +48,23 @@ Hard rules:
 - Production live editing is forbidden by default.
 - Work in bounded ~30-minute BMAD batches with explicit DoD and 80/20 priority.
 
-## CURRENT evidence — 2026-08-31
+## CURRENT evidence — 2026-09-01
 
 | Claim | Evidence | Verdict |
 |---|---|---|
-| Canonical PR-AF branch | `n0namer/pr-af:dev` HEAD reconciled into the permanent workforce at `6245796a6c47a0f114dd0e8382f4abf63a89752f`; that HEAD advances the earlier application-code base mainly with canonical docs/contracts | FACT |
-| Live source identity | permanent workforce `/src/pr-af/.git/HEAD` = `6245796a6c47a0f114dd0e8382f4abf63a89752f` after clean exact reconcile | FACT |
-| Source/runtime identity | current PR-AF workspace was clean at reconcile and now matches the approved `dev` HEAD; future SourceLoop capture must still use fresh actual-HEAD/dirty readback | RESOLVED_FOR_CURRENT_GENERATION |
-| Current DEV topology target | Coolify app `edshqtkwskg3lrczekhcmd71` is loaded on `universal-solver` commit `8d852d1783fc0bb5f2fcb4037226967a08b9ba15`; current workforce `workforce-edshqtkwskg3lrczekhcmd71-174220777751` is healthy | FACT |
+| Canonical PR-AF branch | `n0namer/pr-af:dev` runtime source was clean-reconciled to `6245796a6c47a0f114dd0e8382f4abf63a89752f`; later PLAN-only commits advance branch metadata but do not change PR-AF application code | FACT |
+| Live source identity | permanent workforce `/src/pr-af` was reconciled cleanly before current bootstrap; fresh SourceLoop capture still requires rereading HEAD/dirty state immediately before capture | FACT |
+| Current DEV topology target | Coolify app `edshqtkwskg3lrczekhcmd71` is loaded on `universal-solver` commit `b7e2f00116358d78d01a73b77aa31d1c2bdfb9d5`; current control-plane, workforce and Deep Research are healthy | FACT |
 | Maintained implementation | `go/` package; node id `pr-af`; default port `8007`; build `./cmd/pr-af`; start `bin/pr-af` | FACT |
-| Local install semantics | local-path install of repo root keeps legacy Python package; maintained Go local path is `/src/pr-af/go` | FACT |
-| Runtime install path | `/afhome/installed.yaml` shows `pr-af.source_path: /src/pr-af/go` | PASS |
-| Runtime process | `/afhome/installed.yaml` shows `status: running`, `desired_state: running`, port `8007`, pid `8058` | PASS |
-| Runtime registration | PR-AF log records `node.register.complete`; current control-plane log accepts explicit callback `http://workforce:8007` and creates DID for `pr-af` | PASS |
-| Reasoner surface | exact Go source registers one externally-driven `review` reasoner plus 16 internal review-DAG reasoners; current external AgentField connector has not refreshed this node and returns `target_not_found` for `pr-af.review` | SOURCE_PASS / CONNECTOR_VIEW_DRIFT |
+| Runtime install path | current `/afhome/installed.yaml` shows `pr-af.source_path: /src/pr-af/go` | PASS |
+| Runtime process | current `/afhome/installed.yaml` shows `pr-af` `status: running`, `desired_state: running`, port `8007`, pid `7706` | PASS |
+| Runtime registration | PR-AF log previously recorded `node.register.complete`; current control-plane accepted callback `http://workforce:8007` and created the `pr-af` DID | PASS |
+| Reasoner surface | exact Go source registers external `review` plus 16 internal review-DAG reasoners | SOURCE PASS |
 | Provider wiring in workforce | topology injects `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENROUTER_API_KEY`, and `GH_TOKEN` by name; secret values are not recorded here | FACT |
 | Go manifest provider contract | `go/agentfield-package.yaml` currently requires `OPENROUTER_API_KEY`; `GH_TOKEN` is optional | FACT |
 | Go provider env propagation | `go/internal/config/ai.go::ProviderEnv()` forwards `OPENAI_API_KEY` but not `OPENAI_BASE_URL` | SOURCE FACT / RUNTIME HYPOTHESIS |
-| Bootstrap lifecycle route | working SWE-style workforce bootstrap now performs the maintained PR-AF install/start; no separate typed install capability is required for steady-state bootstrap | RESOLVED |
-| External connector view | `agentfield_actions` remains healthy but its node inventory omits the freshly registered `pr-af`; attempting `pr-af.review` through that connector returns `target_not_found` while current runtime/control-plane evidence proves registration | CONTROL_PLANE_VIEW_DRIFT |
+| Bootstrap lifecycle route | SWE-style workforce bootstrap now installs `/src/pr-af/go` and starts `pr-af:8007`; B1 no longer depends on a separate typed install capability | RESOLVED |
+| External execution bridge | stale-stack binding was diagnosed and current control-plane is now on shared `coolify` network with unique alias `agentfield-current-control-plane`; gateway process has the correct unique upstream + upstream API-key injection, but external ingress remains unavailable because Coolify strips custom Traefik labels from the custom-service runtime and generic Traefik file-write is blocked by the current mediator | EXECUTION_BRIDGE_BLOCKER |
 
 ## Design/runtime drift register
 
