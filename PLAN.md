@@ -70,8 +70,8 @@ Hard rules:
 
 1. **INSTALL_PATH_DRIFT — RESOLVED**: workforce bootstrap installs maintained `/src/pr-af/go`; current installed-state readback proves it.
 2. **START_POLICY_DRIFT — RESOLVED**: maintained Go PR-AF is running on `8007` and registered in the current control-plane.
-3. **PROVIDER_CONTRACT_CANDIDATE — OPEN**: `ProviderEnv()` omits `OPENAI_BASE_URL`; this remains a source-level hypothesis until a real `review` execution reaches the model path.
-4. **EXECUTION_BRIDGE_BLOCKER — OPEN**: the former stale AgentField stack binding is resolved, but the external `agentfield_actions` ingress is currently unavailable because Coolify strips custom Traefik labels; direct internal API probing is also blocked by the current generic mediator. This is not evidence of a PR-AF defect.
+3. **PROVIDER_CONTRACT_DRIFT — APPROVED_FIX**: user/design authority selected one fleet transport contract: `OPENAI_API_KEY + OPENAI_BASE_URL + openai/<model>`. `ProviderEnv()` omits `OPENAI_BASE_URL`, so PR-AF requires a bounded conformance patch plus regression coverage even before semantic/runtime failure reproduction. Real provider PASS still requires an actual review call.
+4. **EXECUTION_BRIDGE_BLOCKER — OPEN**: the former stale AgentField stack binding is resolved, but the external `agentfield_actions` ingress is currently unavailable because Coolify strips custom Traefik labels; direct internal API probing is also blocked by the current generic mediator. Separately, the current DEV mediator rejects direct live source mutation commands as `opaque_or_unknown_mutation`, so the approved two-file PR-AF conformance delta cannot yet be applied through the available container execution surface.
 
 ## Phase DoD
 
