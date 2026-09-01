@@ -77,6 +77,7 @@ func (c AIIntegrationConfig) ProviderEnv() map[string]string {
 		"OPENROUTER_API_KEY",
 		"ANTHROPIC_API_KEY",
 		"OPENAI_API_KEY",
+		"OPENAI_BASE_URL",
 		"GOOGLE_API_KEY",
 		"GH_TOKEN",
 	} {
