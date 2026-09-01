@@ -143,17 +143,21 @@ From `go/`:
 
 ## Current blocker
 
-The project is not blocked on understanding the next technical action. The exact next runtime mutation is known and bounded, but the CURRENT DEV execution surface lacks a typed capability that can perform it. Generic command execution rejects `af install` as opaque, and the generic approval adapter is unavailable.
+PR-AF itself is no longer blocked on install/start/registration. The blocker is the **execution bridge to the CURRENT control-plane**:
 
-This is `CAPABILITY_GAP`, not missing user authorization and not evidence of a PR-AF code defect.
+- stale `agentfield_actions` binding to the old AgentField stack was diagnosed and removed;
+- CURRENT control-plane is healthy and exposed on shared `coolify` network with unique alias `agentfield-current-control-plane`;
+- gateway process is running with that unique upstream and an internal upstream API-key injection path;
+- Coolify custom-service parsing strips custom Traefik labels from the runtime container, so the external Action endpoint currently has no serving router;
+- direct internal API probing and Traefik dynamic-file mutation are blocked by the current generic mediator; `coolify-proxy` is not a registered live-patch target.
+
+This is `EXECUTION_BRIDGE_BLOCKER`, not a PR-AF code failure and not missing user authorization.
 
 ## Current decision / ONE next move
 
-Use the first CURRENT authoritative typed route that can execute in the existing permanent workforce, then perform exactly:
+Restore **one** executable route to the CURRENT control-plane with the smallest authoritative capability, then immediately run one bounded `pr-af.review` synthetic dry-run canary and inspect provider/model/base/fallback evidence.
 
-`af install /src/pr-af/go` → `af run pr-af --port 8007 --detach=true` → installed/process/log readback → AgentField registration → reasoner discovery.
-
-Do not patch PR-AF Go code before that runtime path is exercised. If B1 produces a provider-path failure, B2 edits only `/src/pr-af` directly and proves the smallest red→green delta before SourceLoop capture.
+Do not patch PR-AF Go code before that real execution. If the canary proves `BASE_URL_LOSS`/`ENV_PROPAGATION`, edit only `/src/pr-af/go` directly in the container, run the smallest regression + required Go checks, reload only PR-AF in the same runtime, and rerun the canary before SourceLoop capture.
 
 ## Write-back rule
 
