@@ -104,16 +104,25 @@ DoD:
 
 Status: `PASS`.
 
-### B2 — Provider path and minimal Go repair
-Goal: execute the smallest real `pr-af.review` call, prove actual provider/model/base routing, and repair only a reproduced Go defect.
+### B2 — Unified provider contract conformance + runtime proof
+Goal: make PR-AF conform to the approved fleet transport contract `OPENAI_API_KEY + OPENAI_BASE_URL + openai/<model>`, then prove that contract on a real `pr-af.review` execution.
 
 Priority order:
-1. restore one executable route to the CURRENT control-plane without changing PR-AF code;
-2. run a bounded synthetic dry-run review canary;
-3. inspect execution evidence for `opencode + openai/<Gonka>`, custom base survival, and absence of unintended fallback;
-4. only if `BASE_URL_LOSS`/`ENV_PROPAGATION` is reproduced, edit `/src/pr-af/go` directly in the container, add the smallest regression, run targeted tests and required `make check`, then reload only PR-AF in the same runtime.
+1. apply the approved minimal live-source delta directly in `/src/pr-af/go`: add `OPENAI_BASE_URL` to `ProviderEnv()` and focused regression coverage in `internal/config/config_test.go`;
+2. run targeted `go test ./internal/config`, then required `make check` on the same live source;
+3. reload only PR-AF in the same runtime;
+4. restore/use one executable route to the CURRENT control-plane and run a bounded synthetic dry-run `pr-af.review` canary;
+5. inspect execution evidence for `opencode + openai/<Gonka>`, exact custom base survival, and absence of unintended OpenRouter/default-OpenAI fallback.
 
-Status: `ACTIVE / BLOCKED_BY_EXECUTION_BRIDGE`.
+DoD:
+- source forwards `OPENAI_BASE_URL` unchanged when set and omits it when unset;
+- focused regression PASS;
+- `make check` PASS on the same source;
+- same-runtime PR-AF reload PASS;
+- real canary proves model/key/base as one provider identity;
+- no unintended fallback.
+
+Status: `ACTIVE / CODE_PATCH_BLOCKED_BY_LIVE_PATCH_CAPABILITY + EXECUTION_BRIDGE_BLOCKER`.
 
 ### B3 — Semantic acceptance and durability
 Goal: prove useful PR review and canonicalize the exact accepted delta.
@@ -126,7 +135,7 @@ Tasks:
 - SourceLoop capture only after acceptance;
 - verify final `pr-af:dev` SHA and absence of unintended runtime-only delta.
 
-Status: `BLOCKED_BY_B1_B2`.
+Status: `BLOCKED_BY_B2`.
 
 ## Validation ladder
 
