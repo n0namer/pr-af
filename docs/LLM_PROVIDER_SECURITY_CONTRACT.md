@@ -32,23 +32,33 @@ Relevant provider/runtime variables include:
 
 The permanent AgentField DEV topology currently injects OpenAI-compatible key/base variables by name. Environment presence alone is not proof that a PR-AF review call used that provider.
 
-## Required OpenAI-compatible / Gonka pattern
+## Canonical OpenAI-compatible transport contract
 
-When PR-AF is intentionally routed through Gonka as an OpenAI-compatible provider, the intended provider identity is:
+PR-AF standardizes on one provider transport contract for OpenAI-compatible backends, including Gonka:
 
 ```text
-model/provider = openai/<Gonka model> (or the PR-AF equivalent explicit OpenAI-compatible selection)
-OPENAI_API_KEY = <Gonka secret from runtime secret store>
-OPENAI_BASE_URL = <Gonka OpenAI-compatible endpoint>
+model/provider = openai/<intended model>
+OPENAI_API_KEY = <provider credential from runtime secret store>
+OPENAI_BASE_URL = <intended OpenAI-compatible endpoint>
 ```
 
-The credential, endpoint/base, and selected model/provider MUST survive to the final model/tool call.
+`OPENAI_API_KEY` and `OPENAI_BASE_URL` are the canonical transport variable names. PR-AF MUST NOT introduce `AI_BASE_URL` as a parallel public/fleet contract. Adapter-specific aliases may exist only as explicitly documented compatibility shims and must not become a second source of truth.
 
-## Current source evidence and candidate drift
+The credential, endpoint/base, and selected model/provider MUST survive together to the final harness/model call. A key without the intended base URL, or a model without the intended key/base pair, is an invalid provider state.
+
+Deep Research is the proven reference pattern: model/key overrides must preserve the configured custom `api_base`. PR-AF should preserve the same invariant at its OpenCode/harness boundary.
+
+## Current source evidence and required PR-AF delta
 
 `go/internal/config/ai.go::ProviderEnv()` currently forwards `OPENAI_API_KEY` but does not forward `OPENAI_BASE_URL`.
 
-This is a source-level candidate for `BASE_URL_LOSS` / `ENV_PROPAGATION` drift, analogous to the defect class previously fixed in Deep Research. It is NOT promoted to a confirmed PR-AF runtime defect until the maintained Go node is started and a real provider-path execution reproduces the failure.
+Required minimal PR-AF implementation delta:
+- add `OPENAI_BASE_URL` to the environment forwarded by `ProviderEnv()`;
+- add a focused regression in `go/internal/config/config_test.go` proving exact `OPENAI_BASE_URL` propagation and absence when unset;
+- do not add `AI_BASE_URL` to PR-AF as another canonical variable;
+- after the source-level regression passes, prove the real model path and absence of unintended OpenRouter/default-OpenAI fallback before semantic acceptance.
+
+This is now an approved design decision for PR-AF, not merely a naming preference. Runtime `BASE_URL_LOSS` remains unproven until a real provider call is observed, so semantic/runtime PASS still requires execution evidence.
 
 The current Go package manifest also remains OpenRouter-oriented at bootstrap/credential-contract level. If maintained PR-AF supports an OpenAI-compatible lane but package admission rejects it, classify that as `BOOTSTRAP_ADMISSION` drift rather than forcing a real OpenRouter dependency.
 
