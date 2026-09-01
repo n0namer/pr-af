@@ -1,7 +1,7 @@
 # PR-AF — Canonical Plan and Current State
 
-> Status: ACTIVE
-> Updated: 2026-08-31
+> Status: ACTIVE — B1 PASS / B2 EXECUTION-BRIDGE BLOCKER
+> Updated: 2026-09-01
 > Canonical owner: `n0namer/pr-af:dev/PLAN.md`
 > Active development branch: `dev`
 > Runtime topology owner: `n0namer/universal-solver`
