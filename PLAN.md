@@ -152,21 +152,20 @@ From `go/`:
 
 ## Current blocker
 
-PR-AF itself is no longer blocked on install/start/registration. The blocker is the **execution bridge to the CURRENT control-plane**:
+PR-AF itself is no longer blocked on install/start/registration. B2 has two independent execution-surface blockers:
 
-- stale `agentfield_actions` binding to the old AgentField stack was diagnosed and removed;
-- CURRENT control-plane is healthy and exposed on shared `coolify` network with unique alias `agentfield-current-control-plane`;
-- gateway process is running with that unique upstream and an internal upstream API-key injection path;
-- Coolify custom-service parsing strips custom Traefik labels from the runtime container, so the external Action endpoint currently has no serving router;
-- direct internal API probing and Traefik dynamic-file mutation are blocked by the current generic mediator; `coolify-proxy` is not a registered live-patch target.
+1. **LIVE_PATCH_CAPABILITY_GAP** — the approved PR-AF conformance delta cannot currently be applied through the container-first path. Policy guidance returns `ALLOW` for exact `FILESYSTEM:PATCH_FILE`, but the workforce is not registered as a RuntimeFileACI target (`unknown_target`), generic container mutation is classified as `opaque_or_unknown_mutation`, and the approval plane returns `approval_capability_gap` because no executable generic adapter exists.
+2. **EXECUTION_BRIDGE_BLOCKER** — stale `agentfield_actions` binding to the old AgentField stack was diagnosed and removed; CURRENT control-plane is healthy on shared `coolify` network with unique alias `agentfield-current-control-plane`, but the external Action ingress remains unavailable because Coolify strips the custom Traefik labels and generic Traefik file mutation is mediator-blocked.
 
-This is `EXECUTION_BRIDGE_BLOCKER`, not a PR-AF code failure and not missing user authorization.
+Neither blocker is evidence of a PR-AF application failure, and neither is missing user authorization.
 
 ## Current decision / ONE next move
 
-Restore **one** executable route to the CURRENT control-plane with the smallest authoritative capability, then immediately run one bounded `pr-af.review` synthetic dry-run canary and inspect provider/model/base/fallback evidence.
+Restore/register one bounded live-file patch route for the existing workforce `/src/pr-af` first. Then perform exactly this B2 batch without GitHub application-code editing or full redeploy:
 
-Do not patch PR-AF Go code before that real execution. If the canary proves `BASE_URL_LOSS`/`ENV_PROPAGATION`, edit only `/src/pr-af/go` directly in the container, run the smallest regression + required Go checks, reload only PR-AF in the same runtime, and rerun the canary before SourceLoop capture.
+`ProviderEnv()` adds `OPENAI_BASE_URL` → focused `config_test.go` regression → `go test ./internal/config` → `make check` → reload only PR-AF → restore/use one CURRENT control-plane execution route → synthetic `pr-af.review` → prove `openai/<model> + OPENAI_API_KEY + OPENAI_BASE_URL` and no unintended fallback.
+
+If a current typed live-patch capability appears before the external execution bridge is repaired, apply and validate the source conformance delta immediately; runtime/provider acceptance remains open until the real review canary succeeds.
 
 ## Write-back rule
 
