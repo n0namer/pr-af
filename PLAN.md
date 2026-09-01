@@ -62,9 +62,11 @@ Hard rules:
 | Reasoner surface | exact Go source registers external `review` plus 16 internal review-DAG reasoners | SOURCE PASS |
 | Provider wiring in workforce | topology injects `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENROUTER_API_KEY`, and `GH_TOKEN` by name; secret values are not recorded here | FACT |
 | Go manifest provider contract | `go/agentfield-package.yaml` currently requires `OPENROUTER_API_KEY`; `GH_TOKEN` is optional | FACT |
-| Go provider env propagation | `go/internal/config/ai.go::ProviderEnv()` forwards `OPENAI_API_KEY` but not `OPENAI_BASE_URL`; unified provider contract explicitly requires `OPENAI_API_KEY + OPENAI_BASE_URL + openai/<model>` | SOURCE FACT / APPROVED_CONFORMANCE_FIX |
-| Bootstrap lifecycle route | SWE-style workforce bootstrap now installs `/src/pr-af/go` and starts `pr-af:8007`; B1 no longer depends on a separate typed install capability | RESOLVED |
-| External execution bridge | stale-stack binding was diagnosed and current control-plane is now on shared `coolify` network with unique alias `agentfield-current-control-plane`; gateway process has the correct unique upstream + upstream API-key injection, but external ingress remains unavailable because Coolify strips custom Traefik labels from the custom-service runtime and generic Traefik file-write is blocked by the current mediator | EXECUTION_BRIDGE_BLOCKER |
+| Go provider env propagation | CURRENT live source `6245796a...` has `ProviderEnv()` forwarding `OPENAI_API_KEY` **and** `OPENAI_BASE_URL`; focused regression proves exact forwarding when set and omission when unset | PASS |
+| Bootstrap lifecycle route | SWE-style workforce bootstrap installs `/src/pr-af/go` and starts `pr-af:8007`; B1 no longer depends on a separate typed install capability | RESOLVED |
+| External execution bridge | CURRENT AgentField capability discovery exposes active `pr-af.review`; direct typed executions are accepted and observable. Synthetic dry-run `exec_20260901_144853_5nrsyda3` completed `succeeded` through all review phases. The former external-ingress blocker is no longer CURRENT for this GPT execution surface | PASS |
+| Deterministic validation | `go test ./internal/config` PASS and live-source `make check` PASS (`go build ./...` + `go vet ./...` + `go test ./...`) on `/src/pr-af/go` | PASS |
+| Loaded provider identity | live PR-AF process selects `PR_AF_PROVIDER=opencode` and `PR_AF_MODEL=openai/deepseek-ai/DeepSeek-V4-Flash-0731`; `OPENAI_API_KEY` and `OPENAI_BASE_URL` are present without exposing values. A live child was observed as `opencode run ... -m openai/deepseek-ai/DeepSeek-V4-Flash-0731`; source mapping deterministically forwards ProviderEnv into `HarnessConfig.Env` | PASS / TRACE_GRANULARITY_LIMITED |
 
 ## Design/runtime drift register
 
