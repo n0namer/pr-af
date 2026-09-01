@@ -68,27 +68,24 @@ Hard rules:
 
 ## Design/runtime drift register
 
-1. **INSTALL_PATH_DRIFT** — topology installs `/src/pr-af` root while maintained Go runtime requires `/src/pr-af/go` for local-path installation.
-2. **START_POLICY_DRIFT** — maintained Go PR-AF is not started in CURRENT permanent DEV, so registration/functional proof cannot exist yet.
-3. **PROVIDER_CONTRACT_CANDIDATE** — workforce already exposes Gonka/OpenAI-compatible key + base, but Go `ProviderEnv()` currently omits `OPENAI_BASE_URL`; this is not promoted to a confirmed runtime defect until the maintained Go node is exercised.
-4. **EXECUTION_CAPABILITY_GAP** — available DEV container mediator can read the workspace but cannot currently execute the exact `af install/run` mutation through a typed capability.
+1. **INSTALL_PATH_DRIFT — RESOLVED**: workforce bootstrap installs maintained `/src/pr-af/go`; current installed-state readback proves it.
+2. **START_POLICY_DRIFT — RESOLVED**: maintained Go PR-AF is running on `8007` and registered in the current control-plane.
+3. **PROVIDER_CONTRACT_CANDIDATE — OPEN**: `ProviderEnv()` omits `OPENAI_BASE_URL`; this remains a source-level hypothesis until a real `review` execution reaches the model path.
+4. **EXECUTION_BRIDGE_BLOCKER — OPEN**: the former stale AgentField stack binding is resolved, but the external `agentfield_actions` ingress is currently unavailable because Coolify strips custom Traefik labels; direct internal API probing is also blocked by the current generic mediator. This is not evidence of a PR-AF defect.
 
 ## Phase DoD
 
-- [x] Canonical `PLAN.md` exists in the PR-AF repo and owns current PR-AF status.
-- [x] Exact live `/src/pr-af` source identity read back.
-- [x] Live application-code identity established at `c2953a...`; canonical `dev` is ahead only by documentation commits.
-- [ ] Repository/base HEAD reconciled before any SourceLoop code capture.
-- [x] Maintained Go package path and local-root escape-hatch semantics identified.
-- [x] Current orchestration install/start drift identified.
+- [x] Canonical `PLAN.md` exists and owns PR-AF current state.
+- [x] Exact runtime source/install path observed.
+- [x] Maintained Go package installed from `/src/pr-af/go`.
+- [x] `pr-af` process running on port `8007` from the maintained package.
+- [x] `pr-af` registration proven by node-side and control-plane-side evidence.
+- [x] Expected reasoner surface identified from exact Go source (`review` + 16 internal reasoners).
 - [x] Provider env/config source inspected without exposing secret values.
-- [ ] Maintained Go PR-AF installed from `/src/pr-af/go` in permanent DEV without full-stack redeploy.
-- [ ] `pr-af` process started on the intended port and loaded from the intended source.
-- [ ] `pr-af` registered in CURRENT AgentField.
-- [ ] Expected reasoner surface discoverable.
+- [ ] Execute the first current-control-plane `pr-af.review` canary.
+- [ ] Gonka/OpenAI-compatible path proven end-to-end: custom base survives to the actual model/tool call and no unintended OpenRouter fallback occurs.
 - [ ] Deterministic/functional canary PASS.
-- [ ] Gonka/OpenAI-compatible path proven end-to-end if used: configured base survives to the actual model/tool call and no OpenRouter fallback occurs.
-- [ ] One bounded real semantic PR-review E2E PASS with non-dummy provider credentials and outcome inspection.
+- [ ] One bounded real semantic PR-review E2E PASS with outcome inspection.
 - [ ] If code changed: smallest relevant regression red→green, then required broader Go validation.
 - [ ] Accepted code delta captured by SourceLoop.
 - [ ] Durable `pr-af:dev` SHA corresponds to the accepted runtime delta.
@@ -99,33 +96,24 @@ Hard rules:
 ### B1 — Correct maintained runtime path
 Goal: move from “source present” to “maintained Go node actually running”.
 
-Tasks:
-1. Re-read live source identity and relevant install state.
-2. Install `/src/pr-af/go` using the existing AgentField CLI in the same workforce.
-3. Start only `pr-af` on port `8007`.
-4. Read back installed state, process/log evidence, AgentField registration, and reasoner inventory.
-5. Do not change PR-AF code unless Go startup itself proves a code/config defect.
-
 DoD:
-- maintained Go package installed;
-- `pr-af` running and registered;
-- reasoner discoverable;
-- exact blocker recorded if any criterion cannot be executed.
+- maintained Go package installed from `/src/pr-af/go` — **PASS**;
+- `pr-af` running on `8007` — **PASS**;
+- current control-plane registration — **PASS**;
+- exact source/runtime identity read back — **PASS for current generation**.
 
-Status: `DEPLOYING_RUNTIME_BOOTSTRAP_FIX`.
-Current state: comparison with working SWE-AF proved that maintained package lifecycle belongs in the workforce bootstrap itself, not in a separate typed operator capability. Universal Solver target commit `99c45ce...` now installs `/src/pr-af/go` and starts `pr-af:8007` with explicit `opencode + openai/<Gonka>` selection. Deployment `jgqxk6jxe8krtxj9xzfqkr9u` is creating the new generation; B1 remains open until the new workforce readback proves install/start/registration.
+Status: `PASS`.
 
 ### B2 — Provider path and minimal Go repair
-Goal: prove or repair the real provider/model path only after B1 starts the maintained node.
+Goal: execute the smallest real `pr-af.review` call, prove actual provider/model/base routing, and repair only a reproduced Go defect.
 
-Priority hypothesis:
-- if Gonka/OpenAI-compatible routing is selected, verify whether omission of `OPENAI_BASE_URL` from `ProviderEnv()` causes endpoint fallback;
-- fix directly in `/src/pr-af/go` only with reproduced evidence;
-- add the smallest regression test;
-- targeted test → related regression → `make check` as required;
-- same-runtime PR-AF reload only.
+Priority order:
+1. restore one executable route to the CURRENT control-plane without changing PR-AF code;
+2. run a bounded synthetic dry-run review canary;
+3. inspect execution evidence for `opencode + openai/<Gonka>`, custom base survival, and absence of unintended fallback;
+4. only if `BASE_URL_LOSS`/`ENV_PROPAGATION` is reproduced, edit `/src/pr-af/go` directly in the container, add the smallest regression, run targeted tests and required `make check`, then reload only PR-AF in the same runtime.
 
-Status: `BLOCKED_BY_B1`.
+Status: `ACTIVE / BLOCKED_BY_EXECUTION_BRIDGE`.
 
 ### B3 — Semantic acceptance and durability
 Goal: prove useful PR review and canonicalize the exact accepted delta.
