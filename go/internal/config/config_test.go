@@ -21,7 +21,7 @@ var configEnvKeys = []string{
 	"PR_AF_MAX_COST_USD", "PR_AF_MAX_DURATION_SECONDS",
 	"PR_AF_EVIDENCE_PACK", "PR_AF_POSTWORTHINESS_GATE",
 	"HAX_API_KEY", "AGENTFIELD_APPROVAL_USER_ID",
-	"OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY",
+	"OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "OPENAI_BASE_URL",
 	"GOOGLE_API_KEY", "GH_TOKEN", "XDG_DATA_HOME",
 }
 
@@ -221,12 +221,16 @@ func TestProviderEnv(t *testing.T) {
 	clearConfigEnv(t)
 	xdg := t.TempDir()
 	t.Setenv("OPENROUTER_API_KEY", "or-key")
+	t.Setenv("OPENAI_BASE_URL", "https://gonka.example/v1")
 	t.Setenv("GH_TOKEN", "gh-tok")
 	t.Setenv("XDG_DATA_HOME", xdg)
 
 	env := mustAIConfig(t).ProviderEnv()
 	if env["OPENROUTER_API_KEY"] != "or-key" {
 		t.Errorf("OPENROUTER_API_KEY = %q", env["OPENROUTER_API_KEY"])
+	}
+	if env["OPENAI_BASE_URL"] != "https://gonka.example/v1" {
+		t.Errorf("OPENAI_BASE_URL = %q", env["OPENAI_BASE_URL"])
 	}
 	if env["GH_TOKEN"] != "gh-tok" {
 		t.Errorf("GH_TOKEN = %q", env["GH_TOKEN"])
@@ -243,10 +247,16 @@ func TestProviderEnv(t *testing.T) {
 	}
 
 	// With XDG_DATA_HOME unset, ProviderEnv falls back to a tmp dir and creates
-	// it.
+	// it. Unset OPENAI_BASE_URL must also stay absent instead of inventing a
+	// fallback endpoint.
 	t.Setenv("XDG_DATA_HOME", "")
 	_ = os.Unsetenv("XDG_DATA_HOME")
+	t.Setenv("OPENAI_BASE_URL", "")
+	_ = os.Unsetenv("OPENAI_BASE_URL")
 	env2 := mustAIConfig(t).ProviderEnv()
+	if _, ok := env2["OPENAI_BASE_URL"]; ok {
+		t.Errorf("OPENAI_BASE_URL should be absent when unset")
+	}
 	wantXDG := filepath.Join(os.TempDir(), "opencode-shared-data")
 	if env2["XDG_DATA_HOME"] != wantXDG {
 		t.Errorf("fallback XDG_DATA_HOME = %q, want %q", env2["XDG_DATA_HOME"], wantXDG)
