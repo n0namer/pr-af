@@ -37,6 +37,7 @@ func TestHarnessConfigPreservesExistingFields(t *testing.T) {
 		t.Setenv(key, "")
 	}
 	t.Setenv("OPENAI_API_KEY", "openai-key")
+	t.Setenv("OPENAI_BASE_URL", "https://gonka.example/v1")
 	conf := config.AIIntegrationConfig{
 		Provider: "opencode", HarnessModel: "test-model", MaxTurns: 17,
 		OpencodeBin: "C:/bin/opencode-custom",
@@ -47,6 +48,7 @@ func TestHarnessConfigPreservesExistingFields(t *testing.T) {
 	}
 	if want := map[string]string{
 		"OPENAI_API_KEY":            "openai-key",
+		"OPENAI_BASE_URL":           "https://gonka.example/v1",
 		"XDG_DATA_HOME":             xdg,
 		"AGENTFIELD_AFORGE_COMMAND": "exec",
 	}; !reflect.DeepEqual(got.Env, want) {
