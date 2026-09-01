@@ -1,6 +1,6 @@
 # PR-AF — Canonical Plan and Current State
 
-> Status: ACTIVE — B1 PASS / B2 EXECUTION-BRIDGE BLOCKER
+> Status: ACTIVE — B1 PASS / B2 LIVE-PATCH + EXECUTION-BRIDGE BLOCKERS
 > Updated: 2026-09-01
 > Canonical owner: `n0namer/pr-af:dev/PLAN.md`
 > Active development branch: `dev`
