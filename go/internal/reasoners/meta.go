@@ -2,7 +2,10 @@ package reasoners
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/Agent-Field/agentfield/sdk/go/harness"
