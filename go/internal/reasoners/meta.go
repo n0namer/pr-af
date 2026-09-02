@@ -18,8 +18,9 @@ import (
 // when it exceeds 8000 characters (code points), run the lens prompt, then
 // FORCE the lens field regardless of what the model returned.
 //
-// Output keys (§B.2): lens, dimensions, confidence, rationale. Parse failure
-// degrades to lens + empty dimensions + the seeded confidence (0.7).
+// Output keys (§B.2): lens, dimensions, confidence, rationale. Meta selectors
+// use incremental schema mode and fail closed when structured output cannot be
+// produced; an empty seeded fallback can otherwise become a false "Looks Good".
 
 // MetaSemantic ports meta_semantic.
 func MetaSemantic(ctx context.Context, deps Deps, in MetaInput) (map[string]any, error) {
@@ -53,7 +54,10 @@ func runMetaLens(
 	}
 
 	prompt := buildPrompt(metaContext, in.RepoPath, in.Depth)
-	parsed, hres, err := harnessx.Run[schemas.MetaDimensionResult](ctx, deps.Harness, prompt, harness.Options{Cwd: in.RepoPath})
+	parsed, hres, err := harnessx.Run[schemas.MetaDimensionResult](ctx, deps.Harness, prompt, harness.Options{
+		Cwd:        in.RepoPath,
+		SchemaMode: "incremental",
+	})
 	if err != nil {
 		return nil, err
 	}

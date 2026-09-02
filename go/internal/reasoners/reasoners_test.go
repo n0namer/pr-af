@@ -382,6 +382,9 @@ func TestMetaSelectorsForceLens(t *testing.T) {
 			if !strings.Contains(h.gotPrompt, strings.ToUpper(tc.lens)) {
 				t.Fatalf("prompt does not carry the %s lens", tc.lens)
 			}
+			if h.gotOpts.SchemaMode != "incremental" {
+				t.Fatalf("SchemaMode = %q, want incremental", h.gotOpts.SchemaMode)
+			}
 		})
 	}
 }
