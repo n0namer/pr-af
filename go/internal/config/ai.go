@@ -109,23 +109,37 @@ func (c AIIntegrationConfig) ProviderEnv() map[string]string {
 	return env
 }
 
-func (c AIIntegrationConfig) opencodeConfigContent() string {
-	model := strings.TrimPrefix(c.HarnessModel, "openai/")
-	fullModel := c.HarnessModel
-	if !strings.HasPrefix(fullModel, "openai/") {
-		fullModel = "openai/" + model
+// HarnessRuntimeModel adapts the external Deep-Research-style model contract
+// (openai/<model>) to a dedicated OpenCode provider id. OpenCode's built-in
+// "openai" provider uses OpenAI-native APIs such as /responses; generic
+// OpenAI-compatible gateways commonly expose /chat/completions instead. The
+// dedicated compat provider below selects @ai-sdk/openai-compatible explicitly.
+func (c AIIntegrationConfig) HarnessRuntimeModel() string {
+	if c.Provider == "opencode" && strings.HasPrefix(c.HarnessModel, "openai/") {
+		return "compat/" + strings.TrimPrefix(c.HarnessModel, "openai/")
 	}
+	return c.HarnessModel
+}
+
+func (c AIIntegrationConfig) opencodeConfigContent() string {
+	runtimeModel := c.HarnessRuntimeModel()
+	model := strings.TrimPrefix(runtimeModel, "compat/")
 	cfg := map[string]any{
 		"$schema":     "https://opencode.ai/config.json",
-		"model":       fullModel,
-		"small_model": fullModel,
+		"model":       runtimeModel,
+		"small_model": runtimeModel,
 		"provider": map[string]any{
-			"openai": map[string]any{
+			"compat": map[string]any{
+				"name": "PR-AF OpenAI-compatible",
+				"npm":  "@ai-sdk/openai-compatible",
+				"env":  []string{"OPENAI_API_KEY"},
 				"options": map[string]string{
 					"baseURL": "{env:OPENAI_BASE_URL}",
 					"apiKey":  "{env:OPENAI_API_KEY}",
 				},
-				"models": map[string]any{model: map[string]any{}},
+				"models": map[string]any{
+					model: map[string]any{"id": model, "name": model},
+				},
 			},
 		},
 	}
