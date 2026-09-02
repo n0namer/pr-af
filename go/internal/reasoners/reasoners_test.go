@@ -23,19 +23,29 @@ import (
 // on parseFail, a Result with Parsed==nil comes back — the path harnessx.Run
 // turns into a seeded default.
 type mockHarness struct {
-	payload   string
-	parseFail bool
-	calls     int
-	gotPrompt string
-	gotOpts   harness.Options
+	payload            string
+	parseFail          bool
+	parseFailResult    string
+	unstructuredResult string
+	calls              int
+	gotPrompt          string
+	gotOpts            harness.Options
 }
 
-func (m *mockHarness) Harness(_ context.Context, prompt string, _ map[string]any, dest any, opts harness.Options) (*harness.Result, error) {
+func (m *mockHarness) Harness(_ context.Context, prompt string, schema map[string]any, dest any, opts harness.Options) (*harness.Result, error) {
 	m.calls++
 	m.gotPrompt = prompt
 	m.gotOpts = opts
+	if schema == nil {
+		return &harness.Result{Result: m.unstructuredResult}, nil
+	}
 	if m.parseFail {
-		return &harness.Result{IsError: true, ErrorMessage: "schema validation failed"}, nil
+		return &harness.Result{
+			IsError:      true,
+			ErrorMessage: "schema validation failed",
+			FailureType:  harness.FailureSchema,
+			Result:       m.parseFailResult,
+		}, nil
 	}
 	if err := json.Unmarshal([]byte(m.payload), dest); err != nil {
 		return nil, err
@@ -385,8 +395,8 @@ func TestMetaSelectorsForceLens(t *testing.T) {
 			if h.gotOpts.SchemaMode != "incremental" {
 				t.Fatalf("SchemaMode = %q, want incremental", h.gotOpts.SchemaMode)
 			}
-			if h.gotOpts.SchemaMaxRetries != 4 {
-				t.Fatalf("SchemaMaxRetries = %d, want 4", h.gotOpts.SchemaMaxRetries)
+			if h.gotOpts.SchemaMaxRetries != 2 {
+				t.Fatalf("SchemaMaxRetries = %d, want 2 for the lean meta schema", h.gotOpts.SchemaMaxRetries)
 			}
 		})
 	}
@@ -403,8 +413,72 @@ func TestMetaSelectorParseFail(t *testing.T) {
 	if out != nil {
 		t.Fatalf("expected nil output on meta schema failure, got %#v", out)
 	}
-	if !strings.Contains(err.Error(), "meta mechanical structured output unavailable") {
+	if !strings.Contains(err.Error(), "meta mechanical output recovery failed") {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestMetaSelectorRecoversEmbeddedJSON(t *testing.T) {
+	h := &mockHarness{
+		parseFail:       true,
+		parseFailResult: "Model prose before JSON. ```json\n{\"lens\":\"wrong\",\"dimensions\":[{\"name\":\"SQL safety\",\"review_prompt\":\"Check SQL construction and credential handling.\",\"target_files\":[\"internal/auth/login.go\"]}],\"confidence\":0.8,\"rationale\":\"Security-sensitive auth change.\"}\n```",
+	}
+	out, err := MetaSemantic(context.Background(), Deps{Harness: h}, MetaInput{
+		Depth:       "deep",
+		DiffPatches: OrderedPatches{{Key: "internal/auth/login.go", Val: "diff"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h.calls != 1 {
+		t.Fatalf("calls = %d, want 1 because raw JSON recovery should avoid a second model call", h.calls)
+	}
+	if out["lens"] != "semantic" {
+		t.Fatalf("lens = %v, want semantic", out["lens"])
+	}
+	dims := out["dimensions"].([]any)
+	if len(dims) != 1 {
+		t.Fatalf("dimensions = %#v", dims)
+	}
+	dim := dims[0].(map[string]any)
+	if dim["id"] != "semantic-01" || dim["priority"] != float64(1) {
+		t.Fatalf("deterministic enrichment missing: %#v", dim)
+	}
+}
+
+func TestMetaSelectorPlainTextFallback(t *testing.T) {
+	h := &mockHarness{
+		parseFail:          true,
+		unstructuredResult: "DIMENSION: Credential leakage\nPROMPT: Check whether secrets or passwords can be exposed in responses or logs.\nFILES: *\nEND\nCONFIDENCE: 0.65\nRATIONALE: Auth code deserves explicit secret-handling review.",
+	}
+	out, err := MetaMechanical(context.Background(), Deps{Harness: h}, MetaInput{
+		Depth: "deep",
+		DiffPatches: OrderedPatches{
+			{Key: "internal/auth/login.go", Val: "diff"},
+			{Key: "internal/payments/amount.go", Val: "diff"},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h.calls != 2 {
+		t.Fatalf("calls = %d, want structured attempt + one plain-text fallback", h.calls)
+	}
+	if out["lens"] != "mechanical" || out["confidence"] != 0.65 {
+		t.Fatalf("unexpected meta output: %#v", out)
+	}
+	dims := out["dimensions"].([]any)
+	if len(dims) != 1 {
+		t.Fatalf("dimensions = %#v", dims)
+	}
+	dim := dims[0].(map[string]any)
+	files := dim["target_files"].([]any)
+	if len(files) != 2 {
+		t.Fatalf("target_files = %#v, want all changed files", files)
+	}
+	budget := dim["budget"].(map[string]any)
+	if budget["max_cost_usd"] != 0.5 || budget["max_duration_seconds"] != float64(60) {
+		t.Fatalf("schema-owned budget defaults missing: %#v", budget)
 	}
 }
 
