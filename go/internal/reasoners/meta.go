@@ -55,8 +55,9 @@ func runMetaLens(
 
 	prompt := buildPrompt(metaContext, in.RepoPath, in.Depth)
 	parsed, hres, err := harnessx.Run[schemas.MetaDimensionResult](ctx, deps.Harness, prompt, harness.Options{
-		Cwd:        in.RepoPath,
-		SchemaMode: "incremental",
+		Cwd:              in.RepoPath,
+		SchemaMode:       "incremental",
+		SchemaMaxRetries: 4,
 	})
 	if err != nil {
 		return nil, err
