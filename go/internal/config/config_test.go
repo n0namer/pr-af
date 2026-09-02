@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -263,6 +264,43 @@ func TestProviderEnv(t *testing.T) {
 	}
 	if st, err := os.Stat(wantXDG); err != nil || !st.IsDir() {
 		t.Errorf("fallback XDG dir not created: %v", err)
+	}
+}
+
+func TestProviderEnvOpenAICompatibleOpencode(t *testing.T) {
+	clearConfigEnv(t)
+	t.Setenv("PR_AF_PROVIDER", "opencode")
+	t.Setenv("PR_AF_MODEL", "openai/fcm")
+	t.Setenv("OPENAI_API_KEY", "fcm-key")
+	t.Setenv("OPENAI_BASE_URL", "http://fcm.internal:19280/v1")
+	t.Setenv("OPENROUTER_API_KEY", "legacy-dummy")
+
+	env := mustAIConfig(t).ProviderEnv()
+	if env["OPENAI_API_KEY"] != "fcm-key" || env["OPENAI_BASE_URL"] != "http://fcm.internal:19280/v1" {
+		t.Fatalf("OpenAI-compatible provider env not preserved: %#v", env)
+	}
+	if _, ok := env["OPENROUTER_API_KEY"]; ok {
+		t.Fatal("OPENROUTER_API_KEY must not be forwarded on the canonical OpenAI-compatible opencode path")
+	}
+
+	var cfg map[string]any
+	if err := json.Unmarshal([]byte(env["OPENCODE_CONFIG_CONTENT"]), &cfg); err != nil {
+		t.Fatalf("OPENCODE_CONFIG_CONTENT is invalid JSON: %v", err)
+	}
+	if cfg["model"] != "openai/fcm" || cfg["small_model"] != "openai/fcm" {
+		t.Fatalf("opencode models = %#v/%#v, want openai/fcm", cfg["model"], cfg["small_model"])
+	}
+	provider, ok := cfg["provider"].(map[string]any)
+	if !ok {
+		t.Fatalf("provider config missing: %#v", cfg)
+	}
+	openai, ok := provider["openai"].(map[string]any)
+	if !ok {
+		t.Fatalf("openai provider missing: %#v", provider)
+	}
+	models, ok := openai["models"].(map[string]any)
+	if !ok || models["fcm"] == nil {
+		t.Fatalf("fcm model registration missing: %#v", openai)
 	}
 }
 
