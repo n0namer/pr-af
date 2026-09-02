@@ -287,20 +287,26 @@ func TestProviderEnvOpenAICompatibleOpencode(t *testing.T) {
 	if err := json.Unmarshal([]byte(env["OPENCODE_CONFIG_CONTENT"]), &cfg); err != nil {
 		t.Fatalf("OPENCODE_CONFIG_CONTENT is invalid JSON: %v", err)
 	}
-	if cfg["model"] != "openai/fcm" || cfg["small_model"] != "openai/fcm" {
-		t.Fatalf("opencode models = %#v/%#v, want openai/fcm", cfg["model"], cfg["small_model"])
+	if got := mustAIConfig(t).HarnessRuntimeModel(); got != "compat/fcm" {
+		t.Fatalf("HarnessRuntimeModel = %q, want compat/fcm", got)
+	}
+	if cfg["model"] != "compat/fcm" || cfg["small_model"] != "compat/fcm" {
+		t.Fatalf("opencode models = %#v/%#v, want compat/fcm", cfg["model"], cfg["small_model"])
 	}
 	provider, ok := cfg["provider"].(map[string]any)
 	if !ok {
 		t.Fatalf("provider config missing: %#v", cfg)
 	}
-	openai, ok := provider["openai"].(map[string]any)
+	compat, ok := provider["compat"].(map[string]any)
 	if !ok {
-		t.Fatalf("openai provider missing: %#v", provider)
+		t.Fatalf("compat provider missing: %#v", provider)
 	}
-	models, ok := openai["models"].(map[string]any)
+	if compat["npm"] != "@ai-sdk/openai-compatible" {
+		t.Fatalf("compat npm = %#v", compat["npm"])
+	}
+	models, ok := compat["models"].(map[string]any)
 	if !ok || models["fcm"] == nil {
-		t.Fatalf("fcm model registration missing: %#v", openai)
+		t.Fatalf("fcm model registration missing: %#v", compat)
 	}
 }
 

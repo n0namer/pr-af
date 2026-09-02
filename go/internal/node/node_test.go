@@ -43,7 +43,7 @@ func TestHarnessConfigPreservesExistingFields(t *testing.T) {
 		OpencodeBin: "C:/bin/opencode-custom",
 	}
 	got := harnessConfig(conf)
-	if got.Provider != conf.Provider || got.Model != conf.HarnessModel || got.MaxTurns != conf.MaxTurns || got.PermissionMode != "auto" || got.BinPath != conf.OpencodeBin {
+	if got.Provider != conf.Provider || got.Model != "compat/fcm" || got.MaxTurns != conf.MaxTurns || got.PermissionMode != "auto" || got.BinPath != conf.OpencodeBin {
 		t.Errorf("harnessConfig fields = %+v", got)
 	}
 	if got.Env["OPENAI_API_KEY"] != "openai-key" || got.Env["OPENAI_BASE_URL"] != "http://fcm.internal:19280/v1" {
