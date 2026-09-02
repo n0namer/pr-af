@@ -386,26 +386,19 @@ func TestMetaSelectorsForceLens(t *testing.T) {
 	}
 }
 
-// Contract: parse failure yields lens + empty dimensions + the seeded 0.7
-// confidence (Python's MetaDimensionResult(lens=..., dimensions=[])).
+// Contract: meta-selector parse/schema failure fails closed. An empty seeded
+// dimension set can otherwise turn a broken model call into a false "Looks Good".
 func TestMetaSelectorParseFail(t *testing.T) {
 	h := &mockHarness{parseFail: true}
 	out, err := MetaMechanical(context.Background(), Deps{Harness: h}, MetaInput{Depth: "quick"})
-	if err != nil {
-		t.Fatal(err)
+	if err == nil {
+		t.Fatal("expected meta selector to fail closed on schema parse failure")
 	}
-	wantKeys(t, out, metaKeys...)
-	if out["lens"] != "mechanical" {
-		t.Fatalf("lens = %v", out["lens"])
+	if out != nil {
+		t.Fatalf("expected nil output on meta schema failure, got %#v", out)
 	}
-	if len(out["dimensions"].([]any)) != 0 {
-		t.Fatalf("dimensions = %v, want []", out["dimensions"])
-	}
-	if out["confidence"] != 0.7 {
-		t.Fatalf("confidence = %v, want seeded 0.7", out["confidence"])
-	}
-	if out["rationale"] != "" {
-		t.Fatalf("rationale = %v", out["rationale"])
+	if !strings.Contains(err.Error(), "meta mechanical structured output unavailable") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 

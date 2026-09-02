@@ -125,8 +125,8 @@ func TestMetaSelectorWritesContextFile(t *testing.T) {
 		DiffPatches: OrderedPatches{{Key: "a.go", Val: bigPatch}},
 	}
 	h := &mockHarness{parseFail: true}
-	if _, err := MetaSemantic(context.Background(), Deps{Harness: h}, in); err != nil {
-		t.Fatal(err)
+	if _, err := MetaSemantic(context.Background(), Deps{Harness: h}, in); err == nil {
+		t.Fatal("expected meta selector to fail closed on schema parse failure")
 	}
 	path := filepath.Join(repo, ".pr-af-context", "meta_semantic_context.json")
 	b, err := os.ReadFile(path)

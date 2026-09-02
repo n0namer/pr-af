@@ -3,7 +3,6 @@ package harnessx
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/Agent-Field/agentfield/sdk/go/harness"
 
@@ -54,21 +53,11 @@ func Run[T any](ctx context.Context, app HarnessCaller, prompt string, opts harn
 		return nil, result, fErr
 	}
 
-	// Structured-output failure must not degrade into a safe-looking seeded
-	// result. That previously turned provider/schema failures into empty review
-	// dimensions and ultimately "Looks Good". Fail closed with bounded metadata
-	// only; do not include raw prompts/results or credentials in the error.
-	if result == nil {
-		return nil, nil, fmt.Errorf("harness returned no result")
-	}
-	if result.Parsed == nil {
-		return nil, result, fmt.Errorf(
-			"harness structured output unavailable: failure_type=%s model=%q is_error=%t message=%q",
-			result.FailureType,
-			result.Model,
-			result.IsError,
-			result.ErrorMessage,
-		)
+	// Schema parse failure: hand the caller a default-seeded value plus the
+	// Result so it can apply its own deterministic fallback. Not an error.
+	if result == nil || result.Parsed == nil {
+		seeded := seedDefaults[T]()
+		return &seeded, result, nil
 	}
 
 	return &dest, result, nil

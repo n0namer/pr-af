@@ -2,6 +2,7 @@ package reasoners
 
 import (
 	"context"
+	"fmt"
 	"unicode/utf8"
 
 	"github.com/Agent-Field/agentfield/sdk/go/harness"
@@ -52,9 +53,22 @@ func runMetaLens(
 	}
 
 	prompt := buildPrompt(metaContext, in.RepoPath, in.Depth)
-	parsed, _, err := harnessx.Run[schemas.MetaDimensionResult](ctx, deps.Harness, prompt, harness.Options{Cwd: in.RepoPath})
+	parsed, hres, err := harnessx.Run[schemas.MetaDimensionResult](ctx, deps.Harness, prompt, harness.Options{Cwd: in.RepoPath})
 	if err != nil {
 		return nil, err
+	}
+	if hres == nil || hres.Parsed == nil || hres.IsError {
+		if hres == nil {
+			return nil, fmt.Errorf("meta %s harness returned no result", lens)
+		}
+		return nil, fmt.Errorf(
+			"meta %s structured output unavailable: failure_type=%s model=%q is_error=%t message=%q",
+			lens,
+			hres.FailureType,
+			hres.Model,
+			hres.IsError,
+			hres.ErrorMessage,
+		)
 	}
 	result := *parsed
 	// Python forces the lens on both the parsed and the fallback result.
