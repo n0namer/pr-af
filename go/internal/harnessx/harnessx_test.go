@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/Agent-Field/agentfield/sdk/go/harness"
@@ -161,30 +162,36 @@ func TestRunPassesOptsEnvThrough(t *testing.T) {
 	}
 }
 
-// --- Run: Parsed==nil fallback path -----------------------------------------
+// --- Run: Parsed==nil fail-closed path --------------------------------------
 
-// Contract: on Result.Parsed == nil (schema parse failure), Run returns the
-// default-seeded value plus the Result, NOT an error.
-func TestRunParsedNilReturnsSeededDefaults(t *testing.T) {
+// Contract: on Result.Parsed == nil (schema/provider failure), Run must fail
+// closed. A seeded fallback can turn a broken model call into an empty review
+// and a false "Looks Good" result.
+func TestRunParsedNilFailsClosed(t *testing.T) {
 	mh := &mockHarness{
 		fn: func(_ context.Context, _ string, _ map[string]any, _ any, _ harness.Options) (*harness.Result, error) {
-			// Non-fatal error result with no parsed output.
-			return &harness.Result{IsError: true, ErrorMessage: "schema validation failed after retries", Parsed: nil}, nil
+			return &harness.Result{
+				IsError:      true,
+				FailureType:  harness.FailureSchema,
+				ErrorMessage: "schema validation failed after retries",
+				Model:        "fcm",
+				Parsed:       nil,
+			}, nil
 		},
 	}
 
 	out, res, err := Run[seededResult](context.Background(), mh, "prompt", harness.Options{})
-	if err != nil {
-		t.Fatalf("expected no error on Parsed==nil, got %v", err)
+	if err == nil {
+		t.Fatal("expected Parsed==nil to fail closed")
 	}
-	if out == nil {
-		t.Fatal("expected a seeded default value, got nil")
+	if out != nil {
+		t.Fatalf("expected nil parsed value on structured-output failure, got %+v", out)
 	}
-	if !out.Complete || out.Scope != "medium" {
-		t.Fatalf("expected seeded defaults (Complete=true, Scope=medium), got %+v", *out)
+	if res == nil || !res.IsError || res.FailureType != harness.FailureSchema {
+		t.Fatalf("expected failing schema Result to be preserved, got %+v", res)
 	}
-	if res == nil || !res.IsError {
-		t.Fatal("expected the failing Result returned so the caller can inspect IsError")
+	if !strings.Contains(err.Error(), "failure_type=schema") || !strings.Contains(err.Error(), `model="fcm"`) {
+		t.Fatalf("expected bounded failure metadata, got %q", err)
 	}
 }
 
