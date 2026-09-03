@@ -73,6 +73,9 @@ Before returning no findings:
 3. Check callers/consumers against the NEW behavior, not only the current checkout.
 4. If OLD and NEW are not behaviorally equivalent, explain why the change is safe; otherwise report an evidence-grounded finding.
 Do this analysis internally and return only the required review result schema.`
+		if hints := semanticDeltaHints(in.TargetFiles, in.DiffPatches); hints != "" {
+			prompt += "\n\n## Deterministic Semantic-Delta Hints\n" + hints
+		}
 	}
 
 	parsed, res, err := harnessx.Run[reviewFindingsResult](ctx, deps.Harness, prompt, harness.Options{Cwd: in.RepoPath})
