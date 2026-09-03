@@ -64,9 +64,9 @@ Hard rules:
 | Acceptance fixture discipline | historical off-tree auth/payments synthetic fixture is retired for acceptance because live workspace context contaminated planner/reviewer routing; acceptance now uses real existing-file diffs or isolated valid fixtures | RESOLVED |
 | Clean semantic canary `run_20260903_114900_74zj0kf2` | real diff over existing `go/internal/schemas/defaults.go` changed `MaxDurationSeconds: 60 → 0`; root succeeded in ~537s and post-completion payload reported a critical blocking finding with evidence on the changed default and real consumers, producing merge-blocking output | PASS |
 
-## Live dirty application delta
+## Accepted application delta
 
-Tracked intended files currently include:
+The following intended files were accepted in runtime, canonicalized to `dev`, and independently verified byte-identical between accepted runtime commit `5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f` and durable squash commit `1967bb2275855d8f7626806169b2a274b379c9e0`:
 - `go/internal/config/ai.go`
 - `go/internal/config/config_test.go`
 - `go/internal/node/node.go`
