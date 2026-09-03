@@ -145,11 +145,9 @@ func resolvedHarnessBin(c config.AIIntegrationConfig) string {
 //     two .ai() gates (intake/coverage) need AIConfig. Mirrors app.py's
 //     harness_config=/ai_config=.
 //
-// Divergence from Python (documented, deliberate): the Go SDK's ai.Config
-// rejects an empty API key at construction, whereas Python's AIConfig accepts
-// os.getenv("OPENROUTER_API_KEY","") == "". So AIConfig is attached ONLY when
-// OPENROUTER_API_KEY is set — construction succeeds without a key (matching
-// Python), and the AI call fails at call time either way when the key is absent.
+// The direct .ai() path follows the same OpenAI-compatible contract as the
+// harness: OPENAI_API_KEY + OPENAI_BASE_URL + PR_AF_AI_MODEL. A partial pair is
+// rejected at boot so provider misconfiguration cannot silently fall back.
 func BuildAgent(defaultNodeID, defaultPort, description string) (*Node, error) {
 	nodeID := envOr("NODE_ID", defaultNodeID)
 	server := envOr("AGENTFIELD_SERVER", "http://localhost:8080")
