@@ -134,30 +134,34 @@ Delivered:
 - real 3/3 meta runtime proof.
 
 ### B3 — Semantic acceptance and durability
+Status: **PASS — LIVE + DURABLE**.
+
+Delivered:
+- clean real-existing-file semantic canary;
+- primary reviewer completed without reproducing the contaminated-fixture timeout;
+- full downstream review/coverage/obligation/adversary DAG completed;
+- terminal payload inspected with a critical blocking finding on the injected duration-budget regression;
+- exact accepted app tree canonicalized by PR #8;
+- durable squash SHA `1967bb2275855d8f7626806169b2a274b379c9e0` independently verified byte-identical to the accepted runtime app tree.
+
+### B4 — Quality baseline / low-false-positive hardening
 Status: **ACTIVE**.
 
-Current sub-batch:
-1. replace invalid off-tree auth/payments synthetic canary with a bounded diff over a real existing PR-AF file that does not overlap the current dirty patch;
-2. rerun `pr-af.review` on the already validated binary/source;
-3. if primary reviewer no-progress reproduces, localize reviewer/harness recovery while preserving primary fail-closed;
-4. if root succeeds, inspect semantic findings and coverage/obligation behavior;
-5. SourceLoop-capture only the exact intended tracked delta;
-6. verify canonical `pr-af:dev` SHA and update this file with terminal evidence.
+Current ~30-minute sub-batch:
+1. run a clean negative canary using a harmless comment-only diff over a real existing PR-AF file;
+2. inspect terminal payload, not only lifecycle status;
+3. PASS requires root success and no fabricated blocking/high-severity finding attributable to the benign change;
+4. any non-blocking finding must be evidence-grounded to the actual diff/context;
+5. if false positive appears, localize the smallest scoring/adversary/output defect before any broader tuning;
+6. if clean canary passes, record the quality baseline and select one second real bug-class fixture for recall coverage.
 
 ## Current blocker
 
-Not FCM, token, OpenRouter, meta JSON, install, or registration.
-
-The current blocker is **clean semantic acceptance**. The latest canary used an invalid off-tree synthetic diff and was contaminated by the live dirty workspace; it then hit a primary reviewer no-progress timeout. That failure correctly remained fatal, but it is not yet evidence of a product defect independent of the invalid fixture.
+No provider/runtime blocker is open. B1–B3 are accepted and durable. The current quality unknown is **false-positive behavior on a benign real-file change**; one positive bug-catching canary proves recall for that case but does not yet establish low false positives.
 
 ## ONE next move
 
-Run one bounded `bmad-quick-dev` acceptance batch using a **real existing-file diff that does not overlap the current dirty application patch**. Observe whether primary reviewer no-progress reproduces.
-
-- If it does **not** reproduce: inspect terminal findings, prove coverage behavior if triggered, then SourceLoop-capture the accepted delta.
-- If it **does** reproduce: patch the smallest reviewer/harness recovery path while keeping primary failures fail-closed, validate with targeted tests + `make check`, reload only PR-AF, and rerun the same valid fixture.
-
-Do not spend the next batch on broker/provider work unless fresh CURRENT evidence regresses that layer.
+Run the B4 clean negative canary on the current accepted runtime. Do not mutate application code unless the inspected semantic payload reveals a reproducible quality defect. Do not revisit broker/provider work unless fresh CURRENT evidence regresses that layer.
 
 ## Write-back rule
 
