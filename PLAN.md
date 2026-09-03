@@ -147,23 +147,24 @@ Delivered:
 - durable squash SHA `1967bb2275855d8f7626806169b2a274b379c9e0` independently verified byte-identical to the accepted runtime app tree.
 
 ### B4 — Quality baseline / low-false-positive hardening
-Status: **ACTIVE**.
+Status: **ACTIVE — CLEAN NEGATIVE PASS / SECOND RECALL FIXTURE FAIL**.
 
 Current ~30-minute sub-batch:
-1. run a clean negative canary using a harmless comment-only diff over a real existing PR-AF file;
-2. inspect terminal payload, not only lifecycle status;
-3. PASS requires root success and no fabricated blocking/high-severity finding attributable to the benign change;
-4. any non-blocking finding must be evidence-grounded to the actual diff/context;
-5. if false positive appears, localize the smallest scoring/adversary/output defect before any broader tuning;
-6. if clean canary passes, record the quality baseline and select one second real bug-class fixture for recall coverage.
+1. preserve the passed clean-negative baseline (`run_20260903_131346_m6jyj65p`: 0 findings, APPROVE);
+2. repair the localized reviewer-reasoning recall gap from `run_20260903_132450_lcvyp3i6` without weakening fail-closed semantics;
+3. keep the canonical Python/golden prompt builder unchanged; add the smallest review-dimension runtime instruction that makes the proposed diff authoritative for changed lines and requires explicit old/new predicate semantics checking before returning no findings;
+4. add a targeted regression for that reviewer contract;
+5. run targeted tests + full `make check` on exact live source;
+6. reload only PR-AF and rerun the same XOR inversion fixture;
+7. PASS requires an evidence-grounded blocking finding on the broken key/base invariant and no regression of the clean-negative behavior.
 
 ## Current blocker
 
-No provider/runtime blocker is open. B1–B3 are accepted and durable. The current quality unknown is **false-positive behavior on a benign real-file change**; one positive bug-catching canary proves recall for that case but does not yet establish low false positives.
+No provider/runtime blocker is open. The current blocker is a **reviewer-reasoning recall gap**: on `run_20260903_132450_lcvyp3i6`, planning correctly requested verification of the `OPENAI_API_KEY` / `OPENAI_BASE_URL` pair invariant, both primary `review_dimension` calls completed with `schema_parse_failed=false`, but both returned `findings=[]`, and root incorrectly approved the inverted XOR guard. The finding was not lost in scoring, adversary, or output synthesis.
 
 ## ONE next move
 
-Run the B4 clean negative canary on the current accepted runtime. Do not mutate application code unless the inspected semantic payload reveals a reproducible quality defect. Do not revisit broker/provider work unless fresh CURRENT evidence regresses that layer.
+In persistent DEV `/src/pr-af`, patch only the review-dimension runtime reasoning contract so reviewers must treat the supplied diff as authoritative for changed lines and explicitly compare removed vs added guard semantics before concluding `no findings`; validate with targeted tests + full `make check`, reload only PR-AF, then rerun the exact XOR recall canary. Do not revisit broker/provider work unless fresh CURRENT evidence regresses that layer.
 
 ## Write-back rule
 
