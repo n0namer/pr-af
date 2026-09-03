@@ -133,11 +133,11 @@ func TestBuildAgentFromEnv(t *testing.T) {
 func TestBuildAgentWithLLMKey(t *testing.T) {
 	t.Setenv("NODE_ID", "")
 	t.Setenv("PORT", "")
-	t.Setent("AGENTFIELD_SERVER", "")
+	t.Setenv("AGENTFIELD_SERVER", "")
 	t.Setenv("OPENROUTER_API_KEY", "legacy-dummy")
 	t.Setenv("OPENAI_API_KEY", "fcm-key")
 	t.Setenv("OPENAI_BASE_URL", "http://fcm.internal:19280/v1")
-	t.Setent("PR_AF_AI_MODEL", "openai/fcm")
+	t.Setenv("PR_AF_AI_MODEL", "openai/fcm")
 
 	n, err := BuildAgent("pr-af", "8007", "desc")
 	if err != nil {
