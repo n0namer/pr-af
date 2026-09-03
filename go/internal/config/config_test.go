@@ -230,6 +230,9 @@ func TestProviderEnv(t *testing.T) {
 	if env["OPENROUTER_API_KEY"] != "or-key" {
 		t.Errorf("OPENROUTER_API_KEY = %q", env["OPENROUTER_API_KEY"])
 	}
+	if env["OPENAI_BASE_URL"] != "https://gonka.example/v1" {
+		t.Errorf("OPENAI_BASE_URL = %q", env["OPENAI_BASE_URL"])
+	}
 	if env["GH_TOKEN"] != "gh-tok" {
 		t.Errorf("GH_TOKEN = %q", env["GH_TOKEN"])
 	}
