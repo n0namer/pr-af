@@ -202,3 +202,146 @@ func operatorDeltaHint(path, oldLine, newLine string) string {
 	}
 	return ""
 }
+
+func verifySemanticDelta(ctx context.Context, caller harnessx.HarnessCaller, in ReviewDimensionInput, hints string) ([]schemas.ReviewFinding, error) {
+	if caller == nil {
+		return nil, fmt.Errorf("harness is nil")
+	}
+	prompt := fmt.Sprintf(`You are a focused semantic-delta verifier.
+Reviewer task: %s
+Target files: %s
+
+Deterministic facts extracted from the proposed diff:
+%s
+
+Decide whether the NEW behavior is safe in context. The proposed diff is authoritative for changed lines.
+Return exactly one verdict and no JSON/file writes.
+
+SAFE: <one-line evidence-based reason>
+
+or
+
+FINDING:
+SEVERITY: critical|important|suggestion
+TITLE: <short title>
+FILE: <changed file path>
+BODY: <one-line explanation of the defect and impact>
+EVIDENCE: <one-line code/behavior evidence>
+TAGS: <comma-separated tags>
+END`, in.ReviewPrompt, strings.Join(in.TargetFiles, ", "), hints)
+
+	res, err := caller.Harness(ctx, prompt, nil, nil, harness.Options{Cwd: in.RepoPath, MaxTurns: 2})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, fmt.Errorf("semantic verifier returned no result")
+	}
+	if res.IsError {
+		return nil, fmt.Errorf("semantic verifier error: %s", strings.TrimSpace(res.ErrorMessage))
+	}
+	return parseSemanticDeltaVerifier(res.Result, firstTargetFile(in.TargetFiles), hints)
+}
+
+func parseSemanticDeltaVerifier(text, defaultFile, hints string) ([]schemas.ReviewFinding, error) {
+	lines := strings.Split(strings.TrimSpace(text), "\n")
+	findingStart := -1
+	findingTitle := ""
+	for i, raw := range lines {
+		line := protocolLine(raw)
+		if line == "" {
+			continue
+		}
+		upper := strings.ToUpper(line)
+		if strings.HasPrefix(upper, "SAFE:") {
+			if strings.TrimSpace(line[len("SAFE:"):]) == "" {
+				return nil, fmt.Errorf("SAFE verdict missing reason")
+			}
+			return []schemas.ReviewFinding{}, nil
+		}
+		if upper == "FINDING" || upper == "FINDING:" || strings.HasPrefix(upper, "FINDING: ") {
+			findingStart = i + 1
+			if len(line) > len("FINDING:") {
+				findingTitle = strings.TrimSpace(line[len("FINDING:"):])
+			}
+			break
+		}
+	}
+	if findingStart < 0 {
+		return nil, fmt.Errorf("semantic verifier returned neither SAFE nor FINDING")
+	}
+
+	fields := map[string]string{}
+	current := ""
+	for _, raw := range lines[findingStart:] {
+		line := protocolLine(raw)
+		if line == "" {
+			continue
+		}
+		upper := strings.ToUpper(line)
+		if upper == "END" {
+			break
+		}
+		matched := false
+		for _, key := range []string{"SEVERITY", "TITLE", "FILE", "BODY", "EVIDENCE", "TAGS"} {
+			prefix := key + ":"
+			if strings.HasPrefix(upper, prefix) {
+				fields[key] = strings.TrimSpace(line[len(prefix):])
+				current = key
+				matched = true
+				break
+			}
+		}
+		if !matched && current != "" {
+			fields[current] = strings.TrimSpace(fields[current] + " " + line)
+		}
+	}
+	if fields["TITLE"] == "" {
+		fields["TITLE"] = findingTitle
+	}
+	if fields["TITLE"] == "" || fields["BODY"] == "" {
+		return nil, fmt.Errorf("semantic FINDING missing title/body")
+	}
+	file := fields["FILE"]
+	if file == "" {
+		file = defaultFile
+	}
+	if file == "" {
+		return nil, fmt.Errorf("semantic FINDING missing file")
+	}
+	evidence := fields["EVIDENCE"]
+	if evidence == "" {
+		evidence = "Deterministic semantic delta:\n" + hints
+	} else {
+		evidence += "\nDeterministic semantic delta:\n" + hints
+	}
+	tags := compactStrings(strings.Split(fields["TAGS"], ","))
+	if len(tags) == 0 {
+		tags = []string{"correctness", "semantic-delta"}
+	}
+	return []schemas.ReviewFinding{{
+		FilePath:    file,
+		HunkContext: hints,
+		Severity:    schemas.NormalizeSeverity(fields["SEVERITY"], schemas.DefaultSeverity),
+		Title:       fields["TITLE"],
+		Body:        fields["BODY"],
+		Evidence:    evidence,
+		Confidence:  0.8,
+		Tags:        tags,
+	}}, nil
+}
+
+func protocolLine(line string) string {
+	line = strings.TrimSpace(line)
+	if strings.HasPrefix(line, "```") {
+		return ""
+	}
+	return strings.TrimSpace(strings.TrimLeft(line, "-*#> \t"))
+}
+
+func firstTargetFile(files []string) string {
+	if len(files) == 0 {
+		return ""
+	}
+	return files[0]
+}
