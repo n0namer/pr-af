@@ -5,6 +5,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -69,19 +70,33 @@ func AIConfigFromEnv() (AIIntegrationConfig, error) {
 }
 
 // ProviderEnv builds the subprocess environment forwarded to the opencode
-// harness (config.py provider_env): the LLM/GitHub credentials that are set,
-// plus an XDG_DATA_HOME that is created if missing.
+// harness. The canonical OpenAI-compatible path mirrors Deep Research:
+// model + credential + custom base travel together, and OpenRouter is not
+// forwarded as a runtime fallback. Legacy forwarding is kept only for other
+// harness providers.
 func (c AIIntegrationConfig) ProviderEnv() map[string]string {
 	env := map[string]string{}
-	for _, key := range []string{
-		"OPENROUTER_API_KEY",
-		"ANTHROPIC_API_KEY",
-		"OPENAI_API_KEY",
-		"GOOGLE_API_KEY",
-		"GH_TOKEN",
-	} {
-		if v := os.Getenv(key); v != "" {
-			env[key] = v
+	openAIKey := os.Getenv("OPENAI_API_KEY")
+	openAIBase := os.Getenv("OPENAI_BASE_URL")
+	if c.Provider == "opencode" && openAIKey != "" && openAIBase != "" {
+		env["OPENAI_API_KEY"] = openAIKey
+		env["OPENAI_BASE_URL"] = openAIBase
+		env["OPENCODE_CONFIG_CONTENT"] = c.opencodeConfigContent()
+		if v := os.Getenv("GH_TOKEN"); v != "" {
+			env["GH_TOKEN"] = v
+		}
+	} else {
+		for _, key := range []string{
+			"OPENROUTER_API_KEY",
+			"ANTHROPIC_API_KEY",
+			"OPENAI_API_KEY",
+			"OPENAI_BASE_URL",
+			"GOOGLE_API_KEY",
+			"GH_TOKEN",
+		} {
+			if v := os.Getenv(key); v != "" {
+				env[key] = v
+			}
 		}
 	}
 	xdg := os.Getenv("XDG_DATA_HOME")
@@ -92,6 +107,44 @@ func (c AIIntegrationConfig) ProviderEnv() map[string]string {
 	env["XDG_DATA_HOME"] = xdg
 	env["AGENTFIELD_AFORGE_COMMAND"] = strEnv("AGENTFIELD_AFORGE_COMMAND", "exec")
 	return env
+}
+
+// HarnessRuntimeModel adapts the external Deep-Research-style model contract
+// (openai/<model>) to a dedicated OpenCode provider id. OpenCode's built-in
+// "openai" provider uses OpenAI-native APIs such as /responses; generic
+// OpenAI-compatible gateways commonly expose /chat/completions instead. The
+// dedicated compat provider below selects @ai-sdk/openai-compatible explicitly.
+func (c AIIntegrationConfig) HarnessRuntimeModel() string {
+	if c.Provider == "opencode" && strings.HasPrefix(c.HarnessModel, "openai/") {
+		return "compat/" + strings.TrimPrefix(c.HarnessModel, "openai/")
+	}
+	return c.HarnessModel
+}
+
+func (c AIIntegrationConfig) opencodeConfigContent() string {
+	runtimeModel := c.HarnessRuntimeModel()
+	model := strings.TrimPrefix(runtimeModel, "compat/")
+	cfg := map[string]any{
+		"$schema":     "https://opencode.ai/config.json",
+		"model":       runtimeModel,
+		"small_model": runtimeModel,
+		"provider": map[string]any{
+			"compat": map[string]any{
+				"name": "PR-AF OpenAI-compatible",
+				"npm":  "@ai-sdk/openai-compatible",
+				"env":  []string{"OPENAI_API_KEY"},
+				"options": map[string]string{
+					"baseURL": "{env:OPENAI_BASE_URL}",
+					"apiKey":  "{env:OPENAI_API_KEY}",
+				},
+				"models": map[string]any{
+					model: map[string]any{"id": model, "name": model},
+				},
+			},
+		},
+	}
+	b, _ := json.Marshal(cfg)
+	return string(b)
 }
 
 // --- shared env readers (call-time only) ---
