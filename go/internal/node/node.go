@@ -112,7 +112,7 @@ func defaultRunReview(ctx context.Context, deps orch.Deps, in schemas.ReviewInpu
 func harnessConfig(c config.AIIntegrationConfig) *agent.HarnessConfig {
 	return &agent.HarnessConfig{
 		Provider:       c.Provider,
-		Model:          c.HarnessModel,
+		Model:          c.HarnessRuntimeModel(),
 		MaxTurns:       c.MaxTurns,
 		PermissionMode: "auto",
 		Env:            c.ProviderEnv(),
@@ -145,11 +145,9 @@ func resolvedHarnessBin(c config.AIIntegrationConfig) string {
 //     two .ai() gates (intake/coverage) need AIConfig. Mirrors app.py's
 //     harness_config=/ai_config=.
 //
-// Divergence from Python (documented, deliberate): the Go SDK's ai.Config
-// rejects an empty API key at construction, whereas Python's AIConfig accepts
-// os.getenv("OPENROUTER_API_KEY","") == "". So AIConfig is attached ONLY when
-// OPENROUTER_API_KEY is set — construction succeeds without a key (matching
-// Python), and the AI call fails at call time either way when the key is absent.
+// The direct .ai() path follows the same OpenAI-compatible contract as the
+// harness: OPENAI_API_KEY + OPENAI_BASE_URL + PR_AF_AI_MODEL. A partial pair is
+// rejected at boot so provider misconfiguration cannot silently fall back.
 func BuildAgent(defaultNodeID, defaultPort, description string) (*Node, error) {
 	nodeID := envOr("NODE_ID", defaultNodeID)
 	server := envOr("AGENTFIELD_SERVER", "http://localhost:8080")
@@ -173,18 +171,16 @@ func BuildAgent(defaultNodeID, defaultPort, description string) (*Node, error) {
 		CLIConfig:     &agent.CLIConfig{AppDescription: description},
 		HarnessConfig: harnessConfig(aiConf),
 	}
-	if apiKey := os.Getenv("OPENROUTER_API_KEY"); apiKey != "" {
-		// Python's .ai() path runs through LiteLLM, which CONSUMES a leading
-		// "openrouter/" as its routing prefix before calling the OpenRouter API.
-		// The Go SDK's ai client posts the model string verbatim to BaseURL, and
-		// OpenRouter rejects "openrouter/moonshotai/..." as an invalid model ID —
-		// so strip the routing prefix here to reach the same model Python does.
-		// The HARNESS model keeps the prefix (opencode's config wants it; the
-		// entrypoint derives its model key by stripping it there too).
+	openAIKey := os.Getenv("OPENAI_API_KEY")
+	openAIBase := os.Getenv("OPENAI_BASE_URL")
+	if (openAIKey == "") != (openAIBase == "") {
+		return nil, errors.New("OPENAI_API_KEY and OPENAI_BASE_URL must be configured together")
+	}
+	if openAIKey != "" {
 		cfg.AIConfig = &ai.Config{
 			Model:   aiModelForAPI(aiConf.AIModel),
-			APIKey:  apiKey,
-			BaseURL: "https://openrouter.ai/api/v1",
+			APIKey:  openAIKey,
+			BaseURL: openAIBase,
 		}
 	}
 
@@ -267,13 +263,10 @@ func envOr(key, def string) string {
 	return def
 }
 
-// aiModelForAPI converts the configured AI model into the model ID the
-// OpenRouter API expects. Python's .ai() path runs through LiteLLM, which
-// CONSUMES a leading "openrouter/" as its routing prefix before calling the
-// OpenRouter API; the Go SDK's ai client posts the model string verbatim to
-// BaseURL, where "openrouter/moonshotai/..." is an invalid model ID. Stripping
-// the routing prefix reaches the same model Python does. The HARNESS model is
-// untouched (opencode's config expects the prefixed form).
+// aiModelForAPI converts the configured LiteLLM/OpenCode-style model id into
+// the model name sent to an OpenAI-compatible API. Provider prefixes are
+// routing metadata and must not be sent as part of the upstream model name.
 func aiModelForAPI(model string) string {
+	model = strings.TrimPrefix(model, "openai/")
 	return strings.TrimPrefix(model, "openrouter/")
 }
