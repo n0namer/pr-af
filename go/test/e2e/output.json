@@ -1,15 +1,1 @@
-{
-  "findings": [
-    {
-      "dimension_id": "",
-      "dimension_name": "",
-      "file_path": "",
-      "line_start": 0,
-      "line_end": 0,
-      "severity": "",
-      "title": "",
-      "body": ""
-    }
-  ],
-  "sub_reviews": []
-}
+{"findings": [], "sub_reviews": []}
