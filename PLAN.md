@@ -58,11 +58,11 @@ Hard rules:
 | Weak-model tolerance | meta planning uses lean structured schema → deterministic JSON recovery → one plain-text line-protocol fallback → fail-closed; operational ids/budgets/defaults are deterministic PR-AF policy | SOURCE + TEST PASS |
 | False-safe prevention | unrecoverable meta output no longer becomes `dimensions=0 → Looks Good` | PASS |
 | Meta runtime | repeated real FCM canaries completed `meta_semantic`, `meta_mechanical`, and `meta_systemic` 3/3 | PASS |
-| Downstream DAG | real canaries executed multiple `review_dimension`, `coverage_gate`, `extract_obligations`, and several `verify_obligation` children | PASS / ROOT ACCEPTANCE NOT YET STABLE |
-| Coverage-only failure policy | `runCoverageLoop` now preserves existing primary findings and stops further coverage expansion if a coverage-added reviewer fails; primary review path remains unchanged/fatal | SOURCE PASS; targeted regression PASS; runtime-specific proof pending |
-| Deterministic validation | latest `go test ./internal/orch` PASS and full live-source `make check` PASS (`build + vet + all tests`) after coverage policy patch | PASS |
-| Old synthetic acceptance fixture | auth/payments paths do not exist in the real repo and the live dirty workspace dominated planner/reviewer context; latest run assigned a primary reviewer to dirty `go/internal/orch/phases.go` | INVALID FIXTURE / DRIFT |
-| Latest canary `run_20260903_084948_bfbvulrr` | intake/anatomy/meta 3/3 passed; first primary reviewer passed; second primary reviewer made no progress for 360s and root failed before coverage. This is correct fail-closed behavior, but not valid evidence against the coverage-only policy because the fixture was contaminated | FAILED / FIXTURE INVALID |
+| Downstream DAG | clean real-file canary `run_20260903_114900_74zj0kf2` completed intake, anatomy, meta 3/3, primary review, coverage gate, coverage-added review, obligation verification, adversary, and root review | PASS |
+| Coverage-only failure policy | `runCoverageLoop` preserves existing primary findings and stops further coverage expansion if a coverage-added reviewer fails; primary review path remains fatal. Targeted regression PASS; accepted clean canary also completed the coverage-added reviewer without regressing root behavior | PASS |
+| Deterministic validation | `go test ./internal/orch` PASS and full live-source `make check` PASS (`build + vet + all tests`) on the exact accepted source later proven byte-identical to durable `dev` | PASS |
+| Acceptance fixture discipline | historical off-tree auth/payments synthetic fixture is retired for acceptance because live workspace context contaminated planner/reviewer routing; acceptance now uses real existing-file diffs or isolated valid fixtures | RESOLVED |
+| Clean semantic canary `run_20260903_114900_74zj0kf2` | real diff over existing `go/internal/schemas/defaults.go` changed `MaxDurationSeconds: 60 → 0`; root succeeded in ~537s and post-completion payload reported a critical blocking finding with evidence on the changed default and real consumers, producing merge-blocking output | PASS |
 
 ## Live dirty application delta
 
