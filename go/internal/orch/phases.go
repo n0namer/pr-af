@@ -927,7 +927,13 @@ func (o *Orchestrator) runCoverageLoop(
 			CrossRefHints: plan.CrossRefHints,
 		}, "")
 		if err != nil {
-			return nil, nil, err
+			// Coverage reviewers are additive: they probe gaps after the primary
+			// review has already completed. A hung/failed coverage-only reviewer
+			// must not discard the primary findings or fail the whole review. Stop
+			// further coverage expansion and continue synthesis with the evidence
+			// already collected. Primary review failures remain fail-closed in the
+			// normal review path.
+			break
 		}
 		findings = append(findings, gapFindings...)
 
