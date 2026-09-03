@@ -88,10 +88,10 @@ Observed untracked runtime/test artifacts that must not be silently canonicalize
 3. **OPENCODE_BUILTIN_OPENAI_MISMATCH — RESOLVED.** Built-in OpenCode `openai` used OpenAI-native behavior incompatible with the broker; dedicated `@ai-sdk/openai-compatible` adapter is proven.
 4. **WEAK_MODEL_STRUCTURED_OUTPUT_DRIFT — RESOLVED FOR META.** Model output is treated as untrusted input; structured output is preferred, not required; recovery is deterministic and fail-closed.
 5. **FALSE_SAFE_META_FALLBACK — RESOLVED.** Parse/provider failure cannot silently become an empty safe review.
-6. **COVERAGE_ADDITIVE_FAILURE_POLICY — SOURCE RESOLVED / RUNTIME PROOF PENDING.** Coverage-only reviewer failure no longer discards primary findings.
-7. **ACCEPTANCE_FIXTURE_DRIFT — OPEN.** Historical off-tree synthetic auth/payments diff is invalid in the dirty real workspace; acceptance must use a real existing-file diff or isolated valid fixture.
-8. **PRIMARY_REVIEWER_NO_PROGRESS — CURRENT BLOCKER.** Latest contaminated canary hit a primary `review_dimension` no-progress timeout at 360s. Do not weaken primary fail-closed. First reproduce on a valid real-file acceptance fixture before patching reviewer/harness behavior.
-9. **DURABILITY_DRIFT — OPEN.** Accepted live application delta is not yet SourceLoop-captured to canonical `pr-af:dev`.
+6. **COVERAGE_ADDITIVE_FAILURE_POLICY — RESOLVED.** Coverage-only reviewer failure no longer discards primary findings; targeted regression PASS and clean accepted runtime preserved root behavior.
+7. **ACCEPTANCE_FIXTURE_DRIFT — RESOLVED.** Historical off-tree auth/payments fixture is retired; acceptance uses real existing-file diffs or isolated valid fixtures.
+8. **PRIMARY_REVIEWER_NO_PROGRESS — NOT REPRODUCED ON VALID FIXTURE.** The 360s timeout occurred on the contaminated historical fixture; the clean real-file canary completed primary review in ~80s. Primary fail-closed semantics remain unchanged.
+9. **DURABILITY_DRIFT — RESOLVED.** Exact accepted app tree is durable on `dev` at squash commit `1967bb2275855d8f7626806169b2a274b379c9e0`; 9/9 intended blobs MATCH accepted runtime commit and `go/` diff is empty.
 
 ## Phase DoD
 
