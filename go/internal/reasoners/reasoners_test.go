@@ -23,19 +23,29 @@ import (
 // on parseFail, a Result with Parsed==nil comes back — the path harnessx.Run
 // turns into a seeded default.
 type mockHarness struct {
-	payload   string
-	parseFail bool
-	calls     int
-	gotPrompt string
-	gotOpts   harness.Options
+	payload            string
+	parseFail          bool
+	parseFailResult    string
+	unstructuredResult string
+	calls              int
+	gotPrompt          string
+	gotOpts            harness.Options
 }
 
-func (m *mockHarness) Harness(_ context.Context, prompt string, _ map[string]any, dest any, opts harness.Options) (*harness.Result, error) {
+func (m *mockHarness) Harness(_ context.Context, prompt string, schema map[string]any, dest any, opts harness.Options) (*harness.Result, error) {
 	m.calls++
 	m.gotPrompt = prompt
 	m.gotOpts = opts
+	if schema == nil {
+		return &harness.Result{Result: m.unstructuredResult}, nil
+	}
 	if m.parseFail {
-		return &harness.Result{IsError: true, ErrorMessage: "schema validation failed"}, nil
+		return &harness.Result{
+			IsError:      true,
+			ErrorMessage: "schema validation failed",
+			FailureType:  harness.FailureSchema,
+			Result:       m.parseFailResult,
+		}, nil
 	}
 	if err := json.Unmarshal([]byte(m.payload), dest); err != nil {
 		return nil, err
