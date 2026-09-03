@@ -63,6 +63,7 @@ func ReviewDimension(ctx context.Context, deps Deps, in ReviewDimensionInput) (m
 		ReviewerFeedback:  in.ReviewerFeedback,
 		PrimedCode:        in.PrimedCode,
 	})
+	deltaHints := ""
 	if len(in.DiffPatches) > 0 {
 		prompt += `
 
@@ -74,8 +75,9 @@ Before returning no findings:
 3. Check callers/consumers against the NEW behavior, not only the current checkout.
 4. If OLD and NEW are not behaviorally equivalent, explain why the change is safe; otherwise report an evidence-grounded finding.
 Do this analysis internally and return only the required review result schema.`
-		if hints := semanticDeltaHints(in.TargetFiles, in.DiffPatches); hints != "" {
-			prompt += "\n\n## Deterministic Semantic-Delta Hints\n" + hints
+		deltaHints = semanticDeltaHints(in.TargetFiles, in.DiffPatches)
+		if deltaHints != "" {
+			prompt += "\n\n## Deterministic Semantic-Delta Hints\n" + deltaHints
 		}
 	}
 
@@ -100,6 +102,16 @@ Do this analysis internally and return only the required review result schema.`
 	if schemaParseFailed {
 		result.Findings = nil
 		result.SubReviews = nil
+	}
+	if deltaHints != "" && len(result.Findings) == 0 {
+		recovered, err := verifySemanticDelta(ctx, deps.Harness, in, deltaHints)
+		if err != nil {
+			return nil, fmt.Errorf("review_dimension semantic-delta verification failed: %w", err)
+		}
+		result.Findings = recovered
+		// A successful SAFE/FINDING verifier response is a valid alternate
+		// protocol, so the dimension is no longer a schema-parse failure.
+		schemaParseFailed = false
 	}
 	for i := range result.Findings {
 		result.Findings[i].Tags = orEmptyStrs(result.Findings[i].Tags)
