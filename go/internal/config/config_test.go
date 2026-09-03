@@ -267,6 +267,49 @@ func TestProviderEnv(t *testing.T) {
 	}
 }
 
+func TestProviderEnvOpenAICompatibleOpencode(t *testing.T) {
+	clearConfigEnv(t)
+	t.Setenv("PR_AF_PROVIDER", "opencode")
+	t.Setenv("PR_AF_MODEL", "openai/fcm")
+	t.Setenv("OPENAI_API_KEY", "fcm-key")
+	t.Setenv("OPENAI_BASE_URL", "http://fcm.internal:19280/v1")
+	t.Setenv("OPENROUTER_API_KEY", "legacy-dummy")
+
+	env := mustAIConfig(t).ProviderEnv()
+	if env["OPENAI_API_KEY"] != "fcm-key" || env["OPENAI_BASE_URL"] != "http://fcm.internal:19280/v1" {
+		t.Fatalf("OpenAI-compatible provider env not preserved: %#v", env)
+	}
+	if _, ok := env["OPENROUTER_API_KEY"]; ok {
+		t.Fatal("OPENROUTER_API_KEY must not be forwarded on the canonical OpenAI-compatible opencode path")
+	}
+
+	var cfg map[string]any
+	if err := json.Unmarshal([]byte(env["OPENCODE_CONFIG_CONTENT"]), &cfg); err != nil {
+		t.Fatalf("OPENCODE_CONFIG_CONTENT is invalid JSON: %v", err)
+	}
+	if got := mustAIConfig(t).HarnessRuntimeModel(); got != "compat/fcm" {
+		t.Fatalf("HarnessRuntimeModel = %q, want compat/fcm", got)
+	}
+	if cfg["model"] != "compat/fcm" || cfg["small_model"] != "compat/fcm" {
+		t.Fatalf("opencode models = %#v/%#v, want compat/fcm", cfg["model"], cfg["small_model"])
+	}
+	provider, ok := cfg["provider"].(map[string]any)
+	if !ok {
+		t.Fatalf("provider config missing: %#v", cfg)
+	}
+	compat, ok := provider["compat"].(map[string]any)
+	if !ok {
+		t.Fatalf("compat provider missing: %#v", provider)
+	}
+	if compat["npm"] != "@ai-sdk/openai-compatible" {
+		t.Fatalf("compat npm = %#v", compat["npm"])
+	}
+	models, ok := compat["models"].(map[string]any)
+	if !ok || models["fcm"] == nil {
+		t.Fatalf("fcm model registration missing: %#v", compat)
+	}
+}
+
 // ---------------------------------------------------------------------------
 // BudgetConfig / evidence-pack + numeric table.
 // ---------------------------------------------------------------------------
