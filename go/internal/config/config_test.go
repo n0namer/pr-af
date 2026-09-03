@@ -222,6 +222,7 @@ func TestProviderEnv(t *testing.T) {
 	clearConfigEnv(t)
 	xdg := t.TempDir()
 	t.Setenv("OPENROUTER_API_KEY", "or-key")
+	t.Setenv("OPENAI_BASE_URL", "https://gonka.example/v1")
 	t.Setenv("GH_TOKEN", "gh-tok")
 	t.Setenv("XDG_DATA_HOME", xdg)
 
