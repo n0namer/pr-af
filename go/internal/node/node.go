@@ -263,13 +263,10 @@ func envOr(key, def string) string {
 	return def
 }
 
-// aiModelForAPI converts the configured AI model into the model ID the
-// OpenRouter API expects. Python's .ai() path runs through LiteLLM, which
-// CONSUMES a leading "openrouter/" as its routing prefix before calling the
-// OpenRouter API; the Go SDK's ai client posts the model string verbatim to
-// BaseURL, where "openrouter/moonshotai/..." is an invalid model ID. Stripping
-// the routing prefix reaches the same model Python does. The HARNESS model is
-// untouched (opencode's config expects the prefixed form).
+// aiModelForAPI converts the configured LiteLLM/OpenCode-style model id into
+// the model name sent to an OpenAI-compatible API. Provider prefixes are
+// routing metadata and must not be sent as part of the upstream model name.
 func aiModelForAPI(model string) string {
+	model = strings.TrimPrefix(model, "openai/")
 	return strings.TrimPrefix(model, "openrouter/")
 }
