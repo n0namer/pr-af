@@ -557,6 +557,36 @@ func TestReviewDimensionThreadsAuthorDescriptionToPrompt(t *testing.T) {
 		!strings.Contains(h.gotPrompt, "FAIL_SOFT_RATIONALE") {
 		t.Fatal("reviewer prompt did not receive the author description")
 	}
+	if strings.Contains(h.gotPrompt, "## Proposed-Diff Verification Rule") {
+		t.Fatal("diff verification appendix should be absent without diff patches")
+	}
+}
+
+func TestReviewDimensionDiffRequiresOldNewSemanticVerification(t *testing.T) {
+	h := &mockHarness{payload: `{"findings":[],"sub_reviews":[]}`}
+	_, err := ReviewDimension(context.Background(), Deps{Harness: h}, ReviewDimensionInput{
+		ReviewPrompt: "Verify provider pair validation",
+		TargetFiles:  []string{"go/internal/node/node.go"},
+		MaxDepth:     2,
+		DiffPatches: map[string]string{
+			"go/internal/node/node.go": "- if keyEmpty != baseEmpty\n+ if keyEmpty == baseEmpty",
+		},
+		PrimedCode: "if keyEmpty != baseEmpty { return err }",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		"## Proposed-Diff Verification Rule",
+		"authoritative proposed program state",
+		"OLD versus NEW semantics",
+		"representative truth cases",
+		"MUST NOT be used to dismiss an added-line regression",
+	} {
+		if !strings.Contains(h.gotPrompt, want) {
+			t.Fatalf("reviewer prompt missing %q", want)
+		}
+	}
 }
 
 // Contract: at max depth no sub-reviews are forwarded even if the model
