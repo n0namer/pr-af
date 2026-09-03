@@ -62,6 +62,18 @@ func ReviewDimension(ctx context.Context, deps Deps, in ReviewDimensionInput) (m
 		ReviewerFeedback:  in.ReviewerFeedback,
 		PrimedCode:        in.PrimedCode,
 	})
+	if len(in.DiffPatches) > 0 {
+		prompt += `
+
+## Proposed-Diff Verification Rule
+For changed lines, the supplied diff is the authoritative proposed program state. The repository checkout or primed code may still show the pre-change state and MUST NOT be used to dismiss an added-line regression.
+Before returning no findings:
+1. Compare every relevant removed expression/guard with its added replacement as OLD versus NEW semantics.
+2. For boolean conditions, validation guards, boundary checks, or branch predicates, evaluate representative truth cases (including mixed/partial states) and verify which branch each version takes.
+3. Check callers/consumers against the NEW behavior, not only the current checkout.
+4. If OLD and NEW are not behaviorally equivalent, explain why the change is safe; otherwise report an evidence-grounded finding.
+Do this analysis internally and return only the required review result schema.`
+	}
 
 	parsed, res, err := harnessx.Run[reviewFindingsResult](ctx, deps.Harness, prompt, harness.Options{Cwd: in.RepoPath})
 	if err != nil {
