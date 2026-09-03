@@ -151,20 +151,20 @@ Status: **ACTIVE — CLEAN NEGATIVE PASS / SECOND RECALL FIXTURE FAIL**.
 
 Current ~30-minute sub-batch:
 1. preserve the passed clean-negative baseline (`run_20260903_131346_m6jyj65p`: 0 findings, APPROVE);
-2. repair the localized reviewer-reasoning recall gap from `run_20260903_132450_lcvyp3i6` without weakening fail-closed semantics;
-3. keep the canonical Python/golden prompt builder unchanged; add the smallest review-dimension runtime instruction that makes the proposed diff authoritative for changed lines and requires explicit old/new predicate semantics checking before returning no findings;
-4. add a targeted regression for that reviewer contract;
-5. run targeted tests + full `make check` on exact live source;
-6. reload only PR-AF and rerun the same XOR inversion fixture;
-7. PASS requires an evidence-grounded blocking finding on the broken key/base invariant and no regression of the clean-negative behavior.
+2. first repair attempt added a runtime-only proposed-diff authority / OLD-vs-NEW / truth-case instruction without changing the canonical Python/golden builder;
+3. targeted `go test ./internal/reasoners` PASS and full live-source `make check` PASS; PR-AF-only reload produced PID `134870`;
+4. A/B recall run `run_20260903_144443_bdglgj16` reached primary review, but its first patched `review_dimension` still returned `findings=[]`, `schema_parse_failed=false` in ~39s;
+5. therefore prompt-only wording is insufficient for the current weak model; do not add more prose blindly;
+6. next 20/80 repair is deterministic semantic-delta extraction for simple changed predicates/operators, injected as explicit evidence/hypotheses into the reviewer runtime prompt while leaving final contextual judgment to the reviewer;
+7. validate the delta extractor with targeted unit tests + full `make check`, reload only PR-AF, and rerun the exact XOR fixture.
 
 ## Current blocker
 
-No provider/runtime blocker is open. The current blocker is a **reviewer-reasoning recall gap**: on `run_20260903_132450_lcvyp3i6`, planning correctly requested verification of the `OPENAI_API_KEY` / `OPENAI_BASE_URL` pair invariant, both primary `review_dimension` calls completed with `schema_parse_failed=false`, but both returned `findings=[]`, and root incorrectly approved the inverted XOR guard. The finding was not lost in scoring, adversary, or output synthesis.
+No provider/runtime blocker is open. The current blocker remains a **reviewer-reasoning recall gap**. The first prompt-only repair was source-valid but runtime-ineffective: `run_20260903_144443_bdglgj16` still produced an empty primary reviewer result with `schema_parse_failed=false`. This narrows the next move: PR-AF must pre-compute simple semantic deltas from changed predicates instead of asking the weak model to discover them from prose alone.
 
 ## ONE next move
 
-In persistent DEV `/src/pr-af`, patch only the review-dimension runtime reasoning contract so reviewers must treat the supplied diff as authoritative for changed lines and explicitly compare removed vs added guard semantics before concluding `no findings`; validate with targeted tests + full `make check`, reload only PR-AF, then rerun the exact XOR recall canary. Do not revisit broker/provider work unless fresh CURRENT evidence regresses that layer.
+In persistent DEV `/src/pr-af`, add the smallest deterministic semantic-delta helper for simple one-line predicate/operator replacements (starting with operator flips such as `!= ↔ ==`, `&& ↔ ||`, and boundary comparator changes). Feed its OLD/NEW operator and representative boolean/boundary cases into the review-dimension runtime prompt as evidence, add focused tests, run full `make check`, reload only PR-AF, and rerun the exact XOR recall canary. Do not canonicalize the failed prompt-only attempt until a runtime-accepted delta exists.
 
 ## Write-back rule
 
