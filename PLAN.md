@@ -26,11 +26,11 @@ Engineering North Star for this workstream: a verified-running maintained Go PR-
 
 ## Current phase
 
-Phase: implementation / semantic acceptance / durability.
+Phase: semantic acceptance/durability complete → quality baseline/hardening.
 
 ### Phase Goal
 
-Finish one bounded real-model semantic review on the maintained Go PR-AF using the generic broker env contract, preserve fail-closed semantics for primary reviewer failures, degrade safely only for additive coverage work, then SourceLoop-capture the exact accepted live delta to `pr-af:dev`.
+Establish a small evidence-backed quality baseline on the durable Go PR-AF: preserve the proven generic OpenAI-compatible broker path, fail-closed primary review semantics, and weak-model recovery while measuring review usefulness across a bounded mix of buggy and clean real-file fixtures before any broader optimization.
 
 ## Operating contract
 
