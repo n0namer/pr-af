@@ -63,6 +63,7 @@ Hard rules:
 | Deterministic validation | `go test ./internal/orch` PASS and full live-source `make check` PASS (`build + vet + all tests`) on the exact accepted source later proven byte-identical to durable `dev` | PASS |
 | Acceptance fixture discipline | historical off-tree auth/payments synthetic fixture is retired for acceptance because live workspace context contaminated planner/reviewer routing; acceptance now uses real existing-file diffs or isolated valid fixtures | RESOLVED |
 | Clean semantic canary `run_20260903_114900_74zj0kf2` | real diff over existing `go/internal/schemas/defaults.go` changed `MaxDurationSeconds: 60 → 0`; root succeeded in ~537s and post-completion payload reported a critical blocking finding with evidence on the changed default and real consumers, producing merge-blocking output | PASS |
+| B4 clean-negative canary `run_20260903_131346_m6jyj65p` | comment-only diff over the same real file completed the full review path in ~416.5s; terminal payload returned `findings=[]`, `blocking_count=0`, no severities, event `APPROVE`, and `Looks Good / Safe to merge`; one degraded dimension was reported but produced no fabricated finding | PASS |
 
 ## Accepted application delta
 
