@@ -112,7 +112,7 @@ func defaultRunReview(ctx context.Context, deps orch.Deps, in schemas.ReviewInpu
 func harnessConfig(c config.AIIntegrationConfig) *agent.HarnessConfig {
 	return &agent.HarnessConfig{
 		Provider:       c.Provider,
-		Model:          c.HarnessModel,
+		Model:          c.HarnessRuntimeModel(),
 		MaxTurns:       c.MaxTurns,
 		PermissionMode: "auto",
 		Env:            c.ProviderEnv(),
