@@ -120,7 +120,7 @@ Observed untracked runtime/test artifacts that must not be silently canonicalize
 Status: **PASS**.
 
 ### B2 — Generic provider + model-tolerance contract
-Status: **PASS IN LIVE SOURCE/RUNTIME; DURABILITY PENDING**.
+Status: **PASS — LIVE + DURABLE**.
 
 Delivered:
 - generic OpenAI-compatible env contract;
