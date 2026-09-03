@@ -106,13 +106,13 @@ Observed untracked runtime/test artifacts that must not be silently canonicalize
 - [x] Downstream reviewer / coverage / obligation DAG proven to execute.
 - [x] Coverage-only reviewer failure policy implemented + targeted regression PASS.
 - [x] Full live-source `make check` PASS after latest patch.
-- [ ] Clean semantic acceptance canary using a valid real-existing-file diff/fixture.
-- [ ] Primary reviewer no-progress either does not reproduce on valid fixture or is repaired without fail-open semantics.
-- [ ] If coverage-only failure is triggered, runtime proves primary findings survive and root continues.
-- [ ] Root review terminal success with inspected useful findings.
-- [ ] Exact accepted live delta SourceLoop-captured to `pr-af:dev`.
-- [ ] Durable canonical SHA verified against accepted runtime delta.
-- [ ] Untracked runtime/test artifacts excluded unless intentionally owned.
+- [x] Clean semantic acceptance canary using a valid real-existing-file diff/fixture.
+- [x] Primary reviewer no-progress did not reproduce on the valid fixture; primary fail-closed semantics remain unchanged.
+- [x] Coverage-only degradation policy has targeted regression evidence; clean accepted runtime also completed the additive coverage reviewer without root regression.
+- [x] Root review terminal success with inspected useful findings.
+- [x] Exact accepted live delta canonicalized to `pr-af:dev` via PR #8.
+- [x] Durable canonical SHA `1967bb2275855d8f7626806169b2a274b379c9e0` verified against accepted runtime delta with empty `go/` diff and 9/9 blob MATCH.
+- [x] Untracked runtime/test artifacts excluded from canonicalization.
 
 ## Bounded BMAD batches
 
