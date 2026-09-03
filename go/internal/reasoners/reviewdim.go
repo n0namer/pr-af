@@ -10,6 +10,7 @@ import (
 
 	"github.com/Agent-Field/pr-af/go/internal/harnessx"
 	"github.com/Agent-Field/pr-af/go/internal/prompts"
+	"github.com/Agent-Field/pr-af/go/internal/schemas"
 )
 
 // ReviewDimension ports review_dimension: one focused reviewer over an
