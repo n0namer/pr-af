@@ -55,7 +55,7 @@ func TestRunFailsBeforeOutputWhenAllDimensionsFailSchemaParsing(t *testing.T) {
 
 	_, err := o.Run(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "all review dimensions failed schema parsing (failed dimensions: 2)") {
-		t.Fatal("Run error = %v", err)
+		t.Fatalf("Run error = %v", err)
 	}
 	if outputCalls.Load() != 0 {
 		t.Fatalf("generateOutput calls = %d, want 0", outputCalls.Load())
