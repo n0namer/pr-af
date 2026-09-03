@@ -2,6 +2,7 @@ package orch
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -54,10 +55,35 @@ func TestRunFailsBeforeOutputWhenAllDimensionsFailSchemaParsing(t *testing.T) {
 
 	_, err := o.Run(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "all review dimensions failed schema parsing (failed dimensions: 2)") {
-		t.Fatalf("Run error = %v", err)
+		t.Fatal("Run error = %v", err)
 	}
 	if outputCalls.Load() != 0 {
 		t.Fatalf("generateOutput calls = %d, want 0", outputCalls.Load())
+	}
+}
+
+func TestCoverageGapReviewerFailurePreservesPrimaryFindings(t *testing.T) {
+	o := degradationOrchestrator(t)
+	o.config.Budget.MaxCoverageIterations = 1
+	o.rfns.coverageGate = func(context.Context, reasoners.Deps, reasoners.CoverageGateInput) (map[string]any, error) {
+		return map[string]any{
+			"fully_covered":    false,
+			"confident":        true,
+			"gap_descriptions": []any{"Inspect uncovered auth edge cases"},
+		}, nil
+	}
+	o.rfns.reviewDim = func(context.Context, reasoners.Deps, reasoners.ReviewDimensionInput) (map[string]any, error) {
+		return nil, errors.New("reviewer made no progress for 360s")
+	}
+
+	primary := []schemas.ReviewFindings{{Title: "Primary finding", FilePath: "already.go"}}
+	anatomy := schemas.AnatomyResult{Clusters: []schemas.ChangeCluster{{ID: "gap", Files: []string{"gap.go"}}}}
+	got, _, err := o.runCoverageLoop(context.Background(), degradationPlan(1), anatomy, primary, nil)
+	if err != nil {
+		t.Fatalf("coverage-only reviewer failure must not fail root review: %v", err)
+	}
+	if len(got) != 1 || got[0].Title != "Primary finding" {
+		t.Fatalf("primary findings changed after coverage-only failure: %#v", got)
 	}
 }
 
