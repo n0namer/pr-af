@@ -76,7 +76,7 @@ func TestCoverageGapReviewerFailurePreservesPrimaryFindings(t *testing.T) {
 		return nil, errors.New("reviewer made no progress for 360s")
 	}
 
-	primary := []schemas.ReviewFindings{{Title: "Primary finding", FilePath: "already.go"}}
+	primary := []schemas.ReviewFinding{{Title: "Primary finding", FilePath: "already.go"}}
 	anatomy := schemas.AnatomyResult{Clusters: []schemas.ChangeCluster{{ID: "gap", Files: []string{"gap.go"}}}}
 	got, _, err := o.runCoverageLoop(context.Background(), degradationPlan(1), anatomy, primary, nil)
 	if err != nil {
