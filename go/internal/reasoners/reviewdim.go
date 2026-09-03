@@ -133,3 +133,59 @@ Do this analysis internally and return only the required review result schema.`
 		"schema_parse_failed": schemaParseFailed,
 	}, nil
 }
+
+func semanticDeltaHints(targetFiles []string, patches map[string]string) string {
+	var hints []string
+	for _, path := range targetFiles {
+		patch := patches[path]
+		if patch == "" {
+			continue
+		}
+		lines := strings.Split(patch, "\n")
+		for i := 0; i < len(lines); i++ {
+			if !strings.HasPrefix(lines[i], "-") || strings.HasPrefix(lines[i], "---") {
+				continue
+			}
+			oldLine := strings.TrimSpace(strings.TrimPrefix(lines[i], "-"))
+			for j := i + 1; j < len(lines); j++ {
+				if strings.HasPrefix(lines[j], "-") && !strings.HasPrefix(lines[j], "---") {
+					break
+				}
+				if !strings.HasPrefix(lines[j], "+") || strings.HasPrefix(lines[j], "+++") {
+					continue
+				}
+				newLine := strings.TrimSpace(strings.TrimPrefix(lines[j], "+"))
+				if hint := operatorDeltaHint(path, oldLine, newLine); hint != "" {
+					hints = append(hints, hint)
+				}
+				break
+			}
+		}
+	}
+	return strings.Join(hints, "\n\n")
+}
+
+func operatorDeltaHint(path, oldLine, newLine string) string {
+	type opChange struct {
+		oldOp string
+		newOp string
+		cases string
+	}
+	changes := []opChange{
+		{oldOp: "!=", newOp: "==", cases: "boolean operands: (F,F) OLD=false NEW=true; (F,T) OLD=true NEW=false; (T,F) OLD=true NEW=false; (T,T) OLD=false NEW=true"},
+		{oldOp: "==", newOp: "!=", cases: "boolean operands: (F,F) OLD=true NEW=false; (F,T) OLD=false NEW=true; (T,F) OLD=false NEW=true; (T,T) OLD=true NEW=false"},
+		{oldOp: "&&", newOp: "||", cases: "boolean operands: (F,F) OLD=false NEW=false; (F,T) OLD=false NEW=true; (T,F) OLD=false NEW=true; (T,T) OLD=true NEW=true"},
+		{oldOp: "||", newOp: "&&", cases: "boolean operands: (F,F) OLD=false NEW=false; (F,T) OLD=true NEW=false; (T,F) OLD=true NEW=false; (T,T) OLD=true NEW=true"},
+		{oldOp: "<=", newOp: "<", cases: "boundary case lhs==rhs: OLD=true NEW=false"},
+		{oldOp: "<", newOp: "<=", cases: "boundary case lhs==rhs: OLD=false NEW=true"},
+		{oldOp: ">=", newOp: ">", cases: "boundary case lhs==rhs: OLD=true NEW=false"},
+		{oldOp: ">", newOp: ">=", cases: "boundary case lhs==rhs: OLD=false NEW=true"},
+	}
+	for _, change := range changes {
+		if strings.Contains(oldLine, change.oldOp) && strings.Contains(newLine, change.newOp) &&
+			!strings.Contains(oldLine, change.newOp) && !strings.Contains(newLine, change.oldOp) {
+			return fmt.Sprintf("File: %s\nOLD: %s\nNEW: %s\nDetected operator change: %s -> %s\nRepresentative cases: %s", path, oldLine, newLine, change.oldOp, change.newOp, change.cases)
+		}
+	}
+	return ""
+}

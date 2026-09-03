@@ -582,6 +582,10 @@ func TestReviewDimensionDiffRequiresOldNewSemanticVerification(t *testing.T) {
 		"OLD versus NEW semantics",
 		"representative truth cases",
 		"MUST NOT be used to dismiss an added-line regression",
+		"## Deterministic Semantic-Delta Hints",
+		"Detected operator change: != -> ==",
+		"(F,T) OLD=true NEW=false",
+		"(T,F) OLD=true NEW=false",
 	} {
 		if !strings.Contains(h.gotPrompt, want) {
 			t.Fatalf("reviewer prompt missing %q", want)
