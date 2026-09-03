@@ -248,10 +248,16 @@ func TestProviderEnv(t *testing.T) {
 	}
 
 	// With XDG_DATA_HOME unset, ProviderEnv falls back to a tmp dir and creates
-	// it.
+	// it. Unset OPENAI_BASE_URL must also stay absent instead of inventing a
+	// fallback endpoint.
 	t.Setenv("XDG_DATA_HOME", "")
 	_ = os.Unsetenv("XDG_DATA_HOME")
+	t.Setenv("OPENAI_BASE_URL", "")
+	_ = os.Unsetenv("OPENAI_BASE_URL")
 	env2 := mustAIConfig(t).ProviderEnv()
+	if _, ok := env2["OPENAI_BASE_URL"]; ok {
+		t.Errorf("OPENAI_BASE_URL should be absent when unset")
+	}
 	wantXDG := filepath.Join(os.TempDir(), "opencode-shared-data")
 	if env2["XDG_DATA_HOME"] != wantXDG {
 		t.Errorf("fallback XDG_DATA_HOME = %q, want %q", env2["XDG_DATA_HOME"], wantXDG)
