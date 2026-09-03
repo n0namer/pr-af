@@ -392,30 +392,93 @@ func TestMetaSelectorsForceLens(t *testing.T) {
 			if !strings.Contains(h.gotPrompt, strings.ToUpper(tc.lens)) {
 				t.Fatalf("prompt does not carry the %s lens", tc.lens)
 			}
+			if h.gotOpts.SchemaMode != "incremental" {
+				t.Fatalf("SchemaMode = %q, want incremental", h.gotOpts.SchemaMode)
+			}
+			if h.gotOpts.SchemaMaxRetries != 2 {
+				t.Fatalf("SchemaMaxRetries = %d, want 2 for the lean meta schema", h.gotOpts.SchemaMaxRetries)
+			}
 		})
 	}
 }
 
-// Contract: parse failure yields lens + empty dimensions + the seeded 0.7
-// confidence (Python's MetaDimensionResult(lens=..., dimensions=[])).
+// Contract: meta-selector parse/schema failure fails closed. An empty seeded
+// dimension set can otherwise turn a broken model call into a false "Looks Good".
 func TestMetaSelectorParseFail(t *testing.T) {
 	h := &mockHarness{parseFail: true}
 	out, err := MetaMechanical(context.Background(), Deps{Harness: h}, MetaInput{Depth: "quick"})
+	if err == nil {
+		t.Fatal("expected meta selector to fail closed on schema parse failure")
+	}
+	if out != nil {
+		t.Fatalf("expected nil output on meta schema failure, got %#v", out)
+	}
+	if !strings.Contains(err.Error(), "meta mechanical output recovery failed") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestMetaSelectorRecoversEmbeddedJSON(t *testing.T) {
+	h := &mockHarness{
+		parseFail:       true,
+		parseFailResult: "Model prose before JSON. ```json\n{\"lens\":\"wrong\",\"dimensions\":[{\"name\":\"SQL safety\",\"review_prompt\":\"Check SQL construction and credential handling.\",\"target_files\":[\"internal/auth/login.go\"]}],\"confidence\":0.8,\"rationale\":\"Security-sensitive auth change.\"}\n```",
+	}
+	out, err := MetaSemantic(context.Background(), Deps{Harness: h}, MetaInput{
+		Depth:       "deep",
+		DiffPatches: OrderedPatches{{Key: "internal/auth/login.go", Val: "diff"}},
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	wantKeys(t, out, metaKeys...)
-	if out["lens"] != "mechanical" {
-		t.Fatalf("lens = %v", out["lens"])
+	if h.calls != 1 {
+		t.Fatalf("calls = %d, want 1 because raw JSON recovery should avoid a second model call", h.calls)
 	}
-	if len(out["dimensions"].([]any)) != 0 {
-		t.Fatalf("dimensions = %v, want []", out["dimensions"])
+	if out["lens"] != "semantic" {
+		t.Fatalf("lens = %v, want semantic", out["lens"])
 	}
-	if out["confidence"] != 0.7 {
-		t.Fatalf("confidence = %v, want seeded 0.7", out["confidence"])
+	dims := out["dimensions"].([]any)
+	if len(dims) != 1 {
+		t.Fatalf("dimensions = %#v", dims)
 	}
-	if out["rationale"] != "" {
-		t.Fatalf("rationale = %v", out["rationale"])
+	dim := dims[0].(map[string]any)
+	if dim["id"] != "semantic-01" || dim["priority"] != float64(1) {
+		t.Fatalf("deterministic enrichment missing: %#v", dim)
+	}
+}
+
+func TestMetaSelectorPlainTextFallback(t *testing.T) {
+	h := &mockHarness{
+		parseFail:          true,
+		unstructuredResult: "DIMENSION: Credential leakage\nPROMPT: Check whether secrets or passwords can be exposed in responses or logs.\nFILES: *\nEND\nCONFIDENCE: 0.65\nRATIONALE: Auth code deserves explicit secret-handling review.",
+	}
+	out, err := MetaMechanical(context.Background(), Deps{Harness: h}, MetaInput{
+		Depth: "deep",
+		DiffPatches: OrderedPatches{
+			{Key: "internal/auth/login.go", Val: "diff"},
+			{Key: "internal/payments/amount.go", Val: "diff"},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h.calls != 2 {
+		t.Fatalf("calls = %d, want structured attempt + one plain-text fallback", h.calls)
+	}
+	if out["lens"] != "mechanical" || out["confidence"] != 0.65 {
+		t.Fatalf("unexpected meta output: %#v", out)
+	}
+	dims := out["dimensions"].([]any)
+	if len(dims) != 1 {
+		t.Fatalf("dimensions = %#v", dims)
+	}
+	dim := dims[0].(map[string]any)
+	files := dim["target_files"].([]any)
+	if len(files) != 2 {
+		t.Fatalf("target_files = %#v, want all changed files", files)
+	}
+	budget := dim["budget"].(map[string]any)
+	if budget["max_cost_usd"] != 0.5 || budget["max_duration_seconds"] != float64(60) {
+		t.Fatalf("schema-owned budget defaults missing: %#v", budget)
 	}
 }
 
