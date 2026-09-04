@@ -557,6 +557,129 @@ func TestReviewDimensionThreadsAuthorDescriptionToPrompt(t *testing.T) {
 		!strings.Contains(h.gotPrompt, "FAIL_SOFT_RATIONALE") {
 		t.Fatal("reviewer prompt did not receive the author description")
 	}
+	if strings.Contains(h.gotPrompt, "## Proposed-Diff Verification Rule") {
+		t.Fatal("diff verification appendix should be absent without diff patches")
+	}
+}
+
+func TestReviewDimensionDiffRequiresOldNewSemanticVerification(t *testing.T) {
+	h := &mockHarness{
+		payload:            `{"findings":[],"sub_reviews":[]}`,
+		unstructuredResult: "SAFE: prompt-contract fixture has no real defect",
+	}
+	_, err := ReviewDimension(context.Background(), Deps{Harness: h}, ReviewDimensionInput{
+		ReviewPrompt: "Verify provider pair validation",
+		TargetFiles:  []string{"go/internal/node/node.go"},
+		MaxDepth:     2,
+		DiffPatches: map[string]string{
+			"go/internal/node/node.go": "- if keyEmpty != baseEmpty\n+ if keyEmpty == baseEmpty",
+		},
+		PrimedCode: "if keyEmpty != baseEmpty { return err }",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		"## Proposed-Diff Verification Rule",
+		"authoritative proposed program state",
+		"OLD versus NEW semantics",
+		"representative truth cases",
+		"MUST NOT be used to dismiss an added-line regression",
+		"## Deterministic Semantic-Delta Hints",
+		"Detected operator change: != -> ==",
+		"(F,T) OLD=true NEW=false",
+		"(T,F) OLD=true NEW=false",
+	} {
+		if !strings.Contains(h.gotPrompt, want) {
+			t.Fatalf("reviewer prompt missing %q", want)
+		}
+	}
+}
+
+func TestOperatorDeltaHintDetectsNestedXORReplacement(t *testing.T) {
+	oldLine := `if (openAIKey == "") != (openAIBase == "") {`
+	newLine := `if (openAIKey == "") == (openAIBase == "") {`
+	hint := operatorDeltaHint("go/internal/node/node.go", oldLine, newLine)
+	if !strings.Contains(hint, "Detected operator change: != -> ==") {
+		t.Fatalf("nested XOR replacement was not detected: %q", hint)
+	}
+	if !strings.Contains(hint, "(F,T) OLD=true NEW=false") || !strings.Contains(hint, "(T,F) OLD=true NEW=false") {
+		t.Fatalf("truth-table evidence missing: %q", hint)
+	}
+}
+
+func TestOperatorDeltaHintDetectsBoundaryComparatorReplacement(t *testing.T) {
+	hint := operatorDeltaHint("limit.go", "if n <= limit {", "if n < limit {")
+	if !strings.Contains(hint, "Detected operator change: <= -> <") {
+		t.Fatalf("boundary replacement was not detected: %q", hint)
+	}
+}
+
+func TestReviewDimensionSemanticDeltaFallbackFinding(t *testing.T) {
+	h := &mockHarness{
+		payload:            `{"findings":[],"sub_reviews":[]}`,
+		unstructuredResult: "FINDING:\nSEVERITY: important\nTITLE: Provider pair guard is inverted\nFILE: go/internal/node/node.go\nBODY: The new equality condition rejects both-valid states and fails to reject partial key/base configuration.\nEVIDENCE: Mixed key/base truth-table cases flip from rejection to acceptance.\nTAGS: correctness,configuration\nEND",
+	}
+	out, err := ReviewDimension(context.Background(), Deps{Harness: h}, ReviewDimensionInput{
+		ReviewPrompt: "Verify provider pair validation",
+		TargetFiles:  []string{"go/internal/node/node.go"},
+		MaxDepth:     2,
+		DiffPatches: map[string]string{
+			"go/internal/node/node.go": "- if keyEmpty != baseEmpty\n+ if keyEmpty == baseEmpty",
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h.calls != 2 {
+		t.Fatalf("calls = %d, want structured reviewer + semantic verifier", h.calls)
+	}
+	if out["schema_parse_failed"] != false {
+		t.Fatalf("schema_parse_failed = %v, want false after verifier recovery", out["schema_parse_failed"])
+	}
+	findings := out["findings"].([]any)
+	if len(findings) != 1 {
+		t.Fatalf("findings = %#v, want one recovered finding", findings)
+	}
+	f := findings[0].(map[string]any)
+	if f["title"] != "Provider pair guard is inverted" || f["severity"] != "important" {
+		t.Fatalf("unexpected recovered finding: %#v", f)
+	}
+	if !strings.Contains(f["evidence"].(string), "Detected operator change: != -> ==") {
+		t.Fatalf("deterministic evidence missing: %#v", f)
+	}
+}
+
+func TestReviewDimensionSemanticDeltaFallbackSafeRecoversSchemaFailure(t *testing.T) {
+	h := &mockHarness{parseFail: true, unstructuredResult: "SAFE: truth cases are intentionally equivalent in this context"}
+	out, err := ReviewDimension(context.Background(), Deps{Harness: h}, ReviewDimensionInput{
+		ReviewPrompt: "Verify predicate change",
+		TargetFiles:  []string{"a.go"},
+		MaxDepth:     2,
+		DiffPatches:  map[string]string{"a.go": "- if left != right\n+ if left == right"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h.calls != 2 {
+		t.Fatalf("calls = %d, want structured attempt + semantic verifier", h.calls)
+	}
+	if out["schema_parse_failed"] != false || len(out["findings"].([]any)) != 0 {
+		t.Fatalf("SAFE fallback should recover cleanly, got %#v", out)
+	}
+}
+
+func TestReviewDimensionSemanticDeltaFallbackInvalidFailsClosed(t *testing.T) {
+	h := &mockHarness{payload: `{"findings":[],"sub_reviews":[]}`, unstructuredResult: "I am not sure."}
+	_, err := ReviewDimension(context.Background(), Deps{Harness: h}, ReviewDimensionInput{
+		ReviewPrompt: "Verify predicate change",
+		TargetFiles:  []string{"a.go"},
+		MaxDepth:     2,
+		DiffPatches:  map[string]string{"a.go": "- if left != right\n+ if left == right"},
+	})
+	if err == nil || !strings.Contains(err.Error(), "semantic-delta verification failed") {
+		t.Fatalf("expected fail-closed verifier error, got %v", err)
+	}
 }
 
 // Contract: at max depth no sub-reviews are forwarded even if the model
