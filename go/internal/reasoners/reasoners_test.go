@@ -28,12 +28,16 @@ type mockHarness struct {
 	parseFailResult    string
 	unstructuredResult string
 	calls              int
+	firstPrompt        string
 	gotPrompt          string
 	gotOpts            harness.Options
 }
 
 func (m *mockHarness) Harness(_ context.Context, prompt string, schema map[string]any, dest any, opts harness.Options) (*harness.Result, error) {
 	m.calls++
+	if m.firstPrompt == "" {
+		m.firstPrompt = prompt
+	}
 	m.gotPrompt = prompt
 	m.gotOpts = opts
 	if schema == nil {
@@ -590,7 +594,7 @@ func TestReviewDimensionDiffRequiresOldNewSemanticVerification(t *testing.T) {
 		"(F,T) OLD=true NEW=false",
 		"(T,F) OLD=true NEW=false",
 	} {
-		if !strings.Contains(h.gotPrompt, want) {
+		if !strings.Contains(h.firstPrompt, want) {
 			t.Fatalf("reviewer prompt missing %q", want)
 		}
 	}
