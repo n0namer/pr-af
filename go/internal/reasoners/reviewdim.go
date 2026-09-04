@@ -195,12 +195,26 @@ func operatorDeltaHint(path, oldLine, newLine string) string {
 		{oldOp: ">", newOp: ">=", cases: "boundary case lhs==rhs: OLD=false NEW=true"},
 	}
 	for _, change := range changes {
-		if strings.Contains(oldLine, change.oldOp) && strings.Contains(newLine, change.newOp) &&
-			!strings.Contains(oldLine, change.newOp) && !strings.Contains(newLine, change.oldOp) {
+		if operatorCount(oldLine, change.oldOp) > operatorCount(newLine, change.oldOp) &&
+			operatorCount(newLine, change.newOp) > operatorCount(oldLine, change.newOp) {
 			return fmt.Sprintf("File: %s\nOLD: %s\nNEW: %s\nDetected operator change: %s -> %s\nRepresentative cases: %s", path, oldLine, newLine, change.oldOp, change.newOp, change.cases)
 		}
 	}
 	return ""
+}
+
+func operatorCount(line, op string) int {
+	count := strings.Count(line, op)
+	// Single-character boundary operators are substrings of <=/>=. Exclude
+	// those composite occurrences so <= -> < and >= -> > are detected as
+	// replacements instead of appearing unchanged.
+	switch op {
+	case "<":
+		count -= strings.Count(line, "<=")
+	case ">":
+		count -= strings.Count(line, ">=")
+	}
+	return count
 }
 
 func verifySemanticDelta(ctx context.Context, caller harnessx.HarnessCaller, in ReviewDimensionInput, hints string) ([]schemas.ReviewFinding, error) {

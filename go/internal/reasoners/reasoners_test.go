@@ -596,6 +596,25 @@ func TestReviewDimensionDiffRequiresOldNewSemanticVerification(t *testing.T) {
 	}
 }
 
+func TestOperatorDeltaHintDetectsNestedXORReplacement(t *testing.T) {
+	oldLine := `if (openAIKey == "") != (openAIBase == "") {`
+	newLine := `if (openAIKey == "") == (openAIBase == "") {`
+	hint := operatorDeltaHint("go/internal/node/node.go", oldLine, newLine)
+	if !strings.Contains(hint, "Detected operator change: != -> ==") {
+		t.Fatalf("nested XOR replacement was not detected: %q", hint)
+	}
+	if !strings.Contains(hint, "(F,T) OLD=true NEW=false") || !strings.Contains(hint, "(T,F) OLD=true NEW=false") {
+		t.Fatalf("truth-table evidence missing: %q", hint)
+	}
+}
+
+func TestOperatorDeltaHintDetectsBoundaryComparatorReplacement(t *testing.T) {
+	hint := operatorDeltaHint("limit.go", "if n <= limit {", "if n < limit {")
+	if !strings.Contains(hint, "Detected operator change: <= -> <") {
+		t.Fatalf("boundary replacement was not detected: %q", hint)
+	}
+}
+
 func TestReviewDimensionSemanticDeltaFallbackFinding(t *testing.T) {
 	h := &mockHarness{
 		payload:            `{"findings":[],"sub_reviews":[]}`,
