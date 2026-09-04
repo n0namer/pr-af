@@ -147,24 +147,27 @@ Delivered:
 - durable squash SHA `1967bb2275855d8f7626806169b2a274b379c9e0` independently verified byte-identical to the accepted runtime app tree.
 
 ### B4 — Quality baseline / low-false-positive hardening
-Status: **ACTIVE — CLEAN NEGATIVE PASS / SECOND RECALL FIXTURE FAIL**.
+Status: **ACTIVE — CLEAN NEGATIVE PASS / DETERMINISTIC RECALL REPAIR TEST PASS / RUNTIME ACCEPTANCE BLOCKED**.
 
 Current ~30-minute sub-batch:
-1. preserve the passed clean-negative baseline (`run_20260903_131346_m6jyj65p`: 0 findings, APPROVE);
-2. first repair attempt added a runtime-only proposed-diff authority / OLD-vs-NEW / truth-case instruction without changing the canonical Python/golden builder;
-3. targeted `go test ./internal/reasoners` PASS and full live-source `make check` PASS; PR-AF-only reload produced PID `134870`;
-4. A/B recall run `run_20260903_144443_bdglgj16` reached primary review, but its first patched `review_dimension` still returned `findings=[]`, `schema_parse_failed=false` in ~39s;
-5. therefore prompt-only wording is insufficient for the current weak model; do not add more prose blindly;
-6. next 20/80 repair is deterministic semantic-delta extraction for simple changed predicates/operators, injected as explicit evidence/hypotheses into the reviewer runtime prompt while leaving final contextual judgment to the reviewer;
-7. validate the delta extractor with targeted unit tests + full `make check`, reload only PR-AF, and rerun the exact XOR fixture.
+1. preserved the passed clean-negative baseline (`run_20260903_131346_m6jyj65p`: 0 findings, APPROVE) and the failed XOR recall baseline (`run_20260903_132450_lcvyp3i6`);
+2. the prompt-only repair remained runtime-ineffective in `run_20260903_144443_bdglgj16`, so B4 moved to deterministic semantic-delta extraction rather than more prompt prose;
+3. live DEV `reviewdim.go` now extracts simple operator replacements and feeds OLD/NEW plus representative truth/boundary cases into a focused semantic verifier when the primary reviewer returns no finding;
+4. the first extractor implementation was localized against the exact XOR fixture: its `!= -> ==` detector incorrectly required the OLD line to contain no `==`, but the real guard contains nested equality terms (`(openAIKey == "") != (openAIBase == "")`), so no hint/verifier was activated;
+5. the detector was repaired to compare operator counts, with composite-boundary handling for `<`/`>` versus `<=`/`>=`; exact nested-XOR and boundary regression tests were added;
+6. full live-source `make check` PASS on the current two-file B4 delta: build + vet + all Go tests, including `internal/reasoners`; the temporary Makefile PATH adaptation used only to expose `/usr/local/go/bin/go` was restored byte-for-byte and its SourceLoop captures were rejected;
+7. the intended dirty application surface remains only `go/internal/reasoners/reviewdim.go` and `go/internal/reasoners/reasoners_test.go`; runtime/debug JSON/context artifacts remain excluded;
+8. runtime acceptance is not yet claimed: current DEV mediation blocks component-scoped `af install /src/pr-af/go` / `af run pr-af --port 8007 --detach=true` as opaque mutation, while the available typed reload restarts the whole workforce and is out of scope because it would disturb other components.
 
 ## Current blocker
 
-No provider/runtime blocker is open. The current blocker remains a **reviewer-reasoning recall gap**. The first prompt-only repair was source-valid but runtime-ineffective: `run_20260903_144443_bdglgj16` still produced an empty primary reviewer result with `schema_parse_failed=false`. This narrows the next move: PR-AF must pre-compute simple semantic deltas from changed predicates instead of asking the weak model to discover them from prose alone.
+The product-side deterministic repair now has **source/test PASS**, but B4 remains **EVIDENCE_MISSING for runtime acceptance**. The blocker is the current DEV operator surface: there is no callable typed PR-AF-only rebuild/reload action. Raw `af install/run` is mediation-blocked, and whole-workforce reload is forbidden by component ownership. The last loaded runtime therefore still represents the pre-fix helper and cannot prove the repaired XOR path.
+
+Separately, repository governance is inconsistent with the fork runbook: upstream `main` remains `48ae7eeb4f07779004db6354728d49ca7b36dbc3`, while fork `main` is `f11d03bdde8cfb86ac09c19fb1a1c5d1b98d9465` because four downstream docs commits were written to `main`. Do not rewrite/reset `main` without explicit destructive authorization; component work continues on `dev`.
 
 ## ONE next move
 
-In persistent DEV `/src/pr-af`, add the smallest deterministic semantic-delta helper for simple one-line predicate/operator replacements (starting with operator flips such as `!= ↔ ==`, `&& ↔ ||`, and boundary comparator changes). Feed its OLD/NEW operator and representative boolean/boundary cases into the review-dimension runtime prompt as evidence, add focused tests, run full `make check`, reload only PR-AF, and rerun the exact XOR recall canary. Do not canonicalize the failed prompt-only attempt until a runtime-accepted delta exists.
+Expose or authorize a **typed PR-AF-only DEV lifecycle** equivalent to the proven orchestration contract `af install /src/pr-af/go` followed by process-scoped `af run pr-af --port 8007 --detach=true`, without restarting the shared workforce. Then rerun the exact XOR recall fixture. If it returns an evidence-grounded finding while the clean-negative baseline remains clean, SourceLoop-capture only the two intended B4 files to `pr-af:dev`; otherwise localize the same runtime path further. Do not canonicalize the current B4 delta before that runtime proof.
 
 ## Write-back rule
 
