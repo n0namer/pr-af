@@ -1,0 +1,11 @@
+{
+  "context_notes": "",
+  "intent_gaps": [],
+  "pr_narrative": "The PR adds a local diff review capability by introducing a new CLI command `pr-af diff` that renders code changes against the working tree or staged changes without requiring a remote PR. The command is implemented in `main.go` and the diff rendering logic is in `diff.go`. The feature supports both git and non-git workflows and includes review annotations. No external dependencies were added, and the configuration surface appears minimal based on the file count.",
+  "risk_surfaces": [
+    "The new command `pr-af diff` could conflict with existing commands or aliases in the user's shell environment.",
+    "The diff rendering logic in `diff.go` assumes a specific format for the diff output, which could break if the underlying diff tool changes its output format.",
+    "The feature does not handle binary files, which could lead to unexpected behavior or errors when reviewing changes that include binary files."
+  ],
+  "unrelated_changes": []
+}
