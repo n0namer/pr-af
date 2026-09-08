@@ -166,7 +166,7 @@ Separately, repository governance is inconsistent with the fork runbook: upstrea
 
 ## Active BMAD batch — B4 semantic pair-test
 
-Method: `bmad-quick-dev` plan-code-review lane, narrowed to one user-facing goal: decide whether the current two-file recall repair is semantically acceptable. North Star Drift Check: **CONTINUE** — no new code, no redeploy, no infrastructure sidequest.
+Method: `bmad-quick-dev` plan-code-review lane, narrowed to one user-facing goal: decide whether the current two-file recall repair is semantically acceptable. North Star Drift Check: **NARROW_SCOPE** — keep the application code frozen; repair only the missing execution prerequisite required to obtain semantic evidence.
 
 DoD:
 1. XOR-positive canary through authenticated `pr-af.review` returns at least one evidence-grounded finding describing the semantic regression caused by `!= -> ==` in the provider key/base invariant.
@@ -175,9 +175,18 @@ DoD:
 4. Record exact live source/runtime identity tested; if provenance is not exact, B4 remains PARTIAL even if both semantic verdicts are correct.
 5. Decision table: XOR finding + clean no-finding => B4 semantic PASS and canonicalize only `go/internal/reasoners/reviewdim.go` + `go/internal/reasoners/reasoners_test.go`; XOR miss => proven recall defect, return to code; clean finding => proven precision regression, return to code.
 
+CURRENT pair-test evidence:
+- authenticated route is correct and live: `pr-af.review` accepted all requests and ran intake/anatomy;
+- XOR `exec_20260908_192125_u843u7go` failed before review in `meta_systemic` output recovery; one identical retry `exec_20260908_192140_emt9xdgw` failed in the same meta stage;
+- clean-negative `exec_20260908_192202_oo7pkjls` also failed before review in meta output recovery;
+- therefore neither run produced a semantic XOR/clean verdict and they must not be counted as recall/precision failures;
+- PID `7675` has `PR_AF_PROVIDER=opencode`, `PR_AF_MODEL=openai/fcm`, `PR_AF_AI_MODEL=openai/fcm`, and required OpenAI-compatible key/base variables present;
+- however `opencode` is absent from the running process PATH and no executable was found under `/usr`, `/opt`, or `/root`; PR-AF logs fail in ~0.5s with `Schema validation failed ... The output file was NOT created` before primary review;
+- this is **DESIGN_RUNTIME_DRIFT**: runtime configuration selects the OpenCode harness but the current workforce image/runtime does not contain its executable.
+
 ## ONE next move
 
-Run the XOR-positive canary now through the authenticated token-backed `pr-af.review` route from the existing DEV target, inspect terminal payload, then immediately run the clean-negative canary through the same route. Do not edit application code until the pair-test verdict requires it.
+Restore the existing OpenCode harness executable through the canonical workforce/runtime owner (no PR-AF application-code change), then rerun the same XOR and clean-negative executions through authenticated `pr-af.review`. Installing a new persistent tool ad hoc inside the shared workforce is outside the current bounded application scope; do not do it without explicit approval or the canonical runtime route.
 
 ## Write-back rule
 
