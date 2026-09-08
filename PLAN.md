@@ -160,13 +160,13 @@ Current ~30-minute sub-batch (2026-09-08):
 
 ## Current blocker
 
-The product-side deterministic repair now has **source/test PASS**, but B4 remains **EVIDENCE_MISSING for runtime acceptance**. The blocker is the current DEV operator surface: there is no callable typed PR-AF-only rebuild/reload action. Raw `af install/run` is mediation-blocked, and whole-workforce reload is forbidden by component ownership. The last loaded runtime therefore still represents the pre-fix helper and cannot prove the repaired XOR path.
+B4 remains **EVIDENCE_MISSING for semantic runtime acceptance**, but the blocker changed after CURRENT readback. It is no longer justified to say that PR-AF definitely needs a rebuild/reload: the current binary and process were created after the two-file B4 source edits and the node is healthy. The remaining evidence gap is a trusted execution path for the acceptance canary plus exact loaded-binary provenance. The AgentField Action gateway is currently returning `502 Bad Gateway`; direct control-plane HTTP is reachable and healthy but correctly rejects unauthenticated execution with `401`. Do not bypass authentication or expose credentials.
 
 Separately, repository governance is inconsistent with the fork runbook: upstream `main` remains `48ae7eeb4f07779004db6354728d49ca7b36dbc3`, while fork `main` is `f11d03bdde8cfb86ac09c19fb1a1c5d1b98d9465` because four downstream docs commits were written to `main`. Do not rewrite/reset `main` without explicit destructive authorization; component work continues on `dev`.
 
 ## ONE next move
 
-Expose or authorize a **typed PR-AF-only DEV lifecycle** equivalent to the proven orchestration contract `af install /src/pr-af/go` followed by process-scoped `af run pr-af --port 8007 --detach=true`, without restarting the shared workforce. Then rerun the exact XOR recall fixture. If it returns an evidence-grounded finding while the clean-negative baseline remains clean, SourceLoop-capture only the two intended B4 files to `pr-af:dev`; otherwise localize the same runtime path further. Do not canonicalize the current B4 delta before that runtime proof.
+Restore the **trusted PR-AF execution lane** (prefer the existing AgentField Action when healthy; otherwise an already-authorized token-backed control-plane route that keeps credentials server-side) and rerun the exact XOR recall fixture against the currently loaded PID `7675`. If the repaired path returns an evidence-grounded finding, immediately rerun the existing clean-negative fixture to guard false positives. Only after both outcomes are inspected should SourceLoop capture the two intended B4 files to `pr-af:dev`; if XOR still misses, localize that same runtime path before changing more code.
 
 ## Write-back rule
 
