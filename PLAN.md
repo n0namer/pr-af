@@ -147,17 +147,16 @@ Delivered:
 - durable squash SHA `1967bb2275855d8f7626806169b2a274b379c9e0` independently verified byte-identical to the accepted runtime app tree.
 
 ### B4 — Quality baseline / low-false-positive hardening
-Status: **ACTIVE — CLEAN NEGATIVE PASS / DETERMINISTIC RECALL REPAIR TEST PASS / RUNTIME ACCEPTANCE BLOCKED**.
+Status: **ACTIVE — CLEAN NEGATIVE PASS / DETERMINISTIC RECALL REPAIR TEST PASS / RUNTIME SEMANTIC ACCEPTANCE EVIDENCE MISSING**.
 
-Current ~30-minute sub-batch:
-1. preserved the passed clean-negative baseline (`run_20260903_131346_m6jyj65p`: 0 findings, APPROVE) and the failed XOR recall baseline (`run_20260903_132450_lcvyp3i6`);
-2. the prompt-only repair remained runtime-ineffective in `run_20260903_144443_bdglgj16`, so B4 moved to deterministic semantic-delta extraction rather than more prompt prose;
-3. live DEV `reviewdim.go` now extracts simple operator replacements and feeds OLD/NEW plus representative truth/boundary cases into a focused semantic verifier when the primary reviewer returns no finding;
-4. the first extractor implementation was localized against the exact XOR fixture: its `!= -> ==` detector incorrectly required the OLD line to contain no `==`, but the real guard contains nested equality terms (`(openAIKey == "") != (openAIBase == "")`), so no hint/verifier was activated;
-5. the detector was repaired to compare operator counts, with composite-boundary handling for `<`/`>` versus `<=`/`>=`; exact nested-XOR and boundary regression tests were added;
-6. full live-source `make check` PASS on the current two-file B4 delta: build + vet + all Go tests, including `internal/reasoners`; the temporary Makefile PATH adaptation used only to expose `/usr/local/go/bin/go` was restored byte-for-byte and its SourceLoop captures were rejected;
-7. the intended dirty application surface remains only `go/internal/reasoners/reviewdim.go` and `go/internal/reasoners/reasoners_test.go`; runtime/debug JSON/context artifacts remain excluded;
-8. runtime acceptance is not yet claimed: current DEV mediation blocks component-scoped `af install /src/pr-af/go` / `af run pr-af --port 8007 --detach=true` as opaque mutation, while the available typed reload restarts the whole workforce and is out of scope because it would disturb other components.
+Current ~30-minute sub-batch (2026-09-08):
+1. anti-drift OBSERVE confirmed persistent DEV source at `/src/pr-af` is still based on runtime commit `5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f`; intended tracked dirty surface is still only `go/internal/reasoners/reviewdim.go` and `go/internal/reasoners/reasoners_test.go`, with runtime/debug artifacts kept untracked;
+2. repository-local `AGENTS.md` was reread before mutation; root `ERRORS.md` remains absent;
+3. CURRENT deterministic validation was rerun on the dirty two-file repair using the installed Go tool directly: `go test ./internal/reasoners` PASS, `go build ./...` PASS, `go vet ./...` PASS, and full `go test ./...` PASS;
+4. the running PR-AF process is PID `7675` at `/afhome/packages/pr-af/bin/pr-af`; binary mtime is `2026-09-08 15:55:27Z`, process start is `2026-09-08 15:55:49Z`, and `http://127.0.0.1:8007/health` returns `{"status":"ok"}`. Both binary build/start times are later than the 2026-09-04 dirty-source edits, so the previous claim that the loaded runtime was definitely pre-fix is stale;
+5. exact binary→source byte provenance is still not independently proven: `go version -m` confirms the maintained Go module/toolchain but carries no source VCS stamp for this local build;
+6. semantic acceptance rerun is still missing. The CURRENT AgentField Action surface returned `502 Bad Gateway`; direct control-plane invocation at `http://control-plane:8080/api/v1/execute/async/pr-af.review` reached the healthy control plane but returned `401`, and no credential was printed or bypassed;
+7. therefore no further application-code change is justified yet: the highest-value next evidence is the exact XOR recall canary against the currently loaded process, followed by the existing clean-negative canary if recall succeeds.
 
 ## Current blocker
 
