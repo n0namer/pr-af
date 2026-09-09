@@ -1,6 +1,7 @@
 package prompts
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/Agent-Field/pr-af/go/internal/schemas"
@@ -68,6 +69,23 @@ func TestMetaGolden(t *testing.T) {
 	bigPatches := []StrPair{{Key: "client.py", Val: bigFiller("patch", 9000)}}
 	ctxC := MetaContext(intakeFix(nil), anatA(), bigPatches, "focus on auth")
 	assertGolden(t, "meta_semantic_C", MetaSemanticPrompt(ctxC, fixtureRepo, "deep"))
+}
+
+func TestMetaSemanticQuickPromptIsBounded(t *testing.T) {
+	prompt := MetaSemanticPrompt(`{"file_paths":["go/internal/node/node.go"],"diff_patches":{"go/internal/node/node.go":"diff"}}`, "/src/pr-af", "quick")
+	for _, want := range []string{
+		"QUICK review dimensions",
+		"at most ONE directly relevant caller, test, or configuration file",
+		"Do NOT inspect git history, git status, branches, old commits",
+		"Always complete lens, dimensions, confidence, and rationale before stopping",
+	} {
+		if !strings.Contains(prompt, want) {
+			t.Fatalf("quick semantic prompt missing %q: %s", want, prompt)
+		}
+	}
+	if strings.Contains(prompt, "Then find their callers. Trace how data flows through them") {
+		t.Fatalf("quick semantic prompt must not include broad recursive investigation protocol: %s", prompt)
+	}
 }
 
 func TestCoverageGolden(t *testing.T) {
