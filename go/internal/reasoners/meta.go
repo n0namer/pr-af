@@ -79,6 +79,16 @@ All source paths in the review context and diff patches are repository-relative 
 When using file tools, resolve relative paths under the repository root. For example, go/... means %s/go/..., never /go/....
 `, root, root)
 	}
+	if lens == "semantic" && strings.EqualFold(strings.TrimSpace(in.Depth), "quick") {
+		prompt += `
+
+## Quick semantic investigation budget
+This is a bounded quick review. Inspect the changed file first and at most TWO directly relevant context files needed to understand the changed behavior.
+Do not recursively browse the repository, enumerate broad call graphs, or continue repository archaeology once one specific semantic risk can be stated.
+As soon as you have enough evidence for 0-2 focused dimensions, COMPLETE the required output object immediately (lens, dimensions, confidence, rationale) and stop.
+If uncertainty remains after the bounded reads, emit one focused verification dimension rather than doing more exploration.
+`
+	}
 	parsed, hres, err := harnessx.Run[metaDraftResult](ctx, deps.Harness, prompt, harness.Options{
 		Cwd:              in.RepoPath,
 		SchemaMode:       "incremental",
