@@ -1,4 +1,20 @@
 {
   "lens": "SEMANTIC",
-  "confidence": 0.95
+  "confidence": 0.95,
+  "dimensions": [
+    {
+      "name": "Configuration validation inversion",
+      "review_prompt": "The boolean guard in BuildAgent at go/internal/node/node.go:176 changed from XOR (!=) to equivalence (==). Original: error when exactly one of OPENAI_API_KEY/OPENAI_BASE_URL is empty (rejects partial pairs). New: error when both are empty or both are non-empty (allows only exactly one configured). Verify: set OPENAI_API_KEY only, set OPENAI_BASE_URL only, set neither, set both — confirm the accepted/rejected combinations match the new equivalence semantics. Check callers of BuildAgent for behavior shifts.",
+      "target_files": ["go/internal/node/node.go"],
+      "context_files": ["go/internal/node/node.go:174-185"],
+      "priority": "high"
+    },
+    {
+      "name": "Error path divergence for callers",
+      "review_prompt": "Callers of BuildAgent that previously handled the 'neither key configured' case (no error, fallback behavior) will now receive a hard error at boot. Conversely, callers that previously errored on exactly-one-configured will now succeed. Identify all callers of BuildAgent in the codebase, trace their error handling, and verify the semantic shift: run the node with (a) no OpenAI keys, (b) only OPENAI_API_KEY, (c) only OPENAI_BASE_URL, (d) both, and confirm the new equivalence logic produces the expected accept/reject pattern.",
+      "target_files": ["go/internal/node/node.go"],
+      "context_files": ["go/internal/node/node.go:151-203", "go/*.go"],
+      "priority": "high"
+    }
+  ]
 }
