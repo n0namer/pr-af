@@ -2,7 +2,7 @@
 set -u
 BIN="/afhome/opencode-runtime/v1.17.15/opencode"
 [ -x "$BIN" ] || { echo "OpenCode runtime missing" >&2; exit 126; }
-export OPENCODE_CONFIG="/src/pr-af/go/opencode.pr-af.json"
+export OPENCODE_CONFIG="/src/swe-af/opencode.json"
 export OPENCODE_DISABLE_AUTOUPDATE=1
 if [ "$#" -eq 8 ] && [ "$6" = "-m" ]; then
   if [ -n "${LLM_BROKER_BASE_URL:-}" ]; then
