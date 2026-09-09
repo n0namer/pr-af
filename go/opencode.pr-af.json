@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "fcm": {
+      "name": "PR-AF broker",
+      "env": ["LLM_BROKER_API_KEY"],
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "apiKey": "{env:LLM_BROKER_API_KEY}",
+        "baseURL": "{env:LLM_BROKER_BASE_URL}"
+      },
+      "models": {"fcm": {"id": "fcm", "name": "FCM"}}
+    },
+    "compat": {
+      "name": "PR-AF OpenAI-compatible",
+      "env": ["OPENAI_API_KEY"],
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "apiKey": "{env:OPENAI_API_KEY}",
+        "baseURL": "{env:OPENAI_BASE_URL}"
+      },
+      "models": {"fcm": {"id": "fcm", "name": "fcm"}}
+    }
+  }
+}
