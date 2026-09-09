@@ -70,6 +70,9 @@ func metaContextRef(lens, context, repoPath string) string {
 
 // MetaSemanticPrompt builds the meta_semantic selector prompt.
 func MetaSemanticPrompt(context, repoPath, depth string) string {
+	if depth == "quick" {
+		return metaSemanticQuick + metaContextRef("semantic", context, repoPath)
+	}
 	return metaSemanticPre1 + depth + metaSemanticPre2 + metaContextRef("semantic", context, repoPath)
 }
 
@@ -82,6 +85,21 @@ func MetaMechanicalPrompt(context, repoPath, depth string) string {
 func MetaSystemicPrompt(context, repoPath, depth string) string {
 	return metaSystemicPre1 + depth + metaSystemicPre2 + metaContextRef("systemic", context, repoPath)
 }
+
+const metaSemanticQuick = "You are a principal engineer designing QUICK review dimensions through the SEMANTIC lens.\n\n" +
+	"## Goal\n" +
+	"Find the highest-value behavioral or logical risk in this change with bounded repository investigation.\n\n" +
+	"## Quick evidence protocol\n" +
+	"1. Read the supplied PR context and diff.\n" +
+	"2. Read the changed source file(s) named in file_paths/diff_patches. This source read is mandatory; do not rely on diff text alone.\n" +
+	"3. If needed, inspect at most ONE directly relevant caller, test, or configuration file to understand the changed behavior.\n" +
+	"4. Do NOT inspect git history, git status, branches, old commits, broad call graphs, or unrelated files. Do NOT recursively browse the repository.\n" +
+	"5. As soon as you can state the behavior difference and a concrete verification question, stop investigating and complete the output.\n\n" +
+	"## Output\n" +
+	"Return 0-2 specific semantic dimensions. Prefer one strong dimension over several weak ones.\n" +
+	"Each dimension needs name, review_prompt, and target_files. The review_prompt must name the concrete source location or behavior to verify and give an actionable verification step.\n" +
+	"If no semantic risk remains after the bounded source check, return zero dimensions. Do not pad.\n" +
+	"Always complete lens, dimensions, confidence, and rationale before stopping.\n\n"
 
 const metaSemanticPre1 = "You are a principal engineer designing review dimensions through the SEMANTIC lens.\n\n" +
 	"## Your Lens: SEMANTIC — What does this code DO differently?\n\n" +

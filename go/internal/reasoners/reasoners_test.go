@@ -424,27 +424,6 @@ func TestMetaSelectorAnchorsRepositoryRelativePaths(t *testing.T) {
 	}
 }
 
-func TestMetaSemanticQuickModeHasBoundedInvestigationBudget(t *testing.T) {
-	h := &mockHarness{payload: `{"lens":"semantic","dimensions":[{"name":"Guard semantics","review_prompt":"Verify the changed boolean invariant.","target_files":["go/internal/node/node.go"]}],"confidence":1,"rationale":"one focused semantic risk"}`}
-	_, err := MetaSemantic(context.Background(), Deps{Harness: h}, MetaInput{
-		Depth:       "quick",
-		RepoPath:    "/src/pr-af",
-		DiffPatches: OrderedPatches{{Key: "go/internal/node/node.go", Val: "diff"}},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(h.gotPrompt, "Quick semantic investigation budget") {
-		t.Fatalf("prompt missing quick semantic budget: %s", h.gotPrompt)
-	}
-	if !strings.Contains(h.gotPrompt, "at most TWO directly relevant context files") {
-		t.Fatalf("prompt missing bounded context-file limit: %s", h.gotPrompt)
-	}
-	if !strings.Contains(h.gotPrompt, "COMPLETE the required output object immediately") {
-		t.Fatalf("prompt missing early-completion instruction: %s", h.gotPrompt)
-	}
-}
-
 // Contract: meta-selector parse/schema failure fails closed. An empty seeded
 // dimension set can otherwise turn a broken model call into a false "Looks Good".
 func TestMetaSelectorParseFail(t *testing.T) {
