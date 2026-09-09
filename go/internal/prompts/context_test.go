@@ -88,6 +88,27 @@ func TestMetaSemanticQuickPromptIsBounded(t *testing.T) {
 	}
 }
 
+func TestMetaQuickPromptsAreBoundedAcrossLenses(t *testing.T) {
+	ctx := `{"file_paths":["go/internal/node/node.go"],"diff_patches":{"go/internal/node/node.go":"diff"}}`
+	cases := []struct {
+		name   string
+		prompt string
+		want   string
+		forbid string
+	}{
+		{"mechanical", MetaMechanicalPrompt(ctx, "/src/pr-af", "quick"), "at most ONE directly relevant caller/test/import site", "search for all callers"},
+		{"systemic", MetaSystemicPrompt(ctx, "/src/pr-af", "quick"), "at most ONE nearby comparison file or test", "Browse similar files in the same directories"},
+	}
+	for _, tc := range cases {
+		if !strings.Contains(tc.prompt, tc.want) {
+			t.Fatalf("quick %s prompt missing %q: %s", tc.name, tc.want, tc.prompt)
+		}
+		if strings.Contains(tc.prompt, tc.forbid) {
+			t.Fatalf("quick %s prompt contains broad investigation text %q: %s", tc.name, tc.forbid, tc.prompt)
+		}
+	}
+}
+
 func TestCoverageGolden(t *testing.T) {
 	assertGolden(t, "coverage_gate_system", CoverageGateSystem)
 	covan := anatomyFix(func(a *schemas.AnatomyResult) {

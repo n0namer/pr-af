@@ -78,11 +78,17 @@ func MetaSemanticPrompt(context, repoPath, depth string) string {
 
 // MetaMechanicalPrompt builds the meta_mechanical selector prompt.
 func MetaMechanicalPrompt(context, repoPath, depth string) string {
+	if depth == "quick" {
+		return metaMechanicalQuick + metaContextRef("mechanical", context, repoPath)
+	}
 	return metaMechanicalPre1 + depth + metaMechanicalPre2 + metaContextRef("mechanical", context, repoPath)
 }
 
 // MetaSystemicPrompt builds the meta_systemic selector prompt.
 func MetaSystemicPrompt(context, repoPath, depth string) string {
+	if depth == "quick" {
+		return metaSystemicQuick + metaContextRef("systemic", context, repoPath)
+	}
 	return metaSystemicPre1 + depth + metaSystemicPre2 + metaContextRef("systemic", context, repoPath)
 }
 
@@ -100,6 +106,30 @@ const metaSemanticQuick = "You are a principal engineer designing QUICK review d
 	"Each dimension needs name, review_prompt, and target_files. The review_prompt must name the concrete source location or behavior to verify and give an actionable verification step.\n" +
 	"If no semantic risk remains after the bounded source check, return zero dimensions. Do not pad.\n" +
 	"Always complete lens, dimensions, confidence, and rationale before stopping.\n\n"
+
+const metaMechanicalQuick = "You are a principal engineer designing QUICK review dimensions through the MECHANICAL lens.\n\n" +
+	"## Goal\n" +
+	"Find only the highest-value structural/runtime risk in this change with bounded repository investigation.\n\n" +
+	"## Quick evidence protocol\n" +
+	"1. Read the supplied PR context and changed source file(s).\n" +
+	"2. If the change affects a signature, import, framework hook, or runtime contract, inspect at most ONE directly relevant caller/test/import site.\n" +
+	"3. Do NOT enumerate all callers, recursively trace dependency graphs, inspect git history, or browse unrelated files.\n" +
+	"4. If no concrete mechanical risk is evident after the bounded source check, return zero dimensions.\n" +
+	"5. Complete lens, dimensions, confidence, and rationale immediately and stop.\n\n" +
+	"## Output\n" +
+	"Return 0-2 specific mechanical dimensions. Prefer one evidence-backed concern over broad categories.\n\n"
+
+const metaSystemicQuick = "You are a principal engineer designing QUICK review dimensions through the SYSTEMIC lens.\n\n" +
+	"## Goal\n" +
+	"Detect only clear architectural/pattern/test-alignment concerns that materially affect this focused change.\n\n" +
+	"## Quick evidence protocol\n" +
+	"1. Read the supplied PR context and changed source file(s).\n" +
+	"2. Inspect at most ONE nearby comparison file or test only when needed to verify an established pattern.\n" +
+	"3. Do NOT browse broad architecture, git history, migrations, dependency graphs, or unrelated directories.\n" +
+	"4. For a focused bugfix with no clear systemic impact, return zero dimensions instead of searching for one.\n" +
+	"5. Complete lens, dimensions, confidence, and rationale immediately and stop.\n\n" +
+	"## Output\n" +
+	"Return 0-1 specific systemic dimension. Do not pad.\n\n"
 
 const metaSemanticPre1 = "You are a principal engineer designing review dimensions through the SEMANTIC lens.\n\n" +
 	"## Your Lens: SEMANTIC — What does this code DO differently?\n\n" +
