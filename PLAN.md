@@ -147,46 +147,41 @@ Delivered:
 - durable squash SHA `1967bb2275855d8f7626806169b2a274b379c9e0` independently verified byte-identical to the accepted runtime app tree.
 
 ### B4 — Quality baseline / low-false-positive hardening
-Status: **ACTIVE — CLEAN NEGATIVE PASS / DETERMINISTIC RECALL REPAIR TEST PASS / RUNTIME SEMANTIC ACCEPTANCE EVIDENCE MISSING**.
+Status: **ACTIVE — CLEAN NEGATIVE BASELINE PASS / L2 META EXECUTION PASS / XOR ROOT ACCEPTANCE NEXT**.
 
-Current ~30-minute sub-batch (2026-09-08):
-1. anti-drift OBSERVE confirmed persistent DEV source at `/src/pr-af` is still based on runtime commit `5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f`; intended tracked dirty surface is still only `go/internal/reasoners/reviewdim.go` and `go/internal/reasoners/reasoners_test.go`, with runtime/debug artifacts kept untracked;
-2. repository-local `AGENTS.md` was reread before mutation; root `ERRORS.md` remains absent;
-3. CURRENT deterministic validation was rerun on the dirty two-file repair using the installed Go tool directly: `go test ./internal/reasoners` PASS, `go build ./...` PASS, `go vet ./...` PASS, and full `go test ./...` PASS;
-4. the running PR-AF process is PID `7675` at `/afhome/packages/pr-af/bin/pr-af`; binary mtime is `2026-09-08 15:55:27Z`, process start is `2026-09-08 15:55:49Z`, and `http://127.0.0.1:8007/health` returns `{"status":"ok"}`. Both binary build/start times are later than the 2026-09-04 dirty-source edits, so the previous claim that the loaded runtime was definitely pre-fix is stale;
-5. exact binary→source byte provenance is still not independently proven: `go version -m` confirms the maintained Go module/toolchain but carries no source VCS stamp for this local build;
-6. semantic acceptance rerun is still missing. The CURRENT AgentField Action surface returned `502 Bad Gateway`; direct control-plane invocation at `http://control-plane:8080/api/v1/execute/async/pr-af.review` reached the healthy control plane but returned `401`, and no credential was printed or bypassed;
-7. therefore no further application-code change is justified yet: the highest-value next evidence is the exact XOR recall canary against the currently loaded process, followed by the existing clean-negative canary if recall succeeds.
+Current ~30-minute BMAD batch (2026-09-09):
+1. `bmad-help` was activated from canonical `BMAD-MNNZ`; target project is `n0namer/pr-af`, phase is implementation/debugging, and `bmad-quick-dev` is the selected specialist lane. No duplicate BMAD/spec document was created; this `PLAN.md` remains the project SoT.
+2. anti-drift OBSERVE confirmed persistent DEV source is still detached at base `5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f`. Current tracked dirty candidate surface is `go/agentfield-package.yaml`, `go/internal/reasoners/meta.go`, `go/internal/reasoners/reasoners_test.go`, and `go/internal/reasoners/reviewdim.go`; runtime/debug artifacts remain untracked and excluded from canonicalization.
+3. bootstrap admission drift was repaired live in `go/agentfield-package.yaml`: provider admission now supports one of the supported provider keys instead of hard-requiring OpenRouter; `af show-requirements` parsed the manifest and `af install /src/pr-af/go --force` rebuilt the maintained package. SourceLoop capture: `vtchg_ab44785edb194ab5b9f77d773f8749be` (pending canonical write-back).
+4. previous belief that OpenCode was absent was false: canonical wrapper `/afhome/bin/opencode` and pinned runtime `/afhome/opencode-runtime/v1.17.15/opencode` both exist. The wrapper owns the workforce OpenCode config/model adaptation; PR-AF now uses the wrapper rather than the raw binary.
+5. CURRENT runtime after PR-AF-only reload is PID `99844`, health PASS, `AGENT_CALLBACK_URL=http://workforce:8007`, `PR_AF_PROVIDER=opencode`, `PR_AF_MODEL=openai/fcm`, `PR_AF_HARNESS_BIN=/afhome/bin/opencode`. Shared workforce and SWE were not restarted.
+6. the pre-fix direct `meta_mechanical` canary `exec_20260909_091208_nupf9vnh` failed before semantic output. Wrapper diagnostics showed `cwd=/src/pr-af`, while OpenCode attempted `/go/internal/node/node.go`, classified it as external-directory access, and auto-rejected the read; no schema output file was created. The wrapper also does not parse the SDK incremental-schema wording into its optional output shim, but that shim is not required when the model follows the file protocol.
+7. an independent OpenCode micro-canary using the same wrapper/model with explicit absolute repository path successfully read `/src/pr-af/go/internal/node/node.go` and wrote the requested JSON artifact. This proved the harness/model/write-tool path itself works.
+8. live `go/internal/reasoners/meta.go` now appends explicit repository-root/path-resolution guidance to all meta lenses; regression `TestMetaSelectorAnchorsRepositoryRelativePaths` was added to `go/internal/reasoners/reasoners_test.go`. Targeted `go test ./internal/reasoners` PASS, full `go test ./...` PASS, `go vet ./...` PASS, and `go build ./...` PASS.
+9. after reinstall + PR-AF-only reload, direct `meta_mechanical` `exec_20260909_092203_owfj6zuv` **SUCCEEDED** in ~184.5s and returned two evidence-grounded mechanical dimensions referencing the real repository files. This closes the immediate L2 meta execution blocker and proves repository investigation no longer fails on `/go/...` path drift.
+10. B4 reviewer recall repair in `reviewdim.go` remains unaccepted until the full root semantic gate runs. No further reviewer-logic change is justified before that evidence.
 
 ## Current blocker
 
-B4 remains **EVIDENCE_MISSING for semantic runtime acceptance**, but there is no longer an infrastructure blocker to the next test. CURRENT readback in the PR-AF DEV target confirms `AGENTFIELD_API_KEY` is present without exposing its value, and the project DX contract defines the authenticated async route `POST /api/v1/execute/async/pr-af.review`. The earlier unauthenticated `401` was therefore route misuse, not evidence that PR-AF or AgentField was unavailable. The only remaining gate is the semantic pair-test plus exact tested runtime/source identity.
+There is no longer an L2 runtime/meta blocker. The remaining B4 gate is the full production-path semantic acceptance of the current candidate runtime plus exact tested-runtime provenance. Historical `run_20260903_132450_lcvyp3i6` remains the known XOR miss; historical `run_20260903_131346_m6jyj65p` remains the clean-negative PASS baseline.
 
-Separately, repository governance is inconsistent with the fork runbook: upstream `main` remains `48ae7eeb4f07779004db6354728d49ca7b36dbc3`, while fork `main` is `f11d03bdde8cfb86ac09c19fb1a1c5d1b98d9465` because four downstream docs commits were written to `main`. Do not rewrite/reset `main` without explicit destructive authorization; component work continues on `dev`.
+Repository governance remains unchanged: do not rewrite/reset `main`; component work continues through `dev` and SourceLoop after live proof.
 
-## Active BMAD batch — B4 semantic pair-test
+## Active BMAD batch — B4 root semantic gate
 
-Method: `bmad-quick-dev` plan-code-review lane, narrowed to one user-facing goal: decide whether the current two-file recall repair is semantically acceptable. North Star Drift Check: **NARROW_SCOPE** — keep the application code frozen; repair only the missing execution prerequisite required to obtain semantic evidence.
+Method: `bmad-help` → `bmad-quick-dev`, evidence-first. North Star Drift Check: **CONTINUE** — runtime execution is now proven far enough to test product quality; do not expand into infrastructure or unrelated reviewer refactors.
 
 DoD:
-1. XOR-positive canary through authenticated `pr-af.review` returns at least one evidence-grounded finding describing the semantic regression caused by `!= -> ==` in the provider key/base invariant.
-2. Clean-negative canary through the same route returns no fabricated finding (`findings=[]` / approve-equivalent).
-3. Record both execution IDs and terminal semantic verdicts.
-4. Record exact live source/runtime identity tested; if provenance is not exact, B4 remains PARTIAL even if both semantic verdicts are correct.
-5. Decision table: XOR finding + clean no-finding => B4 semantic PASS and canonicalize only `go/internal/reasoners/reviewdim.go` + `go/internal/reasoners/reasoners_test.go`; XOR miss => proven recall defect, return to code; clean finding => proven precision regression, return to code.
-
-CURRENT pair-test evidence:
-- authenticated route is correct and live: `pr-af.review` accepted all requests and ran intake/anatomy;
-- XOR `exec_20260908_192125_u843u7go` failed before review in `meta_systemic` output recovery; one identical retry `exec_20260908_192140_emt9xdgw` failed in the same meta stage;
-- clean-negative `exec_20260908_192202_oo7pkjls` also failed before review in meta output recovery;
-- therefore neither run produced a semantic XOR/clean verdict and they must not be counted as recall/precision failures;
-- PID `7675` has `PR_AF_PROVIDER=opencode`, `PR_AF_MODEL=openai/fcm`, `PR_AF_AI_MODEL=openai/fcm`, and required OpenAI-compatible key/base variables present;
-- however `opencode` is absent from the running process PATH and no executable was found under `/usr`, `/opt`, or `/root`; PR-AF logs fail in ~0.5s with `Schema validation failed ... The output file was NOT created` before primary review;
-- this is **DESIGN_RUNTIME_DRIFT**: runtime configuration selects the OpenCode harness but the current workforce image/runtime does not contain its executable.
+1. XOR-positive through authenticated canonical `pr-af.review` returns at least one evidence-grounded finding describing the behavior change caused by `!= -> ==` in the provider key/base invariant.
+2. Clean-negative through the same runtime returns no fabricated finding (`findings=[]` / approve-equivalent).
+3. Repeat XOR on the same runtime identity returns a finding again; disagreement is treated as stability evidence, not silently averaged away.
+4. Record all execution IDs, terminal semantic verdicts, current PID/binary/source identity, and exact candidate files.
+5. Decision: XOR finding + clean no-finding + repeat XOR finding => B4 semantic PASS; XOR miss => proven recall defect; clean finding => precision regression; execution failure => runtime defect and quality remains EVIDENCE_MISSING.
+6. Canonicalize only evidence-backed tracked candidate files via SourceLoop after PASS; exclude all runtime/debug artifacts.
 
 ## ONE next move
 
-Restore the existing OpenCode harness executable through the canonical workforce/runtime owner (no PR-AF application-code change), then rerun the same XOR and clean-negative executions through authenticated `pr-af.review`. Installing a new persistent tool ad hoc inside the shared workforce is outside the current bounded application scope; do not do it without explicit approval or the canonical runtime route.
+Run the exact XOR-positive full `pr-af.review` canary against PID `99844`. If it produces the required finding, immediately run the clean-negative canary and one XOR repeat on the same runtime identity; then make the B4 PASS/PARTIAL decision and SourceLoop/write-back only the proven candidate delta.
 
 ## Write-back rule
 
