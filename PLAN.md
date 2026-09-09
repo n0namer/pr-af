@@ -50,7 +50,7 @@ Hard rules:
 |---|---|---|
 | Durable application source | accepted live app tree was canonicalized to `dev`; squash commit `1967bb2275855d8f7626806169b2a274b379c9e0` was independently compared against accepted runtime commit `5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f`: `go/` diff empty, 9/9 intended blobs MATCH | PASS |
 | Maintained package | `/afhome/installed.yaml`: `pr-af.source_path=/src/pr-af/go`, status running, port `8007` | PASS |
-| Latest loaded process after coverage-policy reload | PID `105691` from `/src/pr-af/go` | PASS |
+| Latest loaded process | PID `129010`, health PASS, installed from `/src/pr-af/go`; callback `http://workforce:8007`; `PR_AF_PROVIDER=opencode`, `PR_AF_MODEL=openai/fcm`, `PR_AF_HARNESS_BIN=/src/pr-af/go/scripts/opencode-stream.sh` | PASS / CURRENT |
 | Generic provider contract | live PR-AF uses `OPENAI_BASE_URL=http://fcm-dev-internal:19280/v1`, `OPENAI_API_KEY` present, `PR_AF_MODEL=openai/fcm`, `PR_AF_AI_MODEL=openai/fcm` | PASS |
 | Broker transport | direct `/chat/completions` probe with current broker key returned HTTP 200; tool-calling probe returned valid tool calls | PASS |
 | OpenCode transport | external `openai/<model>` is internally adapted to dedicated `compat/<model>` via `@ai-sdk/openai-compatible`; runtime process trees proved `compat/fcm → fcm/fcm`; no unintended OpenRouter provider selection | PASS |
