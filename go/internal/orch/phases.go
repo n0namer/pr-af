@@ -434,6 +434,9 @@ func (o *Orchestrator) runParallelReview(
 	feedback string,
 	stats *dimensionParseStats,
 ) error {
+	if o.budgetOrTimeoutExhausted("review") {
+		return budgetExhaustedErr(o.budgetExhaustedMessage("review"))
+	}
 	maxDepth := o.config.Budget.MaxReviewDepth
 	sem := semaphore.NewWeighted(int64(o.config.Budget.MaxConcurrentReviewers))
 	g, gctx := errgroup.WithContext(ctx)
@@ -446,7 +449,7 @@ func (o *Orchestrator) runParallelReview(
 	runDim = func(dim schemas.ReviewDimension, depth int) {
 		g.Go(func() error {
 			if o.budgetOrTimeoutExhausted("review") {
-				return nil
+				return budgetExhaustedErr(o.budgetExhaustedMessage("review"))
 			}
 			if err := sem.Acquire(gctx, 1); err != nil {
 				return err

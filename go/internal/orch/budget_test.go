@@ -90,6 +90,24 @@ func TestPhaseCapNeverTripsWithZeroCost(t *testing.T) {
 	}
 }
 
+func TestPrimaryReviewBudgetExhaustionFailsClosed(t *testing.T) {
+	cfg, cfgErr := config.ReviewConfig{}.FromInput(schemas.ReviewInput{})
+	if cfgErr != nil {
+		t.Fatalf("FromInput: %v", cfgErr)
+	}
+	o := New(Deps{App: &fakeApp{}}, schemas.ReviewInput{}, cfg)
+	o.clock = func() time.Duration { return 4000 * time.Second }
+	plan := schemas.ReviewPlan{Dimensions: []schemas.ReviewDimension{{ID: "d1", Name: "D1", ReviewPrompt: "check", TargetFiles: []string{"a.go"}}}}
+	err := o.runParallelReview(context.Background(), plan, make(chan []schemas.ReviewFinding, 1), 0, "", &dimensionParseStats{})
+	if err == nil {
+		t.Fatal("expected budget exhaustion to fail primary review closed")
+	}
+	want := "Review time budget exceeded (max_duration_seconds=3600) before review"
+	if err.Error() != want {
+		t.Fatalf("error = %q, want %q", err.Error(), want)
+	}
+}
+
 func TestRunNoSourceIsBadInput(t *testing.T) {
 	o := New(Deps{App: &fakeApp{}}, schemas.ReviewInput{Depth: "auto"}, config.DefaultReviewConfig())
 	_, err := o.Run(context.Background())
