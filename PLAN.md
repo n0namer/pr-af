@@ -172,29 +172,32 @@ Current ~30-minute BMAD batch (2026-09-09):
 20. The smallest next repair was to make quick mode cheap across **all three** meta lenses. `MetaMechanicalPrompt` and `MetaSystemicPrompt` received bounded quick-specific protocols matching the proven semantic quick lane; targeted prompt/reasoner tests, full `go test ./...`, `go vet ./...`, and `go build ./...` all PASS. PR-AF was reinstalled and restarted only as PID `129010`, health PASS, with `AGENT_CALLBACK_URL=http://workforce:8007`, `PR_AF_PROVIDER=opencode`, `PR_AF_MODEL=openai/fcm`, and the PR-AF streaming wrapper.
 21. Real-repository acceptance was moved to clean `cloudsecurity-af` using committed range `985234b5ed79323afd2a8a7b5d975c893ac4394f..6c1133cae087f98887c6dfbe7b8248e414b5c02f`. The diff changes only `tests/test_config.py`: `QUICK == 10 -> 20` and adds `STANDARD == 30`; `DEPTH_PROVER_CAPS` is already `{QUICK:20, STANDARD:30, THOROUGH:10000}` in both base and head source, so this is a stale-test correction with no production-code change.
 22. Root review `exec_20260909_144921_135drh7t` **SUCCEEDED** end-to-end. It returned 7 findings, 0 blocking; 3 `important`, 4 `suggestion`. Every final finding had `diff_line=null`. Findings were factually grounded but PR-irrelevant/pre-existing: missing Python CI, historical stale-test drift, undocumented cap rationale, and an unrelated hard-coded fallback in `reasoners/phases.py`. No finding identified a defect introduced by the selected test-only change. This is a **PRECISION / CHANGE-CAUSALITY GAP**, not a runtime failure.
-23. The next 80/20 repair is restricted to PR relevance: reviewers must report only defects introduced, exposed, or materially worsened by the diff (including required omitted companion changes); an independently verified real repository issue that existed unchanged before the PR is still a false positive for PR review. Evidence verification will run for all findings, not only important/critical, and `verified=false` findings will be dropped before adversary/scoring. No broad scoring retune or timeout increase is justified.
+23. The 80/20 repair was restricted to PR relevance and implemented live in `/src/pr-af/go`: `review_dimension` now has a mandatory PR change-causality gate; evidence verification now applies the same causality rule, runs for **all** findings including suggestions, and drops `verified=false` findings before adversary/scoring. Regression `TestEvidenceVerificationCoversSuggestionsAndDropsUnverified` was added; targeted prompt/orchestrator tests PASS, full `go test ./...` PASS, `go vet ./...` PASS, and `go build ./...` PASS. The exact candidate was reinstalled and PR-AF-only restarted; last independently verified runtime was PID `144062`, health PASS.
+24. Exact `cloudsecurity-af` replay `exec_20260909_153550_ifztqssl` was launched on that causality-repair runtime using the unchanged committed range `985234b5ed79323afd2a8a7b5d975c893ac4394f..6c1133cae087f98887c6dfbe7b8248e414b5c02f`. Its terminal verdict is **EVIDENCE_MISSING** until fresh readback succeeds; do not infer PASS from launch/progress alone.
+25. A separate real-repo smoke `exec_20260909_160214_zy5qk18m` was launched against immutable committed SWE-AF range `f9aec2111d084ab0204d5612f2ea00a562226ac7..0c64fe7cc4fc216f4d32d0b855015509750eb4aa` with `dry_run=true`, specifically because SWE-AF is being edited concurrently elsewhere. At the last successful read it had completed intake and anatomy and entered the three meta lenses. Because touched historical `README.md` content differs from current SWE-AF HEAD, this run is diagnostic smoke only, not a strict acceptance benchmark.
+26. Fresh runtime/execution readback is currently blocked by intermittent VPS Portwing transport failures and AgentField Bad-Gateway responses. This is an **OBSERVABILITY / CONTROL-PLANE READBACK BLOCKER**, not evidence that PR-AF itself failed. No further application mutation is justified until the two in-flight execution states and loaded PID are reread.
 
 ## Current blocker
 
-Runtime execution is now proven on a real external repository. The active North-Star blocker is low false-positive quality: PR-AF can verify real repository issues yet fail to distinguish **repo truth** from **PR-caused review relevance**. B4 is therefore a precision-hardening task. The immediate gate is a change-causality verifier/reviewer patch followed by the exact same `cloudsecurity-af` commit replay; target result is successful root execution with no unrelated/pre-existing findings.
+The product blocker remains low false-positive quality / change causality, but the immediate execution blocker is fresh evidence readback. The causality repair is deterministically validated and was loaded into the last verified runtime, yet the decisive `cloudsecurity-af` replay result has not been observed terminally. First restore CURRENT readback; then: `cloudsecurity` zero unrelated findings => precision gate PASS and immediately run XOR-positive on the same verified runtime; surviving unrelated findings => inspect the exact causal escape and patch only that layer; execution failure => classify runtime failure before any quality conclusion.
 
-Repository governance remains unchanged: do not rewrite/reset `main`; component work continues through `dev` and SourceLoop after live proof.
+Repository governance remains unchanged: do not rewrite/reset `main`; component work continues through `dev` and SourceLoop only after live proof. SWE-AF is concurrently edited elsewhere, so PR-AF must review immutable committed ranges and must not mutate or benchmark against its moving dirty working tree.
 
-## Active BMAD batch — B4 root semantic gate
+## Active BMAD batch — B4 precision + recall gate
 
-Method: `bmad-help` → `bmad-quick-dev`, evidence-first. North Star Drift Check: **CONTINUE** — runtime execution is now proven far enough to test product quality; do not expand into infrastructure or unrelated reviewer refactors.
+Method: `bmad-help` → `bmad-quick-dev`, evidence-first. North Star Drift Check: **CONTINUE** — no new infrastructure, no broad scoring retune, no unrelated reviewer refactor.
 
 DoD:
-1. XOR-positive through authenticated canonical `pr-af.review` returns at least one evidence-grounded finding describing the behavior change caused by `!= -> ==` in the provider key/base invariant.
-2. Clean-negative through the same runtime returns no fabricated finding (`findings=[]` / approve-equivalent).
-3. Repeat XOR on the same runtime identity returns a finding again; disagreement is treated as stability evidence, not silently averaged away.
-4. Record all execution IDs, terminal semantic verdicts, current PID/binary/source identity, and exact candidate files.
-5. Decision: XOR finding + clean no-finding + repeat XOR finding => B4 semantic PASS; XOR miss => proven recall defect; clean finding => precision regression; execution failure => runtime defect and quality remains EVIDENCE_MISSING.
-6. Canonicalize only evidence-backed tracked candidate files via SourceLoop after PASS; exclude all runtime/debug artifacts.
+1. Exact `cloudsecurity-af` negative replay through the causality-repair runtime terminates successfully with no unrelated/pre-existing findings.
+2. XOR-positive through the **same verified runtime identity** returns at least one evidence-grounded finding describing the behavior change caused by `!= -> ==` in the provider key/base invariant.
+3. Repeat XOR on that same runtime returns a finding again; disagreement is treated as stability evidence.
+4. Record execution IDs, terminal verdicts, loaded PID/binary/source identity, and exact candidate files; classify SWE-AF smoke separately from acceptance because its working tree is moving concurrently.
+5. Decision: clean zero-FP + XOR finding + repeat XOR finding => B4 semantic/precision PASS; clean unrelated finding => precision defect; XOR miss => recall defect; execution failure/readback loss => quality remains EVIDENCE_MISSING.
+6. Canonicalize only evidence-backed tracked candidate files via SourceLoop after PASS; exclude runtime/debug artifacts and the rejected minimal OpenCode config candidate.
 
 ## ONE next move
 
-Run the exact XOR-positive full `pr-af.review` canary against PID `99844`. If it produces the required finding, immediately run the clean-negative canary and one XOR repeat on the same runtime identity; then make the B4 PASS/PARTIAL decision and SourceLoop/write-back only the proven candidate delta.
+Restore fresh CURRENT readback and inspect terminal payloads for `exec_20260909_153550_ifztqssl` and `exec_20260909_160214_zy5qk18m`. If the exact `cloudsecurity-af` replay has zero unrelated findings, immediately run the XOR-positive canary on that same verified PR-AF runtime; otherwise inspect only the surviving causality escape before changing code.
 
 ## Write-back rule
 
