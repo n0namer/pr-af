@@ -188,21 +188,21 @@ The active blocker is **QUICK_BUDGET_OVERSPEND + BUDGET_FALSE_SAFE acceptance**.
 
 Repository governance remains unchanged: do not rewrite/reset `main`; component work continues through `dev` and SourceLoop only after live proof. SWE-AF is concurrently edited elsewhere, so PR-AF must review immutable committed ranges and must not mutate or benchmark against its moving dirty working tree.
 
-## Active BMAD batch — B4 precision + recall gate
+## Active BMAD batch — B4 fail-closed budget + quick-latency gate
 
-Method: `bmad-help` → `bmad-quick-dev`, evidence-first. North Star Drift Check: **CONTINUE** — no new infrastructure, no broad scoring retune, no unrelated reviewer refactor.
+Method: `bmad-help` → `bmad-quick-dev`, evidence-first. North Star Drift Check: **CONTINUE** — preserve the proven provider/callback/streaming path; do not add infrastructure, raise the timeout as a workaround, retune scoring broadly, or touch SWE-AF's moving working tree.
 
 DoD:
-1. Exact `cloudsecurity-af` negative replay through the causality-repair runtime terminates successfully with no unrelated/pre-existing findings.
-2. XOR-positive through the **same verified runtime identity** returns at least one evidence-grounded finding describing the behavior change caused by `!= -> ==` in the provider key/base invariant.
-3. Repeat XOR on that same runtime returns a finding again; disagreement is treated as stability evidence.
-4. Record execution IDs, terminal verdicts, loaded PID/binary/source identity, and exact candidate files; classify SWE-AF smoke separately from acceptance because its working tree is moving concurrently.
-5. Decision: clean zero-FP + XOR finding + repeat XOR finding => B4 semantic/precision PASS; clean unrelated finding => precision defect; XOR miss => recall defect; execution failure/readback loss => quality remains EVIDENCE_MISSING.
-6. Canonicalize only evidence-backed tracked candidate files via SourceLoop after PASS; exclude runtime/debug artifacts and the rejected minimal OpenCode config candidate.
+1. Re-observe live `/src/pr-af`, current PR-AF PID/config/health, and any active OpenCode/AgentField work before mutation; if transport is unavailable, remain read-only and record the blocker.
+2. Load the already-tested fail-closed budget candidate from `/src/pr-af/go`; PR-AF-only reload must preserve callback/provider/model/harness identity and health.
+3. Prove budget exhaustion can no longer synthesize approve-equivalent output: exact CloudSecurity replay must either reach substantive primary review or terminate explicitly as budget exhausted.
+4. Reduce `depth=quick` pre-review cost with the smallest evidence-backed change so the same clean real-repo benchmark reaches substantive primary review within its declared budget; do not remove semantic/mechanical/systemic coverage without an explicit quality tradeoff decision.
+5. After a trustworthy clean negative (`0` unrelated findings with primary review actually executed), run XOR-positive and one repeat on the same verified runtime; require an evidence-grounded XOR/XNOR finding both times.
+6. Canonicalize only the proven tracked delta via SourceLoop after runtime acceptance; exclude runtime/debug artifacts and rejected OpenCode config candidates.
 
 ## ONE next move
 
-Restore fresh CURRENT readback and inspect terminal payloads for `exec_20260909_153550_ifztqssl` and `exec_20260909_160214_zy5qk18m`. If the exact `cloudsecurity-af` replay has zero unrelated findings, immediately run the XOR-positive canary on that same verified PR-AF runtime; otherwise inspect only the surviving causality escape before changing code.
+Recover CURRENT container/control-plane readback, then load the deterministic fail-closed budget patch before any further quality canary. The immediate acceptance question is binary: after declared budget is exhausted, PR-AF must fail explicitly instead of returning `Looks Good`; only then optimize quick-mode latency and resume precision/recall scoring.
 
 ## Write-back rule
 
