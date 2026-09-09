@@ -281,29 +281,39 @@ func (o *Orchestrator) runMetaSelectors(
 	results := make([]schemas.MetaDimensionResult, len(jobs))
 	diffPatches := reasoners.OrderedPatches(o.filePatches())
 
-	g, gctx := errgroup.WithContext(ctx)
-	for i := range jobs {
-		i := i
-		g.Go(func() error {
-			raw, err := jobs[i].fn(gctx, o.reasonerDeps(), reasoners.MetaInput{
-				Intake:           intake,
-				Anatomy:          anatomy,
-				Depth:            reviewDepth,
-				RepoPath:         strp(o.input.RepoPath),
-				DiffPatches:      diffPatches,
-				ReviewerFeedback: reviewerFeedback,
-			})
-			if err != nil {
-				return err
-			}
-			o.incInvocations(1)
-			o.registerCost("meta_selectors", raw)
-			results[i] = mapToStruct[schemas.MetaDimensionResult](raw)
-			return nil
+	runJob := func(jobCtx context.Context, i int) error {
+		raw, err := jobs[i].fn(jobCtx, o.reasonerDeps(), reasoners.MetaInput{
+			Intake:           intake,
+			Anatomy:          anatomy,
+			Depth:            reviewDepth,
+			RepoPath:         strp(o.input.RepoPath),
+			DiffPatches:      diffPatches,
+			ReviewerFeedback: reviewerFeedback,
 		})
+		if err != nil {
+			return err
+		}
+		o.incInvocations(1)
+		o.registerCost("meta_selectors", raw)
+		results[i] = mapToStruct[schemas.MetaDimensionResult](raw)
+		return nil
 	}
-	if err := g.Wait(); err != nil {
-		return schemas.ReviewPlan{}, err
+
+	if strings.EqualFold(strings.TrimSpace(reviewDepth), "quick") {
+		for i := range jobs {
+			if err := runJob(ctx, i); err != nil {
+				return schemas.ReviewPlan{}, err
+			}
+		}
+	} else {
+		g, gctx := errgroup.WithContext(ctx)
+		for i := range jobs {
+			i := i
+			g.Go(func() error { return runJob(gctx, i) })
+		}
+		if err := g.Wait(); err != nil {
+			return schemas.ReviewPlan{}, err
+		}
 	}
 
 	o.metaSelectorResults = results

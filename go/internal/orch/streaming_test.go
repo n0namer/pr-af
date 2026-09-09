@@ -79,6 +79,44 @@ func metaResultMap(lens, dimID, target string) map[string]any {
 	}
 }
 
+func TestMetaSelectorQuickModeSerializesLenses(t *testing.T) {
+	o := New(Deps{App: &fakeApp{}}, schemas.ReviewInput{}, config.DefaultReviewConfig())
+	var mu sync.Mutex
+	active, maxActive := 0, 0
+	call := func(lens, id, target string) func(context.Context, reasoners.Deps, reasoners.MetaInput) (map[string]any, error) {
+		return func(context.Context, reasoners.Deps, reasoners.MetaInput) (map[string]any, error) {
+			mu.Lock()
+			active++
+			if active > maxActive {
+				maxActive = active
+			}
+			mu.Unlock()
+			time.Sleep(10 * time.Millisecond)
+			mu.Lock()
+			active--
+			mu.Unlock()
+			return metaResultMap(lens, id, target), nil
+		}
+	}
+	o.rfns.metaSemantic = call("semantic", "a", "fa")
+	o.rfns.metaMechanical = call("mechanical", "b", "fb")
+	o.rfns.metaSystemic = call("systemic", "c", "fc")
+
+	plan, err := o.runMetaSelectors(context.Background(), schemas.IntakeResult{}, schemas.AnatomyResult{}, "quick", "")
+	if err != nil {
+		t.Fatalf("runMetaSelectors: %v", err)
+	}
+	if maxActive != 1 {
+		t.Fatalf("quick meta max concurrency = %d, want 1", maxActive)
+	}
+	want := []string{"semantic_a", "mechanical_b", "systemic_c"}
+	for i, w := range want {
+		if i >= len(plan.Dimensions) || plan.Dimensions[i].ID != w {
+			t.Fatalf("dimension[%d] = %#v, want %q", i, plan.Dimensions, w)
+		}
+	}
+}
+
 func TestMetaSelectorOrderPreservedUnderAdversarialScheduling(t *testing.T) {
 	for iter := 0; iter < 8; iter++ {
 		o := New(Deps{App: &fakeApp{}}, schemas.ReviewInput{}, config.DefaultReviewConfig())
