@@ -407,7 +407,7 @@ func TestMetaSelectorsForceLens(t *testing.T) {
 }
 
 func TestMetaSelectorAnchorsRepositoryRelativePaths(t *testing.T) {
-	h := &mockHarness{payload: `{"lens":"mechanical","dimensions":[],"confidence":1,"rationale":"none"}`}
+	h := &mockHarness{payload: `{"lens":"mechanical","dimensions":[{"name":"Path check","review_prompt":"Read the changed file from the repository root.","target_files":["go/internal/node/node.go"]}],"confidence":1,"rationale":"one changed file"}`}
 	_, err := MetaMechanical(context.Background(), Deps{Harness: h}, MetaInput{
 		Depth:       "quick",
 		RepoPath:    "/src/pr-af",
