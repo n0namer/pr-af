@@ -206,7 +206,7 @@ DoD:
 
 ## ONE next move
 
-Recover CURRENT container/control-plane readback, then load the deterministic fail-closed budget patch before any further quality canary. The immediate acceptance question is binary: after declared budget is exhausted, PR-AF must fail explicitly instead of returning `Looks Good`; only then optimize quick-mode latency and resume precision/recall scoring.
+Recover CURRENT container/control-plane readback, then load the deterministic fail-closed budget patch before any further quality canary. The immediate acceptance question is binary: after declared budget is exhausted, PR-AF must fail explicitly instead of returning `Looks Good`; only then optimize quick-mode latency and resume precision/recall scoring. If Docker/Portwing target readback remains unavailable for another bounded batch, the next recovery operation is a restart of the **shared `agentfield-dev-workforce` container only** (same container, no rebuild/redeploy, no VPS reboot); because that would interrupt concurrent SWE-AF/unrelated work, it requires explicit user approval and must not be inferred from a generic `continue` instruction.
 
 ## Write-back rule
 
