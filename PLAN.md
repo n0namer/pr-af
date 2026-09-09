@@ -147,7 +147,7 @@ Delivered:
 - durable squash SHA `1967bb2275855d8f7626806169b2a274b379c9e0` independently verified byte-identical to the accepted runtime app tree.
 
 ### B4 — Quality baseline / low-false-positive hardening
-Status: **ACTIVE — REAL-REPO E2E PASS / PRECISION-CAUSALITY REPAIR LOADED / ACCEPTANCE REPLAY READBACK PENDING**.
+Status: **ACTIVE — REAL-REPO E2E PASS / CHANGE-CAUSALITY REPAIR DETERMINISTIC PASS / BUDGET FALSE-SAFE REPAIR DETERMINISTIC PASS / RUNTIME ACCEPTANCE NEXT**.
 
 Current ~30-minute BMAD batch (2026-09-09):
 1. `bmad-help` was activated from canonical `BMAD-MNNZ`; target project is `n0namer/pr-af`, phase is implementation/debugging, and `bmad-quick-dev` is the selected specialist lane. No duplicate BMAD/spec document was created; this `PLAN.md` remains the project SoT.
