@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Agent-Field/pr-af/go/internal/config"
+	"github.com/Agent-Field/pr-af/go/internal/evidence"
 	"github.com/Agent-Field/pr-af/go/internal/reasoners"
 	"github.com/Agent-Field/pr-af/go/internal/schemas"
 )
@@ -126,5 +127,37 @@ func TestMixedAndCleanDimensionsExposeOnlyActualDegradation(t *testing.T) {
 				t.Fatalf("clean body unexpectedly degraded: %s", result.Review.Body)
 			}
 		})
+	}
+}
+
+func TestEvidenceVerificationCoversSuggestionsAndDropsUnverified(t *testing.T) {
+	o := degradationOrchestrator(t)
+	findings := []schemas.ReviewFinding{
+		{Title: "Pre-existing repo issue", Severity: "suggestion", Confidence: 0.9, FilePath: "a.go"},
+		{Title: "PR-caused issue", Severity: "suggestion", Confidence: 0.7, FilePath: "b.go"},
+	}
+	ev := map[string]evidence.EvidencePackage{
+		"Pre-existing repo issue": {FindingTitle: "Pre-existing repo issue", DiffHunk: ""},
+		"PR-caused issue":         {FindingTitle: "PR-caused issue", DiffHunk: "@@ -1 +1 @@"},
+	}
+	o.rfns.evidenceVerify = func(_ context.Context, _ reasoners.Deps, in reasoners.EvidenceVerifierInput) (map[string]any, error) {
+		if len(in.Findings) != 2 {
+			t.Fatalf("verifier findings = %d, want 2 including suggestions", len(in.Findings))
+		}
+		return map[string]any{"verified_findings": []any{
+			map[string]any{"title": "Pre-existing repo issue", "verified": false, "revised_severity": "important", "revised_confidence": 0.99},
+			map[string]any{"title": "PR-caused issue", "verified": true, "revised_severity": "important", "revised_confidence": 0.8},
+		}}, nil
+	}
+
+	got, _, err := o.runEvidenceVerification(context.Background(), findings, ev)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0].Title != "PR-caused issue" {
+		t.Fatalf("verified findings = %#v, want only PR-caused issue", got)
+	}
+	if got[0].Severity != "important" || got[0].Confidence != 0.8 {
+		t.Fatalf("verified finding calibration = severity %q confidence %.2f", got[0].Severity, got[0].Confidence)
 	}
 }

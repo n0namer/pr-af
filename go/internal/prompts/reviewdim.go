@@ -114,6 +114,14 @@ func ReviewDimensionPrompt(o ReviewDimensionOptions) string {
 		}
 	}
 
+	causalitySection := ""
+	if len(o.DiffPatches) > 0 {
+		causalitySection = "## PR Change-Causality Gate (MANDATORY)\n\n" +
+			"Report an issue only when the PR diff introduces the defect, makes an existing defect newly reachable or materially worse, or requires a missing companion change in unchanged code to keep the changed behavior correct.\n" +
+			"A repository issue that already existed in the base and is unaffected by this diff is NOT a finding for this PR, even when it is real and well evidenced.\n" +
+			"For findings outside changed lines/files, your evidence MUST name the exact changed hunk and trace how that hunk causes or exposes the failure. If you cannot make that causal link, DROP the finding.\n\n"
+	}
+
 	primedSection := ""
 	if o.PrimedCode != "" {
 		if o.RepoPath != "" && utf8.RuneCountInString(o.PrimedCode) > 6000 {
@@ -164,6 +172,7 @@ func ReviewDimensionPrompt(o ReviewDimensionOptions) string {
 		intakeSection +
 		dimensionsSection +
 		diffSection +
+		causalitySection +
 		primedSection +
 		reviewDimStatic +
 		spawnInstruction

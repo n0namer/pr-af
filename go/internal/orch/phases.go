@@ -657,7 +657,7 @@ func (o *Orchestrator) runReviewLayer(
 	}
 
 	verificationMap := map[string]map[string]any{}
-	if hasHighPriority(allFindings) && len(evidenceMap) > 0 && !o.budgetOrTimeoutExhausted("adversary") {
+	if len(allFindings) > 0 && len(evidenceMap) > 0 && !o.budgetOrTimeoutExhausted("adversary") {
 		updated, vmap, err := o.runEvidenceVerification(ctx, allFindings, evidenceMap)
 		if err != nil {
 			return nil, nil, err
@@ -697,18 +697,13 @@ func (o *Orchestrator) runEvidenceVerification(
 	findings []schemas.ReviewFinding,
 	evidenceMap map[string]evidence.EvidencePackage,
 ) ([]schemas.ReviewFinding, map[string]map[string]any, error) {
-	var highPriority []schemas.ReviewFinding
-	for _, f := range findings {
-		if f.Severity == "critical" || f.Severity == "important" {
-			highPriority = append(highPriority, f)
-		}
-	}
-	if len(highPriority) == 0 {
+	candidates := append([]schemas.ReviewFinding(nil), findings...)
+	if len(candidates) == 0 {
 		return findings, map[string]map[string]any{}, nil
 	}
 
 	evPackages := map[string]map[string]any{}
-	for _, f := range highPriority {
+	for _, f := range candidates {
 		if pkg, ok := evidenceMap[f.Title]; ok {
 			evPackages[f.Title] = evidencePackToMap(pkg)
 		}
@@ -719,7 +714,7 @@ func (o *Orchestrator) runEvidenceVerification(
 	}
 
 	raw, err := o.rfns.evidenceVerify(ctx, o.reasonerDeps(), reasoners.EvidenceVerifierInput{
-		Findings:         highPriority,
+		Findings:         candidates,
 		EvidencePackages: evArg,
 		PrContext:        o.buildPRContextString(),
 		RepoPath:         strp(o.input.RepoPath),
@@ -748,14 +743,6 @@ func (o *Orchestrator) runEvidenceVerification(
 		}
 		verified := getBoolDefault(vf, "verified", true)
 		if !verified {
-			nf := f
-			conf := getFloatOr(vf, "revised_confidence", 0.3)
-			if conf < 0.1 {
-				conf = 0.1
-			}
-			nf.Confidence = conf
-			nf.Severity = schemas.NormalizeSeverity(vf["revised_severity"], schemas.DefaultSeverity)
-			updated = append(updated, nf)
 			continue
 		}
 		nf := f
