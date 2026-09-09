@@ -60,6 +60,12 @@ Other dimensions being reviewed in parallel: Semantic: error paths, Mechanical: 
 +b
 ```
 
+## PR Change-Causality Gate (MANDATORY)
+
+Report an issue only when the PR diff introduces the defect, makes an existing defect newly reachable or materially worse, or requires a missing companion change in unchanged code to keep the changed behavior correct.
+A repository issue that already existed in the base and is unaffected by this diff is NOT a finding for this PR, even when it is real and well evidenced.
+For findings outside changed lines/files, your evidence MUST name the exact changed hunk and trace how that hunk causes or exposes the failure. If you cannot make that causal link, DROP the finding.
+
 ## Target-File Code (pre-read for you)
 
 The current content of your target files (with line numbers) and import context is below — this is the code you would otherwise navigate to. Reason over it directly; open additional files only if it is insufficient.
