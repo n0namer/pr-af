@@ -70,6 +70,15 @@ func runMetaLens(
 	}
 
 	prompt := buildPrompt(metaContext, in.RepoPath, in.Depth)
+	if root := strings.TrimRight(strings.TrimSpace(in.RepoPath), "/"); root != "" {
+		prompt += fmt.Sprintf(`
+
+## Repository path resolution
+Repository root: %s
+All source paths in the review context and diff patches are repository-relative unless already absolute.
+When using file tools, resolve relative paths under the repository root. For example, go/... means %s/go/..., never /go/....
+`, root, root)
+	}
 	parsed, hres, err := harnessx.Run[metaDraftResult](ctx, deps.Harness, prompt, harness.Options{
 		Cwd:              in.RepoPath,
 		SchemaMode:       "incremental",

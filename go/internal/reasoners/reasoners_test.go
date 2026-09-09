@@ -406,6 +406,24 @@ func TestMetaSelectorsForceLens(t *testing.T) {
 	}
 }
 
+func TestMetaSelectorAnchorsRepositoryRelativePaths(t *testing.T) {
+	h := &mockHarness{payload: `{"lens":"mechanical","dimensions":[],"confidence":1,"rationale":"none"}`}
+	_, err := MetaMechanical(context.Background(), Deps{Harness: h}, MetaInput{
+		Depth:       "quick",
+		RepoPath:    "/src/pr-af",
+		DiffPatches: OrderedPatches{{Key: "go/internal/node/node.go", Val: "diff"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(h.gotPrompt, "Repository root: /src/pr-af") {
+		t.Fatalf("prompt missing repository root guidance: %s", h.gotPrompt)
+	}
+	if !strings.Contains(h.gotPrompt, "go/... means /src/pr-af/go/..., never /go/...") {
+		t.Fatalf("prompt missing repository-relative path example: %s", h.gotPrompt)
+	}
+}
+
 // Contract: meta-selector parse/schema failure fails closed. An empty seeded
 // dimension set can otherwise turn a broken model call into a false "Looks Good".
 func TestMetaSelectorParseFail(t *testing.T) {
