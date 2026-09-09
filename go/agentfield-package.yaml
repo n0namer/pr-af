@@ -23,12 +23,29 @@ agent_node:
   default_port: 8007
 
 user_environment:
-  required:
-    - name: OPENROUTER_API_KEY
-      description: LLM provider key (OpenRouter)
-      type: secret
-      scope: global
+  require_one_of:
+    - id: llm_provider
+      description: an LLM provider key
+      options:
+        - name: OPENROUTER_API_KEY
+          description: OpenRouter API key
+          type: secret
+          scope: global
+        - name: ANTHROPIC_API_KEY
+          description: Anthropic API key
+          type: secret
+          scope: global
+        - name: OPENAI_API_KEY
+          description: OpenAI-compatible API key (including Gonka)
+          type: secret
+          scope: global
+        - name: GOOGLE_API_KEY
+          description: Google/Gemini API key
+          type: secret
+          scope: global
   optional:
+    - name: OPENAI_BASE_URL
+      description: OpenAI-compatible endpoint; required together with OPENAI_API_KEY by the Go runtime
     # Optional, not required: every use is lazy and degrades cleanly without it
     # (github.NewClient falls back to unauthenticated API calls, clones only
     # inject the token when set) — public repos review fine anonymously. The
