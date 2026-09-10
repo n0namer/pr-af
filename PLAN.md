@@ -228,9 +228,19 @@ Pareto risk map from CURRENT SWE delta (`git diff --numstat`):
 
 First gold-set target is deliberately small: 4–6 natural SWE cases concentrated on R1–R4, 6–8 seeded defects spanning fail-open/error propagation/approval/worktree/provider boundaries, and 3–4 clean negatives; reserve at least 3 cases as holdout. Each case records expected behavior and evidence before PR-AF output is inspected. Scorecard: critical/major recall, precision, change-causality, severity calibration, evidence completeness/actionability, stability on repeat, wall time/model-call cost, and instrument validity (substantive reviewer actually executed). Python-suite absence remains a validation blocker only; do not install dependencies merely to construct this benchmark.
 
+### Oracle-first R1/R2 slice — frozen before PR-AF output
+
+Independent source/test inspection establishes these expectations before the reviewer sees the cases:
+1. **R1 watchdog recovery clean behavior:** a no-progress watchdog may be recovered only when assistant text or the captured output file contains an exact-schema-valid result; generic transport errors remain fail-closed. Existing tests directly cover both paths.
+2. **R1 candidate natural concern:** when `Harness` returns no Go error but `Result.Parsed == nil`, `executeStructured` still returns a default-seeded `T` with `err=nil` even for `FailureSchema` and `FailureAPIError`; tests explicitly codify that fallback. Callers outside planning do not generally inspect `harness.Result.IsError`. This is a review-worthy fail-open hypothesis, not yet a confirmed product defect: PR-AF should identify the control-flow consequence and evidence it before severity is accepted.
+3. **R2 retry clean behavior:** coder failure after an actual git-worktree change retries in-place with explicit validation/repair feedback; unchanged-worktree provider failure remains unrecoverable. Existing git-backed test covers the changed-worktree path.
+4. **R2 reviewer invariant:** reviewer execution errors now propagate instead of synthesizing `approved=true`; a blocking but successfully returned review is fed back as `fix` and may recover on the next bounded iteration. Existing tests cover blocking-review recovery; reviewer-error propagation is source-evident and should be checked by PR-AF rather than assumed from compile success.
+
+This slice intentionally contains both likely-clean behavior and one falsifiable natural defect hypothesis so precision and recall can be judged together. Oracle labels remain `expected-clean`, `candidate-defect`, or `needs-runtime-proof` until adjudication; do not count a candidate hypothesis as a true positive merely because PR-AF repeats it.
+
 ## ONE next move
 
-Build the **oracle-first R1/R2 natural-case slice** from the current SWE worktree without mutating it: inspect structured-output recovery and coding-loop changes plus their tests/contracts, record 2–3 concrete expected invariants and any independently evidenced natural defects/clean behaviors, then run PR-AF against only that bounded slice and adjudicate every finding. Do not retune PR-AF from those outputs until at least one natural slice plus seeded/clean controls establishes recall and precision evidence.
+Run PR-AF against the frozen **R1 structured-output slice first**, using only the current SWE diff for `go/internal/harnessx/run.go`, `schema.go`, and `harnessx_test.go`; require substantive reviewer execution and capture every finding. Adjudicate against the frozen oracle and exact source/tests. Then do R2 separately so one large 46-file review cannot hide which capability succeeded or failed. No PR-AF retune between R1 and R2.
 
 ## Write-back rule
 
