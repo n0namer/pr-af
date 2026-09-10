@@ -274,6 +274,13 @@ func (o *Orchestrator) runMetaSelectors(
 	}
 	jobs := make([]lensJob, 0, len(enabledLenses))
 	for _, lens := range enabledLenses {
+		// Quick mode uses one bounded fused planner call. The semantic entrypoint's
+		// quick prompt explicitly covers semantic, mechanical, and systemic risk,
+		// removing two expensive harness/model round trips while standard/deep
+		// retain the independent three-lens fan-out.
+		if strings.EqualFold(strings.TrimSpace(reviewDepth), "quick") && lens != "semantic" {
+			continue
+		}
 		if fn, ok := lensFns[lens]; ok {
 			jobs = append(jobs, lensJob{lens: lens, fn: fn})
 		}

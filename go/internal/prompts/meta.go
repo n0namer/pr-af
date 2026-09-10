@@ -92,19 +92,24 @@ func MetaSystemicPrompt(context, repoPath, depth string) string {
 	return metaSystemicPre1 + depth + metaSystemicPre2 + metaContextRef("systemic", context, repoPath)
 }
 
-const metaSemanticQuick = "You are a principal engineer designing QUICK review dimensions through the SEMANTIC lens.\n\n" +
+const metaSemanticQuick = "You are a principal engineer designing QUICK FUSED review dimensions across SEMANTIC, MECHANICAL, and SYSTEMIC risk.\n\n" +
 	"## Goal\n" +
-	"Find the highest-value behavioral or logical risk in this change with bounded repository investigation.\n\n" +
+	"Use ONE bounded repository investigation to produce the smallest review plan that still covers the highest-value behavioral, structural/runtime, and architectural/test-alignment risks in this change.\n\n" +
+	"## Coverage contract\n" +
+	"- SEMANTIC: behavior, logic, API/error/data-flow changes.\n" +
+	"- MECHANICAL: signatures, imports, framework hooks, runtime/type contracts.\n" +
+	"- SYSTEMIC: architectural/pattern consistency and test alignment that materially affect this focused change.\n" +
+	"Do not create one dimension per lens mechanically; combine overlapping concerns into one stronger verification task.\n\n" +
 	"## Quick evidence protocol\n" +
 	"1. Read the supplied PR context and diff.\n" +
 	"2. Read the changed source file(s) named in file_paths/diff_patches. This source read is mandatory; do not rely on diff text alone.\n" +
-	"3. If needed, inspect at most ONE directly relevant caller, test, or configuration file to understand the changed behavior.\n" +
+	"3. If needed, inspect at most ONE directly relevant caller, test, configuration, or nearby comparison file to resolve the highest-value uncertainty.\n" +
 	"4. Do NOT inspect git history, git status, branches, old commits, broad call graphs, or unrelated files. Do NOT recursively browse the repository.\n" +
-	"5. As soon as you can state the behavior difference and a concrete verification question, stop investigating and complete the output.\n\n" +
+	"5. As soon as you can state the behavior difference and concrete verification tasks, stop investigating and complete the output.\n\n" +
 	"## Output\n" +
-	"Return 0-2 specific semantic dimensions. Prefer one strong dimension over several weak ones.\n" +
+	"Return 1-3 specific fused dimensions total. Prefer one strong dimension over several weak ones.\n" +
 	"Each dimension needs name, review_prompt, and target_files. The review_prompt must name the concrete source location or behavior to verify and give an actionable verification step.\n" +
-	"If no semantic risk remains after the bounded source check, return zero dimensions. Do not pad.\n" +
+	"Always return at least one focused verification dimension so substantive primary review executes even when the change initially appears safe.\n" +
 	"Always complete lens, dimensions, confidence, and rationale before stopping.\n\n"
 
 const metaMechanicalQuick = "You are a principal engineer designing QUICK review dimensions through the MECHANICAL lens.\n\n" +

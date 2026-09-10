@@ -79,41 +79,31 @@ func metaResultMap(lens, dimID, target string) map[string]any {
 	}
 }
 
-func TestMetaSelectorQuickModeSerializesLenses(t *testing.T) {
+func TestMetaSelectorQuickModeUsesSingleFusedPlannerCall(t *testing.T) {
 	o := New(Deps{App: &fakeApp{}}, schemas.ReviewInput{}, config.DefaultReviewConfig())
-	var mu sync.Mutex
-	active, maxActive := 0, 0
-	call := func(lens, id, target string) func(context.Context, reasoners.Deps, reasoners.MetaInput) (map[string]any, error) {
-		return func(context.Context, reasoners.Deps, reasoners.MetaInput) (map[string]any, error) {
-			mu.Lock()
-			active++
-			if active > maxActive {
-				maxActive = active
-			}
-			mu.Unlock()
-			time.Sleep(10 * time.Millisecond)
-			mu.Lock()
-			active--
-			mu.Unlock()
-			return metaResultMap(lens, id, target), nil
-		}
+	calls := map[string]int{}
+	o.rfns.metaSemantic = func(context.Context, reasoners.Deps, reasoners.MetaInput) (map[string]any, error) {
+		calls["semantic"]++
+		return metaResultMap("semantic", "fused", "fa"), nil
 	}
-	o.rfns.metaSemantic = call("semantic", "a", "fa")
-	o.rfns.metaMechanical = call("mechanical", "b", "fb")
-	o.rfns.metaSystemic = call("systemic", "c", "fc")
+	o.rfns.metaMechanical = func(context.Context, reasoners.Deps, reasoners.MetaInput) (map[string]any, error) {
+		calls["mechanical"]++
+		return metaResultMap("mechanical", "b", "fb"), nil
+	}
+	o.rfns.metaSystemic = func(context.Context, reasoners.Deps, reasoners.MetaInput) (map[string]any, error) {
+		calls["systemic"]++
+		return metaResultMap("systemic", "c", "fc"), nil
+	}
 
 	plan, err := o.runMetaSelectors(context.Background(), schemas.IntakeResult{}, schemas.AnatomyResult{}, "quick", "")
 	if err != nil {
 		t.Fatalf("runMetaSelectors: %v", err)
 	}
-	if maxActive != 1 {
-		t.Fatalf("quick meta max concurrency = %d, want 1", maxActive)
+	if calls["semantic"] != 1 || calls["mechanical"] != 0 || calls["systemic"] != 0 {
+		t.Fatalf("quick meta calls = %#v, want exactly one fused semantic entrypoint", calls)
 	}
-	want := []string{"semantic_a", "mechanical_b", "systemic_c"}
-	for i, w := range want {
-		if i >= len(plan.Dimensions) || plan.Dimensions[i].ID != w {
-			t.Fatalf("dimension[%d] = %#v, want %q", i, plan.Dimensions, w)
-		}
+	if len(plan.Dimensions) != 1 || plan.Dimensions[0].ID != "semantic_fused" {
+		t.Fatalf("quick fused plan = %#v, want semantic_fused", plan.Dimensions)
 	}
 }
 

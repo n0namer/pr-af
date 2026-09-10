@@ -71,20 +71,24 @@ func TestMetaGolden(t *testing.T) {
 	assertGolden(t, "meta_semantic_C", MetaSemanticPrompt(ctxC, fixtureRepo, "deep"))
 }
 
-func TestMetaSemanticQuickPromptIsBounded(t *testing.T) {
+func TestMetaSemanticQuickPromptIsFusedAndBounded(t *testing.T) {
 	prompt := MetaSemanticPrompt(`{"file_paths":["go/internal/node/node.go"],"diff_patches":{"go/internal/node/node.go":"diff"}}`, "/src/pr-af", "quick")
 	for _, want := range []string{
-		"QUICK review dimensions",
-		"at most ONE directly relevant caller, test, or configuration file",
+		"QUICK FUSED review dimensions",
+		"SEMANTIC, MECHANICAL, and SYSTEMIC risk",
+		"Use ONE bounded repository investigation",
+		"at most ONE directly relevant caller, test, configuration, or nearby comparison file",
+		"Return 1-3 specific fused dimensions total",
+		"substantive primary review executes",
 		"Do NOT inspect git history, git status, branches, old commits",
 		"Always complete lens, dimensions, confidence, and rationale before stopping",
 	} {
 		if !strings.Contains(prompt, want) {
-			t.Fatalf("quick semantic prompt missing %q: %s", want, prompt)
+			t.Fatalf("quick fused prompt missing %q: %s", want, prompt)
 		}
 	}
 	if strings.Contains(prompt, "Then find their callers. Trace how data flows through them") {
-		t.Fatalf("quick semantic prompt must not include broad recursive investigation protocol: %s", prompt)
+		t.Fatalf("quick fused prompt must not include broad recursive investigation protocol: %s", prompt)
 	}
 }
 
