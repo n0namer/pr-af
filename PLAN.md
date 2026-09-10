@@ -238,6 +238,10 @@ Independent source/test inspection establishes these expectations before the rev
 
 This slice intentionally contains both likely-clean behavior and one falsifiable natural defect hypothesis so precision and recall can be judged together. Oracle labels remain `expected-clean`, `candidate-defect`, or `needs-runtime-proof` until adjudication; do not count a candidate hypothesis as a true positive merely because PR-AF repeats it.
 
+Execution note: the first bounded R1 PR-AF probe was started through the existing exact `PR_AF_QUALITY_PROBE` route using a compact diff extracted from CURRENT SWE `harnessx/schema.go`. A direct `/src/swe-af` repo-context probe is intentionally not enabled by the current mediator allowlist. A container-first attempt to widen only that allowlist was previewed but not applied because `vps-terminal-dev` detected a coordinator/source provenance conflict; the operator app was then reconciled toward the currently loaded source SHA, which temporarily made the DEV terminal unavailable. Per verification-before-completion / systematic-debugging guidance, the in-flight R1 result is **EVIDENCE_MISSING** until the exact session/root execution can be reread; do not infer PASS/FAIL from transport state.
+
+External-skill refresh reinforces the benchmark design: current GitHub `qa-methodology` guidance recommends risk-based testing, independent verification, mutation-guided test hardening and diff-aware mutation review; current `code-review` guidance emphasizes concrete file/symbol evidence and actionable BLOCKER/MAJOR findings. These are advisory and fit the existing BMAD test-design/trace lane; they do not authorize broader review scope or mutation.
+
 ## ONE next move
 
 Run PR-AF against the frozen **R1 structured-output slice first**, using only the current SWE diff for `go/internal/harnessx/run.go`, `schema.go`, and `harnessx_test.go`; require substantive reviewer execution and capture every finding. Adjudicate against the frozen oracle and exact source/tests. Then do R2 separately so one large 46-file review cannot hide which capability succeeded or failed. No PR-AF retune between R1 and R2.
