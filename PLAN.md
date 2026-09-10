@@ -214,9 +214,23 @@ DoD:
 5. After a trustworthy clean negative (`0` unrelated findings with primary review actually executed), run XOR-positive and one repeat on the same verified runtime; require an evidence-grounded XOR/XNOR finding both times.
 6. Canonicalize only the proven tracked delta via SourceLoop after runtime acceptance; exclude runtime/debug artifacts and rejected OpenCode config candidates.
 
+## SWE-AF evidence benchmark — active BMAD test-design / trace gate
+
+Method: `bmad-testarch-test-design` for risk-first coverage and `bmad-testarch-trace` for requirement/risk → case → execution → evidence. Advisory skills already selected (`verification-before-completion`, `systematic-debugging`, runtime-behavior-probe) reinforce the same rules: establish the oracle before the system-under-test output, vary one hypothesis at a time, and accept only fresh executed evidence on the exact candidate.
+
+Pareto risk map from CURRENT SWE delta (`git diff --numstat`):
+- **R1 structured-output recovery / fail-closed behavior — P1:** `internal/harnessx/schema.go` +346/-2, `harnessx_test.go` +222, `run.go` refactor. Risk: malformed/no-progress provider output could be incorrectly promoted to a valid orchestration result or silently defaulted.
+- **R2 autonomous coding/review loop — P1:** `internal/coding/loop.go` +62/-8 plus tests, coding role +246/-50. Risk: partial coder work, reviewer failure, blocking feedback, or retry semantics can become false success, lost work, or unsafe continuation.
+- **R3 resolve/approval/HITL boundary — P1:** `orch/resolve.go` +192, HITL ~+376/-34, approval gate +44/-14. Risk: authorization or human-decision boundaries can be bypassed, stale, or interpreted fail-open.
+- **R4 issue/build/git delivery — P1/P2:** build/gitops ~+192 plus tests. Risk: wrong worktree/commit/delivery identity or destructive/unintended git behavior.
+- **R5 provider/runtime configuration — P2:** manifest/node/opencode config. Risk: current OpenAI-compatible provider identity or callback/runtime behavior drifts from intended contract.
+- **R6 prompts/advisor/planning — P2:** reviewer/verifier/advisor/planning deltas. Risk: semantic quality regression without compile failure.
+
+First gold-set target is deliberately small: 4–6 natural SWE cases concentrated on R1–R4, 6–8 seeded defects spanning fail-open/error propagation/approval/worktree/provider boundaries, and 3–4 clean negatives; reserve at least 3 cases as holdout. Each case records expected behavior and evidence before PR-AF output is inspected. Scorecard: critical/major recall, precision, change-causality, severity calibration, evidence completeness/actionability, stability on repeat, wall time/model-call cost, and instrument validity (substantive reviewer actually executed). Python-suite absence remains a validation blocker only; do not install dependencies merely to construct this benchmark.
+
 ## ONE next move
 
-Close **PR_AF_CALLBACK_TOPOLOGY_DRIFT** before touching quick-mode logic. The exact recovery route is already container-first implemented and targeted-tested in `vps-terminal-dev`: stop only `pr-af`, then start only `pr-af` with `AGENT_CALLBACK_URL=http://workforce:8007`; wrong callback/argv variants remain opaque and PROD remains outside scope. After that deployment is CURRENT-loaded, execute stop → callback-aware start → independent PID/env/health/registration readback → retry the same authenticated 1-second dry-run canary once. Only an explicit budget-exhaustion failure through the real control-plane callback boundary can close `BUDGET_FALSE_SAFE` runtime acceptance and unlock `QUICK_META_FUSION`.
+Build the **oracle-first R1/R2 natural-case slice** from the current SWE worktree without mutating it: inspect structured-output recovery and coding-loop changes plus their tests/contracts, record 2–3 concrete expected invariants and any independently evidenced natural defects/clean behaviors, then run PR-AF against only that bounded slice and adjudicate every finding. Do not retune PR-AF from those outputs until at least one natural slice plus seeded/clean controls establishes recall and precision evidence.
 
 ## Write-back rule
 
