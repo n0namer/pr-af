@@ -44,7 +44,7 @@ Hard rules:
 - additive coverage reviewer failures may stop further coverage expansion without discarding already-proven primary findings;
 - work in bounded ~30-minute BMAD batches with explicit DoD and 80/20 priority.
 
-## CURRENT evidence — 2026-09-09
+## CURRENT evidence — 2026-09-10
 
 | Claim | CURRENT evidence | Verdict |
 |---|---|---|
