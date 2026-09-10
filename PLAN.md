@@ -98,7 +98,7 @@ Observed untracked runtime/test artifacts that must not be silently canonicalize
 ## Phase DoD
 
 - [x] Canonical `PLAN.md` owns current PR-AF state.
-- [ ] Current B4 fail-closed candidate installed/running/registered on `8007` — historical B3 runtime was PASS, but CURRENT installed package is stale and PR-AF is stopped.
+- [x] Current B4 fail-closed candidate installed/running/registered on `8007` — 2026-09-10 `vps-terminal-dev` lifecycle route installed exact `/src/pr-af/go`; live/installed `phases.go` SHA-256 match, `/afhome/installed.yaml` records PID `200930` on `8007`, and fresh SDK logs show successful node registration.
 - [x] Generic OpenAI-compatible key/base/model contract proven live.
 - [x] No unintended OpenRouter provider selection.
 - [x] `@ai-sdk/openai-compatible` transport proven.
