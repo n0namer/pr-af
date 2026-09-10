@@ -211,7 +211,7 @@ DoD:
 
 ## ONE next move
 
-`vps-terminal-dev` readback has recovered, so the queued-restart wait is no longer the active step. The exact next move is to load the tested `/src/pr-af/go` package and start **only PR-AF**, then prove fail-closed behavior before any latency optimization. CURRENT `vps-terminal-dev` cannot execute that lifecycle safely: direct `af install` is blocked by enforced mediation as opaque, and `prepareChange` reports no executable generic approval adapter; no exact typed PR-AF install/start action is exposed in the current schema. Treat this as **CAPABILITY_GAP**, not permission denial or application failure. Do not bypass it with GitHub/redeploy, expanded `/afhome` write roots, or another shared-workforce restart. Resume immediately when an exact typed PR-AF package lifecycle action is available; then install → PR-AF-only start → health/identity readback → bounded fail-closed canary.
+Close **PR_AF_CALLBACK_TOPOLOGY_DRIFT** before touching quick-mode logic. The exact recovery route is already container-first implemented and targeted-tested in `vps-terminal-dev`: stop only `pr-af`, then start only `pr-af` with `AGENT_CALLBACK_URL=http://workforce:8007`; wrong callback/argv variants remain opaque and PROD remains outside scope. After that deployment is CURRENT-loaded, execute stop → callback-aware start → independent PID/env/health/registration readback → retry the same authenticated 1-second dry-run canary once. Only an explicit budget-exhaustion failure through the real control-plane callback boundary can close `BUDGET_FALSE_SAFE` runtime acceptance and unlock `QUICK_META_FUSION`.
 
 ## Write-back rule
 
