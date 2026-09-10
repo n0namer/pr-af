@@ -98,7 +98,7 @@ Observed untracked runtime/test artifacts that must not be silently canonicalize
 ## Phase DoD
 
 - [x] Canonical `PLAN.md` owns current PR-AF state.
-- [x] Maintained Go package installed/running/registered on `8007`.
+- [ ] Current B4 fail-closed candidate installed/running/registered on `8007` — historical B3 runtime was PASS, but CURRENT installed package is stale and PR-AF is stopped.
 - [x] Generic OpenAI-compatible key/base/model contract proven live.
 - [x] No unintended OpenRouter provider selection.
 - [x] `@ai-sdk/openai-compatible` transport proven.
