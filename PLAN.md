@@ -252,9 +252,15 @@ A replacement R1 probe was then accepted as `exec_20260911_064550_em3nx00s` / `r
 
 The exact execution-read route is currently blocked by `required_context_provider_degraded` even though operator mediation classifies it ALLOW; the AgentField connector independently still returns `Bad Gateway`. Therefore result retrieval is an observation-plane blocker, not application evidence. Do not retry the same read mutation blindly; use runtime logs until Required Context recovers, then perform one exact execution read.
 
+### Smarter-model full-path differential — CURRENT
+
+User reports the broker now routes to a materially stronger model. Treat this as an external experimental-variable change, not as proven PR-AF source change: the PR-AF package remains the same installed runtime (`PID 213365`, started 2026-09-10) and its public model contract is still `openai/fcm`, so any quality/latency improvement must be demonstrated by fresh execution rather than inferred from configuration. The valid R1 run `exec_20260911_064550_em3nx00s` has now completed end-to-end in `1088062 ms`; it reached fused meta and two substantive reviewers, but exceeded the nominal 900s budget, so its payload still requires adjudication before it can be quality evidence.
+
+To isolate the model change with minimal confounding, a fresh full end-to-end PR-AF review has been started on the same immutable SWE range previously used as diagnostic smoke: `f9aec2111d084ab0204d5612f2ea00a562226ac7..0c64fe7cc4fc216f4d32d0b855015509750eb4aa`, `repo_path=/src/swe-af`, `depth=quick`, correctness focus, dry-run, 900s. New execution is `exec_20260911_105118_g3dm8y4b` / `run_20260911_105118_ydjdjp96`; intake has started. Historical same-range execution `exec_20260909_160214_zy5qk18m` succeeded with `findings=[]`, giving a useful before/after reference while holding repository range and PR-AF review mode fixed. This is the current 80/20 experiment for the reported model upgrade.
+
 ## ONE next move
 
-Let the already-running **valid R1** execution `exec_20260911_064550_em3nx00s` finish; then obtain one exact execution payload, verify anatomy parsed the real hunk/non-zero additions, and adjudicate findings against the frozen R1 oracle (including the caller-check precision trap and concurrent output-capture hypothesis). Only after that verdict run R2 separately with the frozen dirty-worktree fingerprint hypothesis. No PR-AF retune between R1 and R2.
+Let `exec_20260911_105118_g3dm8y4b` finish without retuning PR-AF; compare stage latency, completion within declared budget, parse/recovery behavior, and final findings against the historical same-range run. If the stronger model removes the previous latency/schema/reviewer-quality symptoms, simplify the remaining hardening plan around only defects that reproduce under the new model; if not, retain the corresponding product safeguards. Then return to the frozen current-SWE R1/R2 oracle cases for recall/precision measurement.
 
 ## Write-back rule
 
