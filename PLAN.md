@@ -244,9 +244,17 @@ Execution note: first R1 execution `exec_20260910_231158_qo0763rm` / `run_202609
 
 External-skill refresh reinforces the benchmark design: current GitHub `qa-methodology` guidance recommends risk-based testing, independent verification, mutation-guided test hardening and diff-aware mutation review; current `code-review` guidance emphasizes concrete file/symbol evidence and actionable BLOCKER/MAJOR findings. These are advisory and fit the existing BMAD test-design/trace lane; they do not authorize broader review scope or mutation.
 
+### R1 valid-fixture retry — CURRENT
+
+The previously duplicated malformed-fixture repeat `exec_20260911_000834_3canmv8r` / `run_20260911_000834_ncr30vho` is now terminal: root completed in `1095058 ms` after intake `31.2s`, anatomy `83.2s`, fused meta `349.5s`, two substantive reviewers `306.2s` / `352.9s`, and evidence verifier `272.5s`. Because its fixture was already classified malformed, this remains instrument/stability evidence only; its `0/2 blocking` merge-gate log must not enter quality scoring.
+
+A replacement R1 probe was then accepted as `exec_20260911_064550_em3nx00s` / `run_20260911_064550_cecq1hub` using `repo_path=/src/swe-af` and a syntactically valid numeric unified hunk over the real `go/internal/harnessx/schema.go` path with five explicit additions. This run is CURRENT in progress from intake. Per the frozen gate, no finding will be scored unless returned execution/anatomy evidence first confirms the intended hunk was parsed as non-zero additions. No PR-AF retune occurred between malformed and valid-fixture runs.
+
+The exact execution-read route is currently blocked by `required_context_provider_degraded` even though operator mediation classifies it ALLOW; the AgentField connector independently still returns `Bad Gateway`. Therefore result retrieval is an observation-plane blocker, not application evidence. Do not retry the same read mutation blindly; use runtime logs until Required Context recovers, then perform one exact execution read.
+
 ## ONE next move
 
-Wait for the already-running invalid-fixture repeat to terminate, then rerun **R1 with a syntactically valid unified hunk** (real file path, numeric `@@ -old,+new @@` range, non-zero additions) plus `repo_path=/src/swe-af`; first assert from returned anatomy that the intended hunk/additions were actually parsed before scoring any finding. Only then adjudicate against the frozen R1 oracle. After one valid R1 case, run R2 separately with the frozen dirty-worktree hypothesis. No PR-AF retune between R1 and R2; invalid-fixture runs remain instrument evidence only.
+Let the already-running **valid R1** execution `exec_20260911_064550_em3nx00s` finish; then obtain one exact execution payload, verify anatomy parsed the real hunk/non-zero additions, and adjudicate findings against the frozen R1 oracle (including the caller-check precision trap and concurrent output-capture hypothesis). Only after that verdict run R2 separately with the frozen dirty-worktree fingerprint hypothesis. No PR-AF retune between R1 and R2.
 
 ## Write-back rule
 
