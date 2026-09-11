@@ -322,9 +322,15 @@ BMAD quick-dev/test-architecture localization converted the P1 trace signal into
 
 A regression `TestConsistencyVerifyDoesNotFanOutAfterExtractionExhaustsBudget` freezes the exact boundary: extraction begins at 899s, the next clock read is 901s under a 900s cap, and expected verifier calls are zero with the budget-exhausted flag set. Targeted budget/orchestrator tests PASS; full `go test ./...`, `go vet ./...`, and `go build ./...` PASS using the runtime's explicit `/usr/local/go/bin/go` because the target PATH still omits Go. This is deterministic source proof only: the candidate has not yet been reloaded/runtime-proven or canonicalized, and P1 semantic payload adjudication remains blocked by the execution observation plane.
 
+## B4 runtime-load attempt — 2026-09-11
+
+Fresh pre-mutation observation preserved the dirty `/src/pr-af` worktree and confirmed the shared workforce is no longer resource-saturated (`433848320 / 2147483648` bytes at readback), so the earlier near-limit state is stale. The requested PR-AF-only reload was **not executed**: current DEV target capabilities expose no registered reload route; generic `prepareChange` for `agentfield-dev-workforce:pr-af` fails closed with `approval_capability_gap` and explicitly requires an exact typed capability; AgentField capability discovery independently returns `Bad Gateway`. A broad `/afhome` grep also timed out and was not retried. No shared-workforce restart, package reinstall, SWE-AF mutation, or host action was attempted.
+
+This is a lifecycle/control-plane capability blocker, not evidence against the tested budget guard. The candidate remains source/test PASS but runtime-unproven. Anti-drift rule: do not bypass mediation with arbitrary process commands and do not broaden to a workforce restart merely to obtain PR-AF runtime proof.
+
 ## ONE next move
 
-Load/reload only PR-AF from the exact tested `/src/pr-af/go` candidate through the existing scoped lifecycle route, independently read back loaded source/runtime identity, then run a bounded runtime budget canary that crosses the deadline during obligation extraction and prove that no `verify_obligation` fan-out is scheduled afterward. Do not launch replacement P1 semantic cases or alter SWE-AF. After runtime proof, canonicalize only this verified tracked delta; semantic P1 adjudication remains a separate pending quality gate once exact payload readback recovers.
+Recover the exact scoped PR-AF lifecycle capability/AgentField capability plane, then load/reload only PR-AF from the already-tested `/src/pr-af/go` candidate and independently read back loaded identity before any canary. Once that route is callable, run the single obligation-deadline runtime canary and prove zero post-deadline `verify_obligation` starts; only then canonicalize this delta. Do not launch replacement P1 semantic cases, alter SWE-AF, or restart the shared workforce.
 
 ## Write-back rule
 
