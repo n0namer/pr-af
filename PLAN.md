@@ -286,9 +286,19 @@ Interim semantic score for this six-finding case: **1 confirmed product defect /
 
 Minimal intended-function trace matrix for B4: intake/anatomy → fixture-validity evidence; planning/coverage → risk-to-dimension coverage; primary review → critical/major recall + change causality; evidence verification/adversary → unsupported-claim rejection; severity/merge gate → severity/blocking calibration; failure paths → fail-closed correctness; repeat execution → stability; whole DAG → wall time/model calls/budget compliance. A case cannot score semantic quality when its fixture is malformed or substantive review did not execute.
 
+### Paired gate P1 — oracle frozen before execution
+
+BMAD ATDD + test-design/trace pre-registration, with external `verification-before-completion` / falsification guidance: both cases use the same current PR-AF/model, `repo_path=/src/swe-af`, `depth=quick`, correctness focus, dry-run, 900s; no PR-AF prompt/scoring/code change is permitted between cases.
+
+**P1-positive — seeded major provider-precedence regression.** Real file: `go/internal/node/node.go`, current `resolveAIConfig`. Seeded diff changes only the guard `if strings.TrimSpace(os.Getenv("AI_BASE_URL")) == ""` to `!= ""`. Oracle: this reverses the intended precedence condition. When `AI_BASE_URL` is absent and `OPENAI_BASE_URL` is configured, the OpenAI-compatible endpoint is no longer copied into SDK config; when both are present, `OPENAI_BASE_URL` can overwrite the explicit SDK-native `AI_BASE_URL`. Expected reviewer behavior: report a change-causal provider/base-URL precedence defect with concrete evidence; severity at least important/major. APPROVE/no causally equivalent finding is a recall failure. The case is synthetic and must never be counted as a natural SWE defect.
+
+**P1-negative — comment-only clarification.** Same real file/function; diff changes only explanatory comments around the existing OPENAI_BASE_URL fallback/timeout behavior and leaves executable Go unchanged. Oracle: no correctness/security/reliability defect is introduced. Expected reviewer behavior: no blocking/important defect finding; style/nitpick may be useful but does not count as defect TP. Any claimed runtime behavior regression must be evidence-rejected as FP.
+
+Instrument gate for both: anatomy must report a real non-zero hunk/addition/deletion as appropriate and substantive primary review must execute. Malformed/zero-hunk or pre-review budget exhaustion invalidates semantic scoring rather than becoming PASS/FAIL.
+
 ## ONE next move
 
-Run the highest-information paired gate on the unchanged current PR-AF/model: **one pre-registered seeded critical/major semantic defect and one pre-registered clean negative**, both with valid real-file diffs and exact oracles recorded before execution. No prompt/scoring/code retune between them. Then compute strict defect recall/precision + useful-review precision + causality/severity/budget evidence and choose the next 30-minute batch from the measured bottleneck.
+Execute P1-positive and P1-negative without retuning; retrieve exact terminal payloads, validate instrument gates, adjudicate against the frozen oracle, update recall/precision/causality/severity/budget evidence, then choose the next bottleneck from measured results.
 
 ## Write-back rule
 
