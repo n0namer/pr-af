@@ -335,9 +335,19 @@ Fresh CURRENT evidence narrows the blocker. `vps-terminal-dev` itself is healthy
 
 Repository engineering rules were reread before any mutation; root `ERRORS.md` remains absent. Generic shell/process discovery was attempted only as read-only diagnosis and was blocked by enforced mediation as opaque input, so it was not bypassed or retried. No lifecycle mutation was executed. The exact PR-AF-only reload remains unavailable through CURRENT typed capabilities; therefore the already-tested obligation budget candidate is still runtime-unproven.
 
+## Upstream reconciliation checkpoint — 2026-09-11
+
+BMAD routing was refreshed from canonical `BMAD-MNNZ`: `bmad-quick-dev` requires an explicit change target, current-state observation, narrow plan, and North-Star drift check; `bmad-testarch-trace` supplies the requirement/risk → source delta → verification trace. Existing advisory verification/systematic-debugging guidance is retained: classify deltas before changing behavior and require fresh proof on the exact candidate.
+
+CURRENT Git evidence corrects the sync assumption. Upstream `Agent-Field/pr-af:main` is `48ae7eeb4f07779004db6354728d49ca7b36dbc3`. Fork `n0namer/pr-af:main` is `f11d03bdde8cfb86ac09c19fb1a1c5d1b98d9465`, with upstream `48ae7e...` in its ancestry and four fork-only governance commits on top; representative application blob `go/internal/config/ai.go` is byte-identical between upstream main and fork main. Canonical `dev` also contains `48ae7e...` in its ancestry and then a long fork-only development stream, including accepted application delta `1967bb2275855d8f7626806169b2a274b379c9e0`. Therefore there is no upstream application commit currently missing from fork `main` or `dev`; the real reconciliation target is fork-only `dev`/live work against the already-current upstream baseline.
+
+Persistent DEV `/src/pr-af` remains detached at `5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f` with the previously observed tracked and untracked dirty candidate surface. No reset, merge, checkout, runtime reload, or AgentField mutation was performed during this source-reconciliation batch. The temporary GitHub branch `sync-upstream-main-20260911` is only a sync probe and is not a release/source owner. GitHub's fork `merge-upstream` endpoint is not callable with the current credential, but this is non-blocking because the upstream head is already an ancestor of the fork branches.
+
+Reconciliation classification to produce before code mutation: `ALREADY_UPSTREAM` (drop from candidate), `FORK_QUALITY_DELTA` (preserve), `CONFLICTING_OR_SUPERSEDED` (adjudicate against intended-function contract), and `RUNTIME_ONLY_UNCANONICALIZED` (preserve separately until verified/canonicalized). Acceptance requires a file-level matrix for product code/tests/config, not a blind branch merge; governance-only history is not product behavior.
+
 ## ONE next move
 
-Repair/recover the registered AgentField control-plane discovery/typed lifecycle route at its topology owner (`universal-solver` / operator control plane) without restarting the shared workforce, then immediately load/reload only PR-AF from `/src/pr-af/go`, read back loaded identity, and run the single obligation-deadline canary. Do not alter PR-AF review logic, SWE-AF, models/prompts, or broaden to a workforce/host restart while this capability mismatch is unresolved.
+Build the file-level reconciliation matrix from upstream `48ae7e...` to the accepted fork application baseline `1967bb...`, then layer the current tracked `/src/pr-af` dirty delta on top. For every changed product file classify `ALREADY_UPSTREAM / FORK_QUALITY_DELTA / CONFLICTING_OR_SUPERSEDED / RUNTIME_ONLY_UNCANONICALIZED`, tie preserved deltas to the intended-function quality contract and tests, and only then form a clean sync candidate. Do not touch AgentField lifecycle, SWE-AF, or reset the dirty DEV tree while constructing this matrix.
 
 ## Write-back rule
 
