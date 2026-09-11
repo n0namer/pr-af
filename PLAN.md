@@ -1,11 +1,12 @@
 # PR-AF — Canonical Plan and Current State
 
-> Status: ACTIVE — B4 SWE-AF EVIDENCE BENCHMARK / VALID-R1 NEXT
+> Status: ACTIVE — B4 UPSTREAM RECONCILIATION / QUALITY DELTA PRESERVATION
 > Updated: 2026-09-11
 > Canonical owner: `n0namer/pr-af:dev/PLAN.md`
 > Active development branch: `dev`
-> Runtime topology owner: `n0namer/universal-solver`
-> BMAD lane: `bmad-help` → `bmad-quick-dev` / implementation-debugging
+> Upstream baseline: `Agent-Field/pr-af:main@48ae7eeb4f07779004db6354728d49ca7b36dbc3`
+> Fork main: `n0namer/pr-af:main@f11d03bdde8cfb86ac09c19fb1a1c5d1b98d9465`
+> BMAD lane: `bmad-help` → `bmad-quick-dev` + `bmad-testarch-trace` / source reconciliation
 
 ## Authority and anti-drift
 
