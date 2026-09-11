@@ -300,9 +300,13 @@ Instrument gate for both: anatomy must report a real non-zero hunk/addition/dele
 
 Oracle was durably frozen before either request. Both exact `PR_AF_QUALITY_PROBE` calls were then accepted on the unchanged runtime/model: P1-positive = `exec_20260911_113554_k12hbon5` / `run_20260911_113554_zidaoioo`; P1-negative = `exec_20260911_113602_l8ulrowi` / `run_20260911_113602_ef61mls9`. Runtime log readback proves both reached root `review` and started `intake_phase`. They were launched ~8s apart for wall-clock efficiency; therefore semantic recall/precision remain comparable to the frozen oracle, but their wall-time/model-latency measurements are **contention-confounded** and must not be used as clean latency benchmarks. AgentField connector observation is currently `Bad Gateway`; managed terminal sessions and runtime logs remain the authoritative CURRENT observation path.
 
+### P1 observation checkpoint
+
+The two client sessions both ended after the control-plane synchronous 90s HTTP timeout (`execution timeout after 1m30s`), but post-state inspection proves this was **client/control-plane timeout, not execution termination**. Runtime logs show P1-positive intake completed in `58776 ms`, anatomy completed in `259391 ms`, and fused `meta_semantic` started; P1-negative intake completed in `73807 ms` and anatomy started. No terminal root event exists yet in the latest log read. Current workforce resource readback is near its 2 GiB memory limit (`2140483584 / 2147483648` bytes) with `417` PIDs; because both benchmark cases overlap, do not attribute their current stage latency to the model or PR-AF alone. Do not retry or launch duplicates while these executions are still live.
+
 ## ONE next move
 
-Let both already-running P1 executions reach terminal state; retrieve their exact synchronous payloads (or one exact execution read if the observation route recovers), validate anatomy + substantive-review instrument gates, adjudicate against the frozen oracle, and write strict recall/precision/causality/severity evidence before any PR-AF retune.
+Observe only the two existing P1 runs until terminal root events appear; then retrieve exact results, validate non-zero anatomy/substantive-review gates and adjudicate against the frozen oracle. No new benchmark execution, PR-AF retune, or latency conclusion while this contention-confounded pair is active.
 
 ## Write-back rule
 
