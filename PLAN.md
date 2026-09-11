@@ -328,9 +328,15 @@ Fresh pre-mutation observation preserved the dirty `/src/pr-af` worktree and con
 
 This is a lifecycle/control-plane capability blocker, not evidence against the tested budget guard. The candidate remains source/test PASS but runtime-unproven. Anti-drift rule: do not bypass mediation with arbitrary process commands and do not broaden to a workforce restart merely to obtain PR-AF runtime proof.
 
+## B4 lifecycle recovery observation — 2026-09-11
+
+Fresh CURRENT evidence narrows the blocker. `vps-terminal-dev` itself is healthy (`0.7.0-dev.1`), startup selftest PASS, mediation/validator/scenario planes READY, and the target registry contains both `agentfield-dev-workforce` and `agentfield-control-plane`. The workforce remains observable and unsaturated (`422309888 / 2147483648` bytes; 464 PIDs). AgentField gateway health now returns `healthy/gateway=ok`, but capability/node discovery still returns `Bad Gateway`. The separately registered `agentfield-control-plane` target resolves to zero permitted containers, and the controlled container inventory returns no AgentField containers at all, while `agentfield-dev-workforce` stats/logs remain readable. This is a registry/control-plane discovery mismatch, not proof that PR-AF or the workforce is down.
+
+Repository engineering rules were reread before any mutation; root `ERRORS.md` remains absent. Generic shell/process discovery was attempted only as read-only diagnosis and was blocked by enforced mediation as opaque input, so it was not bypassed or retried. No lifecycle mutation was executed. The exact PR-AF-only reload remains unavailable through CURRENT typed capabilities; therefore the already-tested obligation budget candidate is still runtime-unproven.
+
 ## ONE next move
 
-Recover the exact scoped PR-AF lifecycle capability/AgentField capability plane, then load/reload only PR-AF from the already-tested `/src/pr-af/go` candidate and independently read back loaded identity before any canary. Once that route is callable, run the single obligation-deadline runtime canary and prove zero post-deadline `verify_obligation` starts; only then canonicalize this delta. Do not launch replacement P1 semantic cases, alter SWE-AF, or restart the shared workforce.
+Repair/recover the registered AgentField control-plane discovery/typed lifecycle route at its topology owner (`universal-solver` / operator control plane) without restarting the shared workforce, then immediately load/reload only PR-AF from `/src/pr-af/go`, read back loaded identity, and run the single obligation-deadline canary. Do not alter PR-AF review logic, SWE-AF, models/prompts, or broaden to a workforce/host restart while this capability mismatch is unresolved.
 
 ## Write-back rule
 
