@@ -20,17 +20,17 @@
 
 ## North Star
 
-PR-AF is an AgentField PR-review node for deep evidence-grounded review: convert a pull request into a task-specific review plan, run focused reviewers, ground findings in code evidence, challenge weak claims, synthesize compound risks, close coverage gaps, verify obligations, and return useful review output with strong recall and low false positives.
+PR-AF performs **all of its intended PR-review functions as well as practical, with quality demonstrated by repeatable measurements rather than anecdote**. The intended functional contract is the product behavior documented by canonical PR-AF source/docs: ingest a PR/diff and repository context; understand change anatomy and blast radius; build a task-specific review plan; run focused semantic/mechanical/systemic review; ground findings in exact code evidence and change causality; challenge weak claims; synthesize compound risks; close meaningful coverage gaps; verify obligations; apply severity/blocking policy; and return actionable review output without false-safe approval when required review evidence is missing.
 
-Engineering North Star for this workstream: a verified-running maintained Go PR-AF in permanent DEV that works through a generic OpenAI-compatible broker env contract, tolerates weak/non-JSON models without false-safe output, completes a real semantic review DAG, and has exact source/runtime provenance.
+SWE-AF, CloudSecurity, any individual defect class, the current broker/model, latency optimization, runtime plumbing, and a particular benchmark are **means/evidence**, not the North Star. Engineering reliability requirements (fail-closed behavior, provider compatibility, provenance, runtime stability) are enabling constraints and measurable quality dimensions, not substitutes for product purpose.
 
 ## Current phase
 
-Phase: semantic acceptance/durability complete → quality baseline/hardening.
+Phase: **B4 measurable intended-function quality baseline / model differential**.
 
 ### Phase Goal
 
-Establish a small evidence-backed quality baseline on the durable Go PR-AF: preserve the proven generic OpenAI-compatible broker path, fail-closed primary review semantics, and weak-model recovery while measuring review usefulness across a bounded mix of buggy and clean real-file fixtures before any broader optimization.
+Turn the intended PR-AF functional contract into a compact evidence-backed scorecard and establish a trustworthy baseline on the exact current runtime/model using representative natural, seeded, clean-negative, and holdout cases. Preserve already-proven runtime/fail-closed safeguards, but optimize or remove complexity only when fresh evidence shows it is unnecessary for the intended-function quality gates.
 
 ## Operating contract
 
