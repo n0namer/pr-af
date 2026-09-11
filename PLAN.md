@@ -27,11 +27,11 @@ SWE-AF, CloudSecurity, any individual defect class, the current broker/model, la
 
 ## Current phase
 
-Phase: **B4 measurable intended-function quality baseline / model differential**.
+Phase: **B4 upstream reconciliation / quality-delta preservation**.
 
 ### Phase Goal
 
-Turn the intended PR-AF functional contract into a compact evidence-backed scorecard and establish a trustworthy baseline on the exact current runtime/model using representative natural, seeded, clean-negative, and holdout cases. Preserve already-proven runtime/fail-closed safeguards, but optimize or remove complexity only when fresh evidence shows it is unnecessary for the intended-function quality gates.
+Reconcile the current upstream PR-AF baseline with the fork's `main`, canonical `dev`, and the persistent DEV source before further product tuning. Preserve every fork-only change that still contributes to the measurable intended-function contract; drop or supersede only changes proven redundant, obsolete, or replaced upstream. The reconciliation gate is source-first and must not depend on AgentField lifecycle work, which is out of scope for this chat.
 
 ## Operating contract
 
