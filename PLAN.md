@@ -270,9 +270,25 @@ Fresh exact execution read for `exec_20260911_105118_g3dm8y4b` / `run_20260911_1
 
 The stronger model therefore materially changes observed review usefulness on this case, but **does not solve latency**: total root duration was `1163001 ms` (~19.4 min) despite a 900s requested budget; intake `63.3s`, anatomy `324.3s`, fused meta `224.5s`, two substantive reviewers `366.3s` / `534.8s`. Treat model quality and execution-budget correctness as separate dimensions. Do not remove fail-closed/budget/runtime safeguards because semantic quality improved.
 
+### Stronger-model finding adjudication — batch 1
+
+BMAD trace/adjudication rule: a reviewer claim is TP only when exact changed-source + consumer/test evidence supports both behavior and PR causality; plausible missing tests without demonstrated bad behavior are tracked as coverage observations, not product defects.
+
+Current adjudication from immutable SWE head `0c64fe7cc4fc216f4d32d0b855015509750eb4aa`:
+- **f_important / Go Dockerfile default-chain drift — TP, important justified.** `go/Dockerfile` bakes `ENV HARNESS_MODEL=openrouter/deepseek/deepseek-v4-flash-0731` and explicitly says it MUST match Go `openRouterAutoDefaultModel`. Go tests assert the same literal in runtime resolution but do not couple the Dockerfile value to the Go constant. A one-sided Go default update can therefore leave the image stale while source tests still pass. This is change-causal to the model-default contract touched by the reviewed commit and actionable.
+- **planning-path HARNESS_MODEL gating — coverage observation, not yet TP.** Go source/tests already prove HARNESS_MODEL is scoped to `open_code`, including `ResolveRuntimeModels` and `FastResolveModels`; Python tests cover `_default_planning_model` cascade. The review may be right that one exact planning entrypoint lacks an end-to-end contract test, but current evidence does not establish incorrect runtime behavior.
+- **codex deployer-intent contract — coverage observation, not yet TP.** Both Python and Go tests cover codex auth-mode/default selection and HARNESS_MODEL non-interference. Missing a specific `SWE_DEFAULT_MODEL` + codex combination is useful test-hardening advice, not demonstrated product failure.
+- **legacy HARNESS_MODEL behavior-change claim — needs historical-contract proof.** Current source intentionally documents HARNESS_MODEL as open_code-only; without an authoritative prior compatibility promise, classify the claim as unproven rather than a defect.
+- **Dockerfile parser robustness nitpick — valid maintainability observation, non-defect.** Exact-string parsing can make a guard brittle under formatting changes, but it fails loudly rather than permitting false-safe behavior.
+- **duplicated Go expected-model literal nitpick — valid maintainability observation, non-defect.** Duplication increases edit cost but deliberately retaining an independent literal can also strengthen drift detection; do not count toward defect recall/precision.
+
+Interim semantic score for this six-finding case: **1 confirmed product defect / 6 reported findings**; 2 useful coverage observations, 2 maintainability observations, 1 unresolved compatibility claim. Precision is therefore reported at two levels rather than gamed: strict defect precision currently `1/6`; useful-review precision currently `5/6` if coverage/maintainability observations are accepted as useful and the unresolved compatibility claim is excluded pending proof. This single case is not enough for an aggregate PR-AF precision estimate.
+
+Minimal intended-function trace matrix for B4: intake/anatomy → fixture-validity evidence; planning/coverage → risk-to-dimension coverage; primary review → critical/major recall + change causality; evidence verification/adversary → unsupported-claim rejection; severity/merge gate → severity/blocking calibration; failure paths → fail-closed correctness; repeat execution → stability; whole DAG → wall time/model calls/budget compliance. A case cannot score semantic quality when its fixture is malformed or substantive review did not execute.
+
 ## ONE next move
 
-Adjudicate the six stronger-model findings against exact SWE source/tests and record TP/FP/change-causality/severity evidence; in parallel convert the intended-function list above into the minimal trace matrix/gates in this PLAN. Use that adjudication to select the next highest-information case: one seeded critical/major defect plus one clean negative under the same current model. Do not tune PR-AF between those cases. Only after this small paired gate decide whether the next 30-minute batch is reviewer-quality repair, latency/budget enforcement, or benchmark expansion.
+Run the highest-information paired gate on the unchanged current PR-AF/model: **one pre-registered seeded critical/major semantic defect and one pre-registered clean negative**, both with valid real-file diffs and exact oracles recorded before execution. No prompt/scoring/code retune between them. Then compute strict defect recall/precision + useful-review precision + causality/severity/budget evidence and choose the next 30-minute batch from the measured bottleneck.
 
 ## Write-back rule
 
