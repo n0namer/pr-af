@@ -246,7 +246,7 @@ External-skill refresh reinforces the benchmark design: current GitHub `qa-metho
 
 ## ONE next move
 
-Run PR-AF against the frozen **R1 structured-output slice first**, using only the current SWE diff for `go/internal/harnessx/run.go`, `schema.go`, and `harnessx_test.go`; require substantive reviewer execution and capture every finding. Adjudicate against the frozen oracle and exact source/tests. Then do R2 separately so one large 46-file review cannot hide which capability succeeded or failed. No PR-AF retune between R1 and R2.
+Wait for the already-running invalid-fixture repeat to terminate, then rerun **R1 with a syntactically valid unified hunk** (real file path, numeric `@@ -old,+new @@` range, non-zero additions) plus `repo_path=/src/swe-af`; first assert from returned anatomy that the intended hunk/additions were actually parsed before scoring any finding. Only then adjudicate against the frozen R1 oracle. After one valid R1 case, run R2 separately with the frozen dirty-worktree hypothesis. No PR-AF retune between R1 and R2; invalid-fixture runs remain instrument evidence only.
 
 ## Write-back rule
 
