@@ -296,9 +296,13 @@ BMAD ATDD + test-design/trace pre-registration, with external `verification-befo
 
 Instrument gate for both: anatomy must report a real non-zero hunk/addition/deletion as appropriate and substantive primary review must execute. Malformed/zero-hunk or pre-review budget exhaustion invalidates semantic scoring rather than becoming PASS/FAIL.
 
+### P1 execution — CURRENT
+
+Oracle was durably frozen before either request. Both exact `PR_AF_QUALITY_PROBE` calls were then accepted on the unchanged runtime/model: P1-positive = `exec_20260911_113554_k12hbon5` / `run_20260911_113554_zidaoioo`; P1-negative = `exec_20260911_113602_l8ulrowi` / `run_20260911_113602_ef61mls9`. Runtime log readback proves both reached root `review` and started `intake_phase`. They were launched ~8s apart for wall-clock efficiency; therefore semantic recall/precision remain comparable to the frozen oracle, but their wall-time/model-latency measurements are **contention-confounded** and must not be used as clean latency benchmarks. AgentField connector observation is currently `Bad Gateway`; managed terminal sessions and runtime logs remain the authoritative CURRENT observation path.
+
 ## ONE next move
 
-Execute P1-positive and P1-negative without retuning; retrieve exact terminal payloads, validate instrument gates, adjudicate against the frozen oracle, update recall/precision/causality/severity/budget evidence, then choose the next bottleneck from measured results.
+Let both already-running P1 executions reach terminal state; retrieve their exact synchronous payloads (or one exact execution read if the observation route recovers), validate anatomy + substantive-review instrument gates, adjudicate against the frozen oracle, and write strict recall/precision/causality/severity evidence before any PR-AF retune.
 
 ## Write-back rule
 
