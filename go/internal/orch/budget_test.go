@@ -8,10 +8,13 @@ package orch
 import (
 	"context"
 	"errors"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/Agent-Field/pr-af/go/internal/config"
+	"github.com/Agent-Field/pr-af/go/internal/prompts"
+	"github.com/Agent-Field/pr-af/go/internal/reasoners"
 	"github.com/Agent-Field/pr-af/go/internal/schemas"
 )
 
@@ -105,6 +108,47 @@ func TestPrimaryReviewBudgetExhaustionFailsClosed(t *testing.T) {
 	want := "Review time budget exceeded (max_duration_seconds=3600) before review"
 	if err.Error() != want {
 		t.Fatalf("error = %q, want %q", err.Error(), want)
+	}
+}
+
+func TestConsistencyVerifyDoesNotFanOutAfterExtractionExhaustsBudget(t *testing.T) {
+	cfg, cfgErr := config.ReviewConfig{}.FromInput(schemas.ReviewInput{})
+	if cfgErr != nil {
+		t.Fatalf("FromInput: %v", cfgErr)
+	}
+	cfg.Budget.MaxDurationSeconds = 900
+	o := New(Deps{App: &fakeApp{}}, schemas.ReviewInput{}, cfg)
+	o.patchesCacheSet = true
+	o.patchesCache = []prompts.StrPair{{Key: "a.go", Val: "@@ -1 +1 @@\n-old\n+new"}}
+
+	var clockCalls atomic.Int32
+	o.clock = func() time.Duration {
+		if clockCalls.Add(1) == 1 {
+			return 899 * time.Second
+		}
+		return 901 * time.Second
+	}
+	var verifyCalls atomic.Int32
+	o.rfns.extractOblig = func(context.Context, reasoners.Deps, reasoners.ExtractObligationsInput) (map[string]any, error) {
+		return map[string]any{"obligations": []any{map[string]any{"title": "must hold"}}}, nil
+	}
+	o.rfns.verifyOblig = func(context.Context, reasoners.Deps, reasoners.VerifyObligationInput) (map[string]any, error) {
+		verifyCalls.Add(1)
+		return map[string]any{"holds": true}, nil
+	}
+
+	got, err := o.runConsistencyVerify(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("runConsistencyVerify: %v", err)
+	}
+	if len(got) != 0 {
+		t.Fatalf("findings = %v, want unchanged empty findings", got)
+	}
+	if got := verifyCalls.Load(); got != 0 {
+		t.Fatalf("verify_obligation calls = %d, want 0 after extraction exhausted wall-clock budget", got)
+	}
+	if !o.isBudgetExhausted() {
+		t.Fatal("budgetExhausted flag not set after post-extraction deadline check")
 	}
 }
 

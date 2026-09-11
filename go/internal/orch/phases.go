@@ -1057,6 +1057,12 @@ func (o *Orchestrator) runConsistencyVerify(ctx context.Context, allFindings []s
 	if len(obligations) == 0 {
 		return allFindings, nil
 	}
+	// Extraction can itself consume the remaining wall-clock budget. Re-check
+	// before scheduling the verifier fan-out so an expired review does not
+	// launch up to twelve additional model calls after the deadline.
+	if o.budgetOrTimeoutExhausted("review") {
+		return allFindings, nil
+	}
 
 	// Order-preserving fan-out: one verify_obligation per obligation.
 	verdicts := make([]map[string]any, len(obligations))
