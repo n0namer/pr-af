@@ -304,9 +304,15 @@ Oracle was durably frozen before either request. Both exact `PR_AF_QUALITY_PROBE
 
 The two client sessions both ended after the control-plane synchronous 90s HTTP timeout (`execution timeout after 1m30s`), but post-state inspection proves this was **client/control-plane timeout, not execution termination**. Runtime logs show P1-positive intake completed in `58776 ms`, anatomy completed in `259391 ms`, and fused `meta_semantic` started; P1-negative intake completed in `73807 ms` and anatomy started. No terminal root event exists yet in the latest log read. Current workforce resource readback is near its 2 GiB memory limit (`2140483584 / 2147483648` bytes) with `417` PIDs; because both benchmark cases overlap, do not attribute their current stage latency to the model or PR-AF alone. Do not retry or launch duplicates while these executions are still live.
 
+## P1 terminal-state update — 2026-09-11
+
+BMAD trace now closes the stale `both still live` assumption. CURRENT runtime logs prove P1-positive `exec_20260911_113554_k12hbon5` reached substantive `review_dimension` and root `review` completed in `1135635 ms` (~18.9 min). P1-negative `exec_20260911_113602_l8ulrowi` reached two substantive `review_dimension` calls, `coverage_gate`, and `extract_obligations`; the latest bounded log evidence shows `verify_obligation` started, but a terminal root event/result has not yet been independently recovered. The AgentField execution connector currently returns `Bad Gateway`; generic control-plane GET attempts are blocked by operator mediation, so exact payload adjudication is an observation-plane blocker, not evidence of application failure.
+
+Instrument-gate trace is therefore PARTIAL/PASS: substantive primary review definitely executed in both cases; P1-positive terminal completion is proven. Non-zero anatomy counts and exact semantic findings still require execution payload readback before either case can be scored against the frozen oracle. P1-positive also exceeded the requested 900s budget by ~235.6s. Record this as a **budget-compliance failure signal**, not a clean latency benchmark, because the pair overlapped and contention is a known confounder.
+
 ## ONE next move
 
-Observe only the two existing P1 runs until terminal root events appear; then retrieve exact results, validate non-zero anatomy/substantive-review gates and adjudicate against the frozen oracle. No new benchmark execution, PR-AF retune, or latency conclusion while this contention-confounded pair is active.
+Recover the exact terminal execution records/results for the two already-existing P1 IDs through the authorized typed execution-read path once the observation plane is healthy; do not launch replacements. Then validate non-zero anatomy, adjudicate positive recall/causality/severity and negative false-positive behavior against the frozen oracle, and choose the next code batch from that evidence. If semantic gates pass but the >900s contract violation remains, localize in-flight budget enforcement before any broader latency/token optimization. No PR-AF retune is justified before payload adjudication.
 
 ## Write-back rule
 
