@@ -1,7 +1,7 @@
 # PR-AF — Canonical Plan and Current State
 
-> Status: ACTIVE — B1 PASS / B2 PROVIDER + MODEL-TOLERANCE PASS / B3 SEMANTIC ACCEPTANCE + DURABILITY PASS
-> Updated: 2026-09-10
+> Status: ACTIVE — B4 SWE-AF EVIDENCE BENCHMARK / VALID-R1 NEXT
+> Updated: 2026-09-11
 > Canonical owner: `n0namer/pr-af:dev/PLAN.md`
 > Active development branch: `dev`
 > Runtime topology owner: `n0namer/universal-solver`
