@@ -468,9 +468,17 @@ Fresh CURRENT discovery does not reveal a hidden alternate execution lane. Self-
 
 BMAD trace conclusion: all currently evidenced PR-AF validation paths converge on the same missing typed capability. Repeating `make check`, absolute-Go exec, generic approval, or direct container exec would now be stale retries without new evidence. The correct boundary remains operator ownership; PR-AF source/tests stay frozen until a callable verification route exists.
 
+## Semantic-delta adjudication checkpoint — 2026-09-13
+
+BMAD quick-dev + testarch-trace/test-design used the blocked validation window for source-only adjudication instead of retrying the same transport failure. Exact CURRENT diff from accepted baseline `1967bb...` confirms the semantic-delta candidate is **386 added lines across two files**: `reviewdim.go` +241 and `reasoners_test.go` +145; `git diff --check` is clean. The mechanism is broader than the original XOR fixture (it recognizes `!=/==`, `&&/||`, and boundary comparator replacements), but its implementation still couples deterministic operator parsing, truth-table hints, a second model call, a bespoke SAFE/FINDING text protocol, parsing, and finding synthesis into the primary reviewer path. Existing tests are predominantly self-confirming operator fixtures; they do not yet demonstrate general recall lift or clean-negative precision across representative non-operator changes.
+
+80/20 decision is therefore unchanged but now source-backed: classify the 241-line production mechanism **CONFLICTING_OR_SUPERSEDED? / DO NOT PRESERVE YET**. Preserve the requirement instead of the implementation: reviewers must reason from authoritative OLD→NEW semantics and must not dismiss proposed-diff regressions using stale checkout state. The smallest future candidate, if full-review evidence still shows this gap, should start with the prompt-level proposed-diff rule and discriminating benchmark tests; deterministic operator heuristics and the second fallback protocol must independently earn inclusion through mutation/paired-case evidence.
+
+No PR-AF product file was mutated in this batch. Validation remains blocked by the missing typed DEV Go-verification route, so no fresh Go PASS is claimed.
+
 ## ONE next move
 
-In the operator-owning project/control plane, implement or expose one exact typed DEV verification capability for the already-previewed fixed-Go-PATH `make check` contract, with its adversarial regression and self-protection semantics. Once CURRENT callability is proven, return immediately to this PR-AF plan and execute preservation regressions → canonical `make check` → full `pr-af.review`. Do not bypass mediation, mutate PR-AF tooling, touch PROD, or restart shared AgentField infrastructure.
+In the operator-owning project/control plane, implement or expose one exact typed DEV verification capability for the already-previewed fixed-Go-PATH `make check` contract, with its adversarial regression and self-protection semantics. Once CURRENT callability is proven, first run the narrow preservation regressions and canonical `make check`; then use paired clean/seeded full-`review` cases to decide whether only the proposed-diff prompt rule is needed or whether any deterministic semantic-delta fallback earns preservation. Do not bypass mediation, mutate PR-AF tooling for validation, touch PROD, or restart shared AgentField infrastructure.
 
 ## Write-back rule
 
