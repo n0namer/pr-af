@@ -345,9 +345,36 @@ Persistent DEV `/src/pr-af` remains detached at `5a0f3b2b2c6c37d5cecab140cd2a093
 
 Reconciliation classification to produce before code mutation: `ALREADY_UPSTREAM` (drop from candidate), `FORK_QUALITY_DELTA` (preserve), `CONFLICTING_OR_SUPERSEDED` (adjudicate against intended-function contract), and `RUNTIME_ONLY_UNCANONICALIZED` (preserve separately until verified/canonicalized). Acceptance requires a file-level matrix for product code/tests/config, not a blind branch merge; governance-only history is not product behavior.
 
+## Reconciliation matrix — batch 1 / 2026-09-12
+
+BMAD quick-dev + trace was applied as a source-only batch: observe exact base/live delta, classify by intended-function requirement, and do not mutate product code until the preservation set is explicit. Advisory verification/systematic-debugging guidance agrees: use exact executed diff evidence and preserve one-variable-at-a-time changes.
+
+Accepted baseline `1967bb...` is itself a compact 9-file, 736-line quality delta over its parent. Its product changes are not generic fork noise: `config/ai.go` + tests implement the generic OpenAI-compatible provider contract; `node.go` + tests bind harness/direct `.ai()` to that contract and reject partial key/base config; `reasoners/meta.go` + tests make meta structured-output recovery fail closed; `orch/phases.go` + degradation test preserve primary findings when additive coverage review fails. These remain `FORK_QUALITY_DELTA` because each maps directly to provider compatibility, false-safe prevention, or review resilience and has accepted source/test evidence.
+
+CURRENT live delta relative to `1967bb...` is exactly 17 tracked Go/package files, `+732/-45`; no other tracked product file appears in this layer. First-pass requirement grouping:
+- **Provider/bootstrap admission:** `go/agentfield-package.yaml` → `RUNTIME_ONLY_UNCANONICALIZED`; broadens admission from OpenRouter-only to supported provider-key alternatives and documents `OPENAI_BASE_URL`. Preserve separately until canonicalized; do not confuse manifest admission with runtime provider selection.
+- **Budget/fail-closed:** `orch/phases.go`, `orch/budget_test.go` → `RUNTIME_ONLY_UNCANONICALIZED`; includes primary-review budget fail-closed and the post-`extract_obligations` deadline re-check that prevents verifier fan-out after expiry. Deterministic tests are PASS; latest obligation guard still lacks runtime proof.
+- **Quick planning efficiency:** `orch/phases.go`, `prompts/meta.go`, related orchestration/prompt tests → `RUNTIME_ONLY_UNCANONICALIZED`; quick mode uses one fused semantic/mechanical/systemic planner while standard/deep retain multi-lens behavior. This is a latency mechanism, not North Star itself; preserve only behind quality/coverage regression gates.
+- **PR change causality / precision:** `prompts/reviewdim.go`, `prompts/verify.go`, verifier goldens, `orch/phases.go` → `RUNTIME_ONLY_UNCANONICALIZED`; all findings are evidence-verified and unrelated/pre-existing issues are rejected. Directly maps to precision/change-causality quality.
+- **Proposed-diff semantic recall:** `reasoners/reviewdim.go`, `reasoners/reasoners_test.go` → `RUNTIME_ONLY_UNCANONICALIZED`; adds authoritative OLD-vs-NEW diff reasoning, deterministic operator-change hints, and a focused semantic-delta fallback. This is the largest live delta and must be adjudicated separately for generality/overfitting before preservation; current classification is `CONFLICTING_OR_SUPERSEDED?` pending tests against non-operator defects and clean negatives, not accepted merely because it improves the XOR fixture.
+- **Repository-path/runtime robustness:** `reasoners/meta.go`, `reasoners/reasoners_test.go`, context tests → `RUNTIME_ONLY_UNCANONICALIZED`; anchors repository-relative paths under `repo_path`, directly addressing the proven `/go/...` drift.
+- **Tests/goldens only:** `degradation_test.go`, `streaming_test.go`, `context_test.go`, prompt goldens and the remainder of `reasoners_test.go` trace the mechanisms above and should follow the owning behavior classification rather than be judged independently.
+
+No live tracked file is currently classified `ALREADY_UPSTREAM`: the exact live-vs-`1967bb...` name set is the 17-file layer above. No product mutation/reset/merge/reload was performed. A full upstream→`1967bb...` compare response was too large for the GitHub connector, so the accepted baseline classification uses the exact `1967bb...` commit's 9-file patch evidence rather than guessing from a truncated compare.
+
+### Reconciliation DoD
+
+- [x] Prove current upstream head is already in fork `main`/`dev` ancestry.
+- [x] Identify accepted fork baseline and classify its 9-file application delta by intended-function requirement.
+- [x] Enumerate the exact current tracked live layer relative to accepted baseline: 17 files, `+732/-45`.
+- [x] Group live files by provider, fail-closed budget, quick planning, causality/precision, semantic recall, path robustness, and tests.
+- [ ] Adjudicate the 241-line `reasoners/reviewdim.go` semantic-delta mechanism for generality versus XOR-specific overfitting.
+- [ ] Produce the minimal preservation candidate and exact tests before any canonical source write.
+- [ ] Canonicalize only verified preserved deltas; exclude runtime/debug artifacts.
+
 ## ONE next move
 
-Build the file-level reconciliation matrix from upstream `48ae7e...` to the accepted fork application baseline `1967bb...`, then layer the current tracked `/src/pr-af` dirty delta on top. For every changed product file classify `ALREADY_UPSTREAM / FORK_QUALITY_DELTA / CONFLICTING_OR_SUPERSEDED / RUNTIME_ONLY_UNCANONICALIZED`, tie preserved deltas to the intended-function quality contract and tests, and only then form a clean sync candidate. Do not touch AgentField lifecycle, SWE-AF, or reset the dirty DEV tree while constructing this matrix.
+Adjudicate `go/internal/reasoners/reviewdim.go` first because it is the highest-risk/highest-volume live quality mechanism: trace every added deterministic operator heuristic and fallback against the intended general PR-review contract, run its exact existing tests plus clean/non-operator counterexamples, and decide `FORK_QUALITY_DELTA` versus `CONFLICTING_OR_SUPERSEDED`. Do not edit other product code or touch AgentField/SWE-AF during that adjudication.
 
 ## Write-back rule
 
