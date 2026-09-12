@@ -444,9 +444,15 @@ The execution plane is partially recovered but still cannot produce a fresh Go P
 
 DoD consequence: deterministic preservation evidence remains the previously recorded PASS on the exact candidate, but **fresh 2026-09-12 execution evidence is EVIDENCE_MISSING**, not PASS/FAIL. Do not change product code to compensate for the validator PATH/mediation limitation and do not recreate the previously rejected temporary Makefile PATH adaptation merely to obtain a green badge.
 
+## Validation-route anti-drift — 2026-09-12
+
+Repository `AGENTS.md` was reread before further execution. It confirms `/src/pr-af/go` is the maintained implementation, `make build/vet/test/check` is the canonical ladder, runtime-first is preferred, and GitHub/redeploy is not an inner debug loop. Durable lesson lookup for the current `validation_transport` signature returned no matching verified lesson, so no historical workaround is being treated as authorization.
+
+A second narrower execution attempt (`make test` from `/src/pr-af/go`) is now blocked by operator mediation as `opaque_or_unknown_mutation`, while the already-allowed `make check` deterministically reaches the Makefile and fails only because target PATH lacks `go`. This makes the boundary explicit: the blocker is **callable validation transport**, not an unknown test failure. Per BMAD quick-dev + testarch-trace/ATDD and the selected verification skills, do not broaden product scope, do not modify PR-AF behavior, and do not use a source patch to manufacture validation access.
+
 ## ONE next move
 
-Use the first existing authorized Go-capable validation route that becomes callable to execute the five preservation regressions on exact `/src/pr-af`, followed immediately by the canonical full Go gate. If those pass, proceed to one fresh full `review` acceptance on the same loaded candidate; if a regression fails, localize and patch only that proven behavior in the container. Keep the large XOR semantic-delta heuristic frozen.
+Resolve only the existing DEV validation-route capability (PATH/typed command mediation) through its owning operator plane, then return immediately to PR-AF: run the five preservation regressions on exact `/src/pr-af`, followed by canonical `make check`, then one fresh full `pr-af.review` acceptance on the same loaded candidate. This is an execution-enabler task, not permission to alter PR-AF product behavior or restart/redeploy shared AgentField infrastructure. Keep the large XOR semantic-delta heuristic frozen.
 
 ## Write-back rule
 
