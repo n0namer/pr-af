@@ -372,9 +372,21 @@ No live tracked file is currently classified `ALREADY_UPSTREAM`: the exact live-
 - [ ] Produce the minimal preservation candidate and exact tests before any canonical source write.
 - [ ] Canonicalize only verified preserved deltas; exclude runtime/debug artifacts.
 
+## Cross-agent autonomy check — 2026-09-12
+
+A failure mode observed in SWE-AF was explicitly checked against PR-AF: mistaking an internal primitive/phase for the product acceptance path. PR-AF does **not** expose its internal `review_dimension`, meta, coverage, obligation, or adversary reasoners as separate registered product endpoints; CURRENT `node/register.go` registers one externally driven `review` reasoner, and `Orchestrator.Run` owns the end-to-end review lifecycle. The maintained E2E harness also invokes `pr-af.review`, not an internal reviewer primitive. Therefore PR-AF does not have the same endpoint-level acceptance mistake as SWE-AF's `implement_issue` misuse.
+
+There is, however, a **benchmark-level analogue** in the current B4 evidence: several direct meta/reviewer canaries are legitimate diagnostics, but they must never move the North Star acceptance milestone by themselves. Product acceptance is the complete `review` orchestration: intake → anatomy → task-specific planning → substantive review → coverage/consistency/obligation/adversarial checks → synthesis/scoring/merge gate → output/HITL/post behavior, with fail-closed semantics and exact runtime evidence. A micro-reasoner PASS only localizes a mechanism.
+
+The autonomy analogy is bounded because PR-AF is a reviewer, not a coding controller: it is not expected to edit task product code or self-repair a reviewed repository. Its corresponding autonomous responsibility is to recover or fail closed **inside the review contract**: weak/malformed model output, reviewer degradation where policy permits, coverage gaps, weak claims, obligation verification, HITL rerun, budget exhaustion, and output/posting decisions. Operator repair of PR-AF itself during an acceptance execution invalidates that execution as exact-candidate evidence, just as manual task-code repair invalidates an autonomous SWE Build acceptance.
+
+Acceptance rule added to B4: direct `meta_*`, `review_dimension`, semantic-delta, provider, wrapper, and budget probes remain diagnostic gates only. A PR-AF quality milestone requires a fresh full `review` execution on the exact loaded candidate with valid anatomy, substantive review, downstream verification stages required by the case, terminal result, independently inspected payload/evidence, and no operator mutation of PR-AF between START and terminal state. If the full review fails at a recoverable internal boundary, treat that as a product orchestration defect unless the documented policy explicitly requires fail-closed termination.
+
+This also changes how the current semantic-delta candidate is judged: its unit/direct reasoner tests can establish local correctness but cannot establish product acceptance. Preservation still requires clean/non-operator counterexamples **and then** a full `review` gate proving the mechanism improves recall without unacceptable precision, latency, or fail-closed regressions.
+
 ## ONE next move
 
-Adjudicate `go/internal/reasoners/reviewdim.go` first because it is the highest-risk/highest-volume live quality mechanism: trace every added deterministic operator heuristic and fallback against the intended general PR-review contract, run its exact existing tests plus clean/non-operator counterexamples, and decide `FORK_QUALITY_DELTA` versus `CONFLICTING_OR_SUPERSEDED`. Do not edit other product code or touch AgentField/SWE-AF during that adjudication.
+Continue the `go/internal/reasoners/reviewdim.go` adjudication, but use the corrected acceptance hierarchy: first trace/run local clean and non-operator counterexamples to decide whether the deterministic semantic-delta mechanism is general enough to keep; if it survives, require a full `review` execution on the exact candidate before classifying it as accepted `FORK_QUALITY_DELTA`. Do not let direct reasoner/micro-probe PASS advance the product milestone.
 
 ## Write-back rule
 
