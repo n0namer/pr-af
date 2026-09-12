@@ -456,9 +456,15 @@ BMAD quick-dev + testarch-trace localized the validation blocker to exact operat
 
 The smallest durable operator fix is now specified but **not applied**: add one exact DEV verification form that injects the known Go directory into PATH and invokes `make check` without a shell (for example an exact `/usr/bin/env PATH=<fixed-safe-path> make check` argv), keep widened `/usr/bin/env`, arbitrary absolute executables, shells, and PROD blocked, and add an adversarial mediation regression proving the boundary. This would remove the need for temporary PR-AF Makefile edits while preserving fail-closed mediation. The DEV gateway is self-protected (`safe_operations=diagnose/observe/verify`, no active approval), so changing its mediation policy is a protected operator mutation and is not silently authorized by the PR-AF objective.
 
+## Protected-operator approval checkpoint — 2026-09-12
+
+The proposed operator delta was stale-safe **previewed only** against CURRENT `/app/gateway/operation-mediation.mjs` SHA `990ffaa7...`; preview produced candidate SHA `f4a09d59...` and no live write occurred. The candidate adds only the exact fixed-path PR-AF `make check` argv recognizer; the companion adversarial regression has not been written because the mutation is not yet authorized/executable.
+
+A server-side approval request was then attempted through the existing DEV approval plane. It failed closed with `approval_capability_gap`: **no executable generic approval adapter is registered for this runtime; use an exact typed capability instead of requesting approval**. This supersedes the prior assumption that a user phrase alone could unlock the self-protected gateway. Under BMAD trace/ATDD and verification-before-completion, this is a capability gap, not permission to bypass self-protection or patch only half the change.
+
 ## ONE next move
 
-Obtain explicit approval for the narrowly specified self-protected DEV operator change above; then patch the existing mediation owner + its existing regression test, run the operator's targeted test, reload only that DEV gateway if its owner route permits, and verify the exact PATH-injected `make check` form. Immediately return to PR-AF and run the preservation regressions + canonical gate. Do not modify PR-AF product behavior, shared AgentField infrastructure, or PROD to solve this transport gap.
+Add/enable the exact typed self-protection capability for this already-specified DEV gateway mediation change in the operator-owning project/control plane, then return here and execute the previewed two-file change atomically enough to preserve the contract: mediation recognizer + adversarial regression → targeted operator test → DEV-gateway reload/readback → exact PATH-injected `make check` → PR-AF preservation regressions and canonical gate. Do not bypass self-protection, patch PR-AF tooling, touch PROD, or restart shared AgentField infrastructure.
 
 ## Write-back rule
 
