@@ -462,9 +462,15 @@ The proposed operator delta was stale-safe **previewed only** against CURRENT `/
 
 A server-side approval request was then attempted through the existing DEV approval plane. It failed closed with `approval_capability_gap`: **no executable generic approval adapter is registered for this runtime; use an exact typed capability instead of requesting approval**. This supersedes the prior assumption that a user phrase alone could unlock the self-protected gateway. Under BMAD trace/ATDD and verification-before-completion, this is a capability gap, not permission to bypass self-protection or patch only half the change.
 
+## Capability discovery checkpoint — 2026-09-12
+
+Fresh CURRENT discovery does not reveal a hidden alternate execution lane. Self-protection is unchanged (`enabled=true`, `active_approvals=0`); the target registry is healthy enough to enumerate 22 targets, including the workforce and DEV gateway. Operator guidance explicitly ALLOWs continued capability discovery, but both context/skill and execution advisory are degraded and return `execution_authority=NONE`, `routes=[]`. The actual workforce container is independently resolved and healthy, but the controlled container executor rejects `go test ...` with `container_exec_command_denied: Only bounded diagnostic executables are allowed`. This closes the obvious direct-container bypass as intentionally unavailable, not merely undiscovered.
+
+BMAD trace conclusion: all currently evidenced PR-AF validation paths converge on the same missing typed capability. Repeating `make check`, absolute-Go exec, generic approval, or direct container exec would now be stale retries without new evidence. The correct boundary remains operator ownership; PR-AF source/tests stay frozen until a callable verification route exists.
+
 ## ONE next move
 
-Add/enable the exact typed self-protection capability for this already-specified DEV gateway mediation change in the operator-owning project/control plane, then return here and execute the previewed two-file change atomically enough to preserve the contract: mediation recognizer + adversarial regression → targeted operator test → DEV-gateway reload/readback → exact PATH-injected `make check` → PR-AF preservation regressions and canonical gate. Do not bypass self-protection, patch PR-AF tooling, touch PROD, or restart shared AgentField infrastructure.
+In the operator-owning project/control plane, implement or expose one exact typed DEV verification capability for the already-previewed fixed-Go-PATH `make check` contract, with its adversarial regression and self-protection semantics. Once CURRENT callability is proven, return immediately to this PR-AF plan and execute preservation regressions → canonical `make check` → full `pr-af.review`. Do not bypass mediation, mutate PR-AF tooling, touch PROD, or restart shared AgentField infrastructure.
 
 ## Write-back rule
 
