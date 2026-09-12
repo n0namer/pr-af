@@ -404,19 +404,41 @@ Built-in-test coverage against our observed defect classes is incomplete:
 
 Pareto decision: do **not** start by rerunning every benchmark or preserving every live patch. First complete this defect→built-in-test matrix from exact upstream source. Then run one clean upstream-like canonical gate if a clean workspace route is available. Only defects that are (a) reproducible or already runtime-proven, and (b) not adequately protected by upstream tests/contracts, qualify for a minimal preservation candidate. Semantic-delta heuristics remain frozen until this audit closes.
 
+### Upstream-first audit refinement — provider + causality / 2026-09-12
+
+BMAD `bmad-quick-dev` + `bmad-testarch-trace` + ATDD-style discriminating assertions were applied to the two unresolved rows. No product code was changed.
+
+**Provider/base configuration:** exact upstream tests show only `OPENAI_API_KEY` forwarding in `TestHarnessConfigPreservesExistingFields`; upstream `configEnvKeys` does not include `OPENAI_BASE_URL`, and upstream node tests exercise the OpenRouter production `.ai()` path rather than the generic OpenAI-compatible key+base pair. The live/dev fork adds the missing pair semantics: forwards both `OPENAI_API_KEY` and `OPENAI_BASE_URL`, rejects key-without-base and base-without-key, adapts `openai/<model>` for the API/harness, and proves the same contract through `BuildAgent`. Final classification: **PARTIAL upstream coverage + INTEGRATION-SPECIFIC delta**. Preserve the minimal generic OpenAI-compatible contract/tests unless a clean upstream execution proves an equivalent contract elsewhere.
+
+**PR change causality:** exact upstream `ReviewDimensionPrompt` is strong on reachability, evidence chains, confidence, PR intent, and diff inspection, but it does not require that a reported problem be introduced/worsened by the reviewed change. Exact upstream `EvidenceVerifierPrompt` verifies factual behavior/reachability/severity but likewise has no introduced-by-PR/pre-existing rejection rule. Code search at exact upstream SHA finds no `causality` or `pre-existing` guard. Therefore the proven CloudSecurity false-positive class is not protected by an explicit upstream contract/test. Final classification: **GAP**. The fork's causality prompt/verifier behavior and `TestEvidenceVerificationCoversSuggestionsAndDropsUnverified` remain preservation candidates, but still require clean-negative/full-`review` acceptance before canonicalization.
+
+Frozen defect→built-in-test matrix:
+- malformed meta parse → false-safe: **COVERED** for the core parse-failure invariant;
+- generic OpenAI-compatible key/base/provider path: **PARTIAL / INTEGRATION-SPECIFIC**;
+- coverage-added reviewer failure discarding primary findings: **GAP**;
+- primary-review budget exhaustion becoming approve-equivalent: **GAP**;
+- obligation extraction crossing deadline then verifier fan-out: **GAP**;
+- repository-path anchoring for OpenCode/meta: **GAP / INTEGRATION-SPECIFIC**;
+- PR change causality / pre-existing unrelated findings: **GAP**;
+- XOR/operator semantic recall: **GAP as benchmark recall**, but insufficient evidence for preserving the large deterministic semantic-delta heuristic.
+
+80/20 preservation candidate is now narrow: keep provider compatibility, fail-closed budget boundaries, coverage-failure preservation, repo-path anchoring, and PR-causality safeguards; keep their discriminating tests. Keep quick-meta fusion only behind full-review quality/latency evidence. **Do not preserve the large deterministic XOR semantic-delta heuristic yet.**
+
 ### Upstream-first audit DoD
 
 - [x] Fork main proven current with upstream (`behind_by=0`) and application/test source identical; fork-only main delta is docs/governance.
 - [x] Canonical upstream CI/test contract identified.
 - [x] Exact upstream-head GitHub CI observed GREEN for Go/Python/Docker.
 - [ ] Obtain a fresh clean-workspace execution of the canonical gate for fork/upstream-equivalent source; do not substitute the dirty DEV worktree.
-- [ ] Finish exact source/test mapping for provider contract and change-causality coverage.
-- [ ] Freeze final defect→built-in-test matrix: COVERED / PARTIAL / GAP / INTEGRATION-ONLY.
-- [ ] From that matrix derive the minimal fork preservation set before any product-code mutation.
+- [x] Finish exact source/test mapping for provider contract and change-causality coverage.
+- [x] Freeze final defect→built-in-test matrix: COVERED / PARTIAL / GAP / INTEGRATION-SPECIFIC.
+- [x] Derive the minimal preservation candidate before any new product-code mutation.
+- [ ] Prove preservation candidate with discriminating targeted tests on exact DEV source, then full canonical gate when the DEV execution route is stable.
+- [ ] Run fresh full `review` acceptance only after deterministic gates pass; diagnostic reasoner probes do not count as product acceptance.
 
 ## ONE next move
 
-Finish the exact upstream defect→test coverage matrix, prioritizing provider/base configuration and PR change-causality because those are the two rows still only partially mapped. In parallel, use a clean exact-source workspace only if an existing authorized route is available to rerun the canonical upstream/fork-equivalent gate; do not mutate the dirty persistent DEV tree and do not resume semantic-delta feature work yet.
+On the existing persistent DEV source, run the smallest discriminating test batch for the preservation candidate (provider pair semantics, causality rejection, budget fail-closed, coverage preservation, path anchoring), then the full canonical Go gate if the typed DEV execution route is available. Do not edit product behavior unless one of those tests exposes a real uncovered failure; keep the large XOR semantic-delta heuristic frozen.
 
 ## Write-back rule
 
