@@ -1,7 +1,7 @@
 # PR-AF — Canonical Plan and Current State
 
 > Status: ACTIVE — B4 UPSTREAM RECONCILIATION / QUALITY DELTA PRESERVATION
-> Updated: 2026-09-11
+> Updated: 2026-09-12
 > Canonical owner: `n0namer/pr-af:dev/PLAN.md`
 > Active development branch: `dev`
 > Upstream baseline: `Agent-Field/pr-af:main@48ae7eeb4f07779004db6354728d49ca7b36dbc3`
