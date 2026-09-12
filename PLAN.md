@@ -368,8 +368,8 @@ No live tracked file is currently classified `ALREADY_UPSTREAM`: the exact live-
 - [x] Identify accepted fork baseline and classify its 9-file application delta by intended-function requirement.
 - [x] Enumerate the exact current tracked live layer relative to accepted baseline: 17 files, `+732/-45`.
 - [x] Group live files by provider, fail-closed budget, quick planning, causality/precision, semantic recall, path robustness, and tests.
-- [ ] Adjudicate the 241-line `reasoners/reviewdim.go` semantic-delta mechanism for generality versus XOR-specific overfitting.
-- [ ] Produce the minimal preservation candidate and exact tests before any canonical source write.
+- [x] Adjudicate the 241-line `reasoners/reviewdim.go` semantic-delta mechanism for generality versus XOR-specific overfitting: requirement preserved, implementation `DO NOT PRESERVE YET` pending discriminating full-review evidence.
+- [x] Produce the minimal preservation candidate before any canonical source write: provider compatibility, fail-closed budget boundaries, coverage-failure preservation, repo-path anchoring, PR-causality safeguards + their discriminating tests; quick-meta fusion remains conditional.
 - [ ] Canonicalize only verified preserved deltas; exclude runtime/debug artifacts.
 
 ## Cross-agent autonomy check — 2026-09-12
