@@ -450,9 +450,15 @@ Repository `AGENTS.md` was reread before further execution. It confirms `/src/pr
 
 A second narrower execution attempt (`make test` from `/src/pr-af/go`) is now blocked by operator mediation as `opaque_or_unknown_mutation`, while the already-allowed `make check` deterministically reaches the Makefile and fails only because target PATH lacks `go`. This makes the boundary explicit: the blocker is **callable validation transport**, not an unknown test failure. Per BMAD quick-dev + testarch-trace/ATDD and the selected verification skills, do not broaden product scope, do not modify PR-AF behavior, and do not use a source patch to manufacture validation access.
 
+## Operator-route source diagnosis — 2026-09-12
+
+BMAD quick-dev + testarch-trace localized the validation blocker to exact operator source rather than another PR-AF hypothesis. CURRENT DEV gateway `operation-mediation.mjs` explicitly recognizes bare `go test ...` and only `make check` as `VERIFY/RUN_TESTS`; it does **not** recognize `make test`, and any executable containing `/` is deliberately classified `OPAQUE_EXEC`. The gateway regression suite freezes the same contract: `go test ./...` and `make check` are allowed verification commands. Therefore `make test` being blocked is expected policy behavior, while `/usr/local/go/bin/go ...` is blocked by the generic absolute-path guard. Separately, `make check` is authorized but fails inside the workforce because its runtime PATH does not contain Go.
+
+The smallest durable operator fix is now specified but **not applied**: add one exact DEV verification form that injects the known Go directory into PATH and invokes `make check` without a shell (for example an exact `/usr/bin/env PATH=<fixed-safe-path> make check` argv), keep widened `/usr/bin/env`, arbitrary absolute executables, shells, and PROD blocked, and add an adversarial mediation regression proving the boundary. This would remove the need for temporary PR-AF Makefile edits while preserving fail-closed mediation. The DEV gateway is self-protected (`safe_operations=diagnose/observe/verify`, no active approval), so changing its mediation policy is a protected operator mutation and is not silently authorized by the PR-AF objective.
+
 ## ONE next move
 
-Resolve only the existing DEV validation-route capability (PATH/typed command mediation) through its owning operator plane, then return immediately to PR-AF: run the five preservation regressions on exact `/src/pr-af`, followed by canonical `make check`, then one fresh full `pr-af.review` acceptance on the same loaded candidate. This is an execution-enabler task, not permission to alter PR-AF product behavior or restart/redeploy shared AgentField infrastructure. Keep the large XOR semantic-delta heuristic frozen.
+Obtain explicit approval for the narrowly specified self-protected DEV operator change above; then patch the existing mediation owner + its existing regression test, run the operator's targeted test, reload only that DEV gateway if its owner route permits, and verify the exact PATH-injected `make check` form. Immediately return to PR-AF and run the preservation regressions + canonical gate. Do not modify PR-AF product behavior, shared AgentField infrastructure, or PROD to solve this transport gap.
 
 ## Write-back rule
 
