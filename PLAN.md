@@ -384,9 +384,39 @@ Acceptance rule added to B4: direct `meta_*`, `review_dimension`, semantic-delta
 
 This also changes how the current semantic-delta candidate is judged: its unit/direct reasoner tests can establish local correctness but cannot establish product acceptance. Preservation still requires clean/non-operator counterexamples **and then** a full `review` gate proving the mechanism improves recall without unacceptable precision, latency, or fail-closed regressions.
 
+## Upstream-first test audit — 2026-09-12
+
+BMAD route is reset to `bmad-help` → `bmad-quick-dev` + `bmad-testarch-trace`: step back from feature work, establish the clean upstream baseline, trace known defects to built-in tests, then preserve only evidence-backed divergence. Advisory verification/debugging guidance is applied as verification-before-change and defect→test→runtime trace; no product code is changed in this batch.
+
+CURRENT Git evidence: upstream `Agent-Field/pr-af:main` is `48ae7eeb4f07779004db6354728d49ca7b36dbc3`; fork `main` is `f11d03bdde8cfb86ac09c19fb1a1c5d1b98d9465`. Exact compare is `ahead_by=4`, `behind_by=0`, with only `AGENTS.md`, `ERRORS.md`, and `PLAN.md` changed on fork main. Therefore fork main's application source and built-in tests are currently upstream-identical; the four extra commits are governance/docs, not product code.
+
+Upstream's canonical Go gate is `make check = build + vet + test`; CI additionally runs `gofmt` cleanliness, Python Ruff lint, and Docker build. Fresh GitHub Actions evidence for exact upstream head `48ae7e...` is GREEN: Go `success`, Python `success`, Docker `success`. Fork main has no GitHub Actions run recorded for exact `f11d03bd...`; because its application/CI files are identical to upstream this is strong source-equivalence evidence, but it is **not** a fresh fork-main execution PASS. Coding Station inventory timed out, so no duplicate clean-workspace run was claimed.
+
+Built-in-test coverage against our observed defect classes is incomplete:
+- **Generic OpenAI-compatible provider/base contract:** upstream code contains `OPENAI_BASE_URL` handling, but our accepted fork tests/config contract extend this area; classify built-in coverage `PARTIAL` until exact upstream tests are mapped case-by-case.
+- **Meta malformed/weak structured output → false-safe:** upstream has `TestMetaSelectorParseFailDoesNotApprove`, so the core fail-closed parse-failure invariant is built-in covered.
+- **Coverage-added reviewer failure must preserve primary findings:** exact regression `TestCoverageGapReviewerFailurePreservesPrimaryFindings` is absent upstream; built-in coverage `GAP`.
+- **Primary-review budget exhaustion must not synthesize safe output:** exact regression `TestPrimaryReviewBudgetExhaustionFailsClosed` is absent upstream; upstream `budget_test.go` covers timeout/cost/depth budget accounting but not this false-safe boundary; built-in coverage `GAP`.
+- **Post-obligation-extraction deadline must prevent verifier fan-out:** exact regression `TestConsistencyVerifyDoesNotFanOutAfterExtractionExhaustsBudget` is absent upstream; built-in coverage `GAP`.
+- **Repository-path anchoring for meta/OpenCode:** exact regression `TestMetaSelectorAnchorsRepositoryRelativePaths` is absent upstream; built-in coverage `GAP` for our proven runtime-path failure.
+- **PR change causality / rejection of pre-existing unrelated findings:** the current live causality gate is not present in upstream source search; built-in coverage `GAP/PARTIAL` pending broader prompt/test inspection.
+- **XOR/operator semantic recall:** no built-in regression for our seeded XOR miss was found; this remains a benchmark recall case, not yet justification for the large deterministic semantic-delta implementation.
+
+Pareto decision: do **not** start by rerunning every benchmark or preserving every live patch. First complete this defect→built-in-test matrix from exact upstream source. Then run one clean upstream-like canonical gate if a clean workspace route is available. Only defects that are (a) reproducible or already runtime-proven, and (b) not adequately protected by upstream tests/contracts, qualify for a minimal preservation candidate. Semantic-delta heuristics remain frozen until this audit closes.
+
+### Upstream-first audit DoD
+
+- [x] Fork main proven current with upstream (`behind_by=0`) and application/test source identical; fork-only main delta is docs/governance.
+- [x] Canonical upstream CI/test contract identified.
+- [x] Exact upstream-head GitHub CI observed GREEN for Go/Python/Docker.
+- [ ] Obtain a fresh clean-workspace execution of the canonical gate for fork/upstream-equivalent source; do not substitute the dirty DEV worktree.
+- [ ] Finish exact source/test mapping for provider contract and change-causality coverage.
+- [ ] Freeze final defect→built-in-test matrix: COVERED / PARTIAL / GAP / INTEGRATION-ONLY.
+- [ ] From that matrix derive the minimal fork preservation set before any product-code mutation.
+
 ## ONE next move
 
-Continue the `go/internal/reasoners/reviewdim.go` adjudication, but use the corrected acceptance hierarchy: first trace/run local clean and non-operator counterexamples to decide whether the deterministic semantic-delta mechanism is general enough to keep; if it survives, require a full `review` execution on the exact candidate before classifying it as accepted `FORK_QUALITY_DELTA`. Do not let direct reasoner/micro-probe PASS advance the product milestone.
+Finish the exact upstream defect→test coverage matrix, prioritizing provider/base configuration and PR change-causality because those are the two rows still only partially mapped. In parallel, use a clean exact-source workspace only if an existing authorized route is available to rerun the canonical upstream/fork-equivalent gate; do not mutate the dirty persistent DEV tree and do not resume semantic-delta feature work yet.
 
 ## Write-back rule
 
