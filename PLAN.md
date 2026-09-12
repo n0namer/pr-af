@@ -436,9 +436,17 @@ Frozen defect→built-in-test matrix:
 - [ ] Prove preservation candidate with discriminating targeted tests on exact DEV source, then full canonical gate when the DEV execution route is stable.
 - [ ] Run fresh full `review` acceptance only after deterministic gates pass; diagnostic reasoner probes do not count as product acceptance.
 
+## Test-execution checkpoint — 2026-09-12
+
+Fresh CURRENT source identity is still detached `/src/pr-af@5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f`; no checkout/reset/product mutation was performed. The preservation regressions are physically present on that exact dirty DEV source: budget fail-closed + post-extraction fan-out guard in `orch/budget_test.go`, coverage-failure preservation + evidence-verifier causality rejection in `orch/degradation_test.go`, OpenAI-compatible pair/partial-config coverage in `node/node_test.go`, and repository-root anchoring in `reasoners/reasoners_test.go`.
+
+The execution plane is partially recovered but still cannot produce a fresh Go PASS. Exact target execution of `go test ./internal/orch ./internal/node ./internal/config ./internal/reasoners` reached the intended `/src/pr-af/go` working directory but failed before tests with `go: not found` (`exit 127`). The repository Makefile confirms the canonical gate is ordinary `go build/vet/test`; this is the already-known target-PATH validation transport defect, not a PR-AF test failure. A direct absolute-Go executable probe was then blocked by enforced mediation as opaque input. Controlled container inventory independently identifies the current DEV workforce container and proves it healthy, but direct container exec is likewise mediation-blocked. Coding Station inventory also timed out, so no clean-workspace PASS is substituted.
+
+DoD consequence: deterministic preservation evidence remains the previously recorded PASS on the exact candidate, but **fresh 2026-09-12 execution evidence is EVIDENCE_MISSING**, not PASS/FAIL. Do not change product code to compensate for the validator PATH/mediation limitation and do not recreate the previously rejected temporary Makefile PATH adaptation merely to obtain a green badge.
+
 ## ONE next move
 
-On the existing persistent DEV source, run the smallest discriminating test batch for the preservation candidate (provider pair semantics, causality rejection, budget fail-closed, coverage preservation, path anchoring), then the full canonical Go gate if the typed DEV execution route is available. Do not edit product behavior unless one of those tests exposes a real uncovered failure; keep the large XOR semantic-delta heuristic frozen.
+Use the first existing authorized Go-capable validation route that becomes callable to execute the five preservation regressions on exact `/src/pr-af`, followed immediately by the canonical full Go gate. If those pass, proceed to one fresh full `review` acceptance on the same loaded candidate; if a regression fails, localize and patch only that proven behavior in the container. Keep the large XOR semantic-delta heuristic frozen.
 
 ## Write-back rule
 
