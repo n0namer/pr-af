@@ -716,9 +716,15 @@ The spike still resolved the acceptance contract. The smallest reusable harness 
 
 Anti-drift decision: do not keep or write back unvalidated shell changes merely to make progress visible. The next implementation attempt must first have a CURRENT-callable shell preflight route (or another authoritative validator for `run.sh`) and a working source-capture path. Until then, preserve the current E2E harness unchanged and keep product-level recall acceptance blocked on the real-provider runtime/budget boundary.
 
+## Registered-route inventory — 2026-09-13
+
+The reuse-before-build search is now exhausted enough to stop scanning. CURRENT registry has 22 DEV-visible targets. The two registered targets that expose the exact `/src/pr-af/go` source (`agentfield-dev-workforce`, `agentfield-dev-runtime-capture`) both have Bash but neither exposes `/usr/local/bin/aforge` nor `/usr/local/bin/opencode`; `bash -n` is mediated as `opaque_or_unknown_mutation` on both. `workbench` and `coding-runtime` expose neither the PR-AF source nor those real harness binaries. Previously checked `agentfield-dev-deep-research` / `universal-solver-runtime-dev` also do not mount the exact PR-AF source. Therefore there is no evidenced existing registered route that simultaneously satisfies exact source + real supported harness + script validation.
+
+This is now a true capability/scope boundary, not a search problem. Creating or mounting a new validator/harness runtime would be NEW auxiliary runtime scope and requires explicit approval; installing a real harness into the shared workforce would also expand runtime scope. Until one of those is approved or the operator owner exposes a native route, do not keep probing random containers and do not relax the acceptance oracle.
+
 ## ONE next move
 
-Find an existing registered DEV route that can both validate `go/test/e2e/run.sh` and expose a real supported harness on the exact PR-AF source. If such a route appears, reapply the already-bounded harness-mode patch in-container, validate it before capture, then run only the four ATDD cases after an explicit model-spend ceiling exists. The five earned preservation contracts remain frozen; QUICK fusion and prompt-only semantics stay conditional; the 241-line fallback remains `DO NOT PRESERVE YET`.
+Hold the five earned preservation contracts and current source steady. The next executable product-quality step is a bounded real-provider acceptance runtime on the exact PR-AF source, with shell validation available and `GH_TOKEN=""` / `dry_run=true`. Once that route and a model-spend ceiling are explicitly approved, reapply the already-bounded harness-mode patch in-container, validate/capture it, then run the four ATDD cases. QUICK fusion and prompt-only semantics stay conditional; the 241-line fallback remains `DO NOT PRESERVE YET`.
 
 ## Write-back rule
 
