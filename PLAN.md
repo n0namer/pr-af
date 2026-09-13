@@ -671,6 +671,16 @@ Fresh anti-drift readback shows the DEV target-control file lane recovered: the 
 
 80/20 decision: keep this provider-pair regression as the only provider-specific deterministic gate before package-wide checks. Do not expand into a provider matrix unless this oracle fails or later full-review acceptance exposes a provider-routing defect.
 
+## Full-review acceptance harness design — 2026-09-13
+
+BMAD `bmad-testarch-test-design` was applied to the final product-evidence gate using the existing live E2E harness rather than inventing a parallel framework. `go/test/e2e/run.sh` already exercises the full `pr-af.review` pipeline over a seeded local 2-commit repo, records execution artifacts and harness-role counts, asserts terminal success/findings/non-empty review, and enforces zero GitHub writes. It is therefore the right base harness, but its current oracle is too coarse for reconciliation: it proves that *some* finding exists, not that a specific seeded regression is caught, and it has no clean-control false-positive assertion.
+
+80/20 test design: extend or parameterize this existing harness only after deterministic gates pass, with the smallest paired matrix needed to make preservation decisions. Required cases are: (A) one seeded semantic OLD→NEW defect that specifically exercises the prompt-only proposed-diff contract; (B) one mechanical/runtime-contract defect; (C) one systemic/test-alignment defect; (D) one clean control. For each seeded case, assert the expected changed file plus a case-specific defect token/meaning is present in final findings/review, not merely `findings >= 1`. For the clean control, assert no actionable finding above the project's preserve threshold. Record wall time and planner/reviewer role counts so QUICK fusion can be compared with a non-fused baseline on both recall and call-count cost.
+
+Acceptance rule stays intentionally small: Tier-1 deterministic contracts must pass first; then provider regression and package checks; then this paired full-review matrix decides prompt-only semantics and QUICK fusion. The 241-line semantic fallback gets no dedicated acceptance run unless the smaller prompt-only candidate fails to recover the seeded semantic defect. Existing harness limitation is explicit: it still requires the documented external `.ai()` provider key for a real run; a clean skip is not PASS evidence.
+
+Current E2E harness live SHA-256 is `34e5361308795bb3890a6515d90ea303a0566a1e193fa0cbff6afb15ceb335a9`. No harness or product source was changed in this batch; this is test-design/write-back only.
+
 ## ONE next move
 
 Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. When CURRENT-callable, execute the four Tier-1 RED→restore→GREEN mutants in the fixed order above, then provider regression, targeted packages, and canonical `make check`; only then run paired full-`review` acceptance. Preserve contracts independently, not whole dirty files; quick-meta fusion and the 241-line semantic fallback remain unearned. Do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
