@@ -827,9 +827,39 @@ The nearest mandatory step is therefore the already-recorded acceptance-boundary
 
 Batch DoD: current SoT HEAD and live detached source state rechecked; root `ERRORS.md` confirmed absent; `AGENTS.md` engineering contract re-read; CURRENT operator conflict re-read as loaded `9cf1f189e02df1827440494bc536c2deb23d3ea7` vs configured `1571f8525af160d890805271e23cbf574ca8d101`, `source_conflict=true`; requirements-to-evidence matrix completed; gate decision recorded; no product/runtime mutation performed.
 
+## BMAD correct-course boundary packet — 2026-09-13
+
+`bmad-correct-course` was applied in batch mode to the only unresolved execution blocker. No product requirement changed: the North Star and B4 reconciliation goal stay intact. The change is execution-scope only — deterministic source validation is complete enough to stop spending effort there, while product-level semantic acceptance requires one explicitly bounded real-provider lane that does not currently exist in the registered DEV set.
+
+Minimal proposed scope expansion (nothing broader):
+- **Environment:** DEV only; no PROD, no shared workforce restart, no operator patch.
+- **Purpose:** execute PR-AF real-provider acceptance only; no general-purpose service or persistent workload.
+- **Source:** exact current `/src/pr-af` candidate, mounted/read from the existing persistent DEV source; no checkout/reset of the detached worktree.
+- **Runtime:** ephemeral auxiliary acceptance runtime or operator-native equivalent; single owner = PR-AF B4 acceptance; TTL <= 2 hours; destroy/cleanup after evidence capture.
+- **Harness:** existing supported real `aforge` or real `opencode`; no mockcli for recall decisions.
+- **Safety:** `GH_TOKEN=""`, `dry_run=true`, local seeded repos only, zero GitHub writes, no external repo mutation, secrets presence-only in evidence.
+- **Validation:** shell/script preflight must be callable before keeping any harness edit; SourceLoop/canonical capture required for any retained source delta.
+- **Initial paid scope:** S1 semantic seeded defect + C0 clean control only. Do not start M1/Y1 or QUICK-vs-STANDARD until S1/C0 pass the harness/oracle credibility gate.
+- **Spend boundary:** require an explicit ceiling before paid calls; recommended first ceiling is **USD 4 total** (two runs at the current per-run project default ceiling of USD 2), with stop-on-first-invalid-run. Any increase is a new approval.
+- **Rollback/cleanup:** remove only the auxiliary runtime and temporary acceptance artifacts created for this packet; preserve the existing PR-AF source/worktree and all unrelated DEV resources.
+
+Acceptance DoD for this scope expansion:
+1. Runtime identity and exact source mount proven by readback.
+2. Real harness binary/version proven; mockcli absent from the recall path.
+3. `run.sh` (or equivalent bounded runner) validation passes before execution.
+4. S1 and C0 execute through full `review` with `dry_run=true` and zero GitHub writes.
+5. Results capture provider/model/version, source SHA, fixture commit pair, depth, timeout, cost, duration, agent invocations, native findings, and final event.
+6. S1 reports the seeded OLD→NEW partial-state regression with the seeded file; C0 returns zero findings + `APPROVE`.
+7. Auxiliary runtime and temporary artifacts are cleaned up and absence is verified.
+8. PLAN is updated with PASS/FAIL/PARTIAL evidence; only then decide whether M1/Y1 and causal A/B comparisons are justified.
+
+Impact assessment: this is a **minor, bounded execution-scope change**, not a product replan. It does not alter accepted source contracts, architecture, or release target. Without this approval, the project is legitimately BLOCKED at the semantic/product evidence gate; further source-only polishing would be low-value churn.
+
+Batch DoD: BMAD entry skill re-activated; actual GitHub SoT and CURRENT operator state re-read; SourceLoop inventory checked for pending unrelated changes and not touched; scope delta, rollback, budget, and acceptance evidence were reduced to the smallest executable packet; no product/runtime mutation performed.
+
 ## ONE next move
 
-Hold the five earned preservation contracts and current source steady. The next executable product-quality step is a bounded real-provider acceptance runtime on the exact PR-AF source, with shell validation available and `GH_TOKEN=""` / `dry_run=true`. Once that route and a model-spend ceiling are explicitly approved, reapply the already-bounded harness-mode patch in-container, validate/capture it, then run the four ATDD cases. QUICK fusion and prompt-only semantics stay conditional; the 241-line fallback remains `DO NOT PRESERVE YET`.
+Obtain explicit approval for the bounded acceptance packet above (DEV ephemeral runtime/equivalent + **USD 4 total model-spend ceiling**). After approval, execute only S1+C0 first, clean up the runtime, write evidence back to this PLAN, and expand to M1/Y1 only if the smoke gate is credible. Until then, hold the five earned contracts steady; QUICK and prompt-only semantics remain conditional; the 241-line fallback remains `DO NOT PRESERVE YET`.
 
 ## Write-back rule
 
