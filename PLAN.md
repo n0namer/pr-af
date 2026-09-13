@@ -750,6 +750,22 @@ External skill research supports this route rather than a broad framework instal
 
 Batch DoD: explicit QUICK/STANDARD control path located; prompt-only causal mutant localized and dry-run previewed; acceptance sequence reduced to the smallest high-information smoke→expand ladder; no product source changed; no paid model call started.
 
+## Minimal real-provider acceptance fixtures — 2026-09-13
+
+BMAD test-architecture guidance was applied to turn the causal eval design into exact, low-cost acceptance oracles without adding files or changing product code. External agent-eval skills converge on the same useful rule: compare through the real harness, keep deterministic state assertions ahead of judge-style grading, and treat repeated stochastic runs as confidence evidence rather than replacing a clear pass/fail contract.
+
+Use four frozen two-commit local repos, each with one changed target file and no unrelated churn:
+- **S1 semantic OLD→NEW:** change a boolean guard from the correct partial-pair check `keyEmpty != baseEmpty` to the wrong `keyEmpty == baseEmpty`, so mixed configuration states become accepted/rejected incorrectly. Oracle: final `findings[]` contains the seeded target path and describes the changed guard/partial-state behavioral regression; the final event must not be `APPROVE` if the finding is blocking. This is also the sole case used for the prompt-rule A/B mutant.
+- **M1 mechanical/runtime:** add a retry loop that decrements `retries` after `TimeoutError` but never stops when retries reach zero. Oracle: final finding is on the seeded handler file and states the unbounded/infinite retry behavior or missing termination guard. This reuses the shape already present in the plumbing fixture but must be reviewed by the real provider, not mockcli.
+- **Y1 systemic/test-alignment:** change a small exported function's behavior while leaving an existing test asserting the old contract. Oracle: final finding identifies the changed source/test contract mismatch, naming either the source and test pair or the stale expected behavior. Keep the fixture tiny so repository-wide search is unnecessary.
+- **C0 clean control:** same scale as the seeded repos but behavior and tests remain mutually consistent. Strict oracle: `summary.total_findings == 0` and `review.event == APPROVE`. Any finding is a false positive for this controlled case and blocks preservation claims until repeated/diagnosed.
+
+Deterministic extraction must use the native `ReviewResult` fields, not prose-only grading: `findings[].file_path`, `title`, `body`, `evidence`, `blocking`, `summary.total_findings`, `summary.duration_seconds`, `summary.cost_usd`, `metadata.agent_invocations`, and `review.event`. Semantic matching may normalize case/whitespace and accept a small synonym set per fixture, but must not accept generic "possible issue" text without the seeded causal meaning.
+
+Decision sequence is intentionally asymmetric for cost: (1) real-provider S1 + C0 smoke on current source; (2) if both are credible, run M1 + Y1; (3) only then run QUICK-vs-STANDARD on cases needed to decide fusion; (4) run the prompt-rule source A/B only on S1; (5) repeat a case only when outcome is unstable or preservation depends on it. Provider/model/version, source SHA, fixture commit pair, depth, budget, and timeout are recorded with every run. Do not tune against these frozen acceptance fixtures; create separate development fixtures if iteration is needed.
+
+No paid run, source mutation, auxiliary runtime, or new file was created in this batch. This is the exact acceptance contract to execute once the already-recorded runtime/spend boundary is authorized.
+
 ## ONE next move
 
 Hold the five earned preservation contracts and current source steady. The next executable product-quality step is a bounded real-provider acceptance runtime on the exact PR-AF source, with shell validation available and `GH_TOKEN=""` / `dry_run=true`. Once that route and a model-spend ceiling are explicitly approved, reapply the already-bounded harness-mode patch in-container, validate/capture it, then run the four ATDD cases. QUICK fusion and prompt-only semantics stay conditional; the 241-line fallback remains `DO NOT PRESERVE YET`.
