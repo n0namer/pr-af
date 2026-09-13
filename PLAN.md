@@ -33,6 +33,20 @@ Phase: **B4 upstream reconciliation / quality-delta preservation**.
 
 Reconcile the current upstream PR-AF baseline with the fork's `main`, canonical `dev`, and the persistent DEV source before further product tuning. Preserve every fork-only change that still contributes to the measurable intended-function contract; drop or supersede only changes proven redundant, obsolete, or replaced upstream. The reconciliation gate is source-first and must not depend on AgentField lifecycle work, which is out of scope for this chat.
 
+### CURRENT checkpoint — 2026-09-13
+
+This block is authoritative over older chronological checkpoints below when they describe an earlier blocker/state.
+
+- Canonical project SoT: `n0namer/pr-af:dev/PLAN.md`; canonical `dev` HEAD before this checkpoint is `7ac6d9938b9b76610a32d29c4f00f6546e7454ec`.
+- Persistent DEV product source remains detached at `5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f`; do not checkout/reset it merely to match docs-only SoT progress.
+- Five preservation contracts are **earned by controlled RED→exact-restore→GREEN mutation evidence** on the exact live source: primary-review budget fail-closed, post-obligation budget re-check/no verifier fan-out, evidence filtering of `verified=false`, repository-relative path anchoring, and partial OpenAI-compatible provider-pair rejection.
+- Fresh full-module verification after restore: `/usr/local/go/bin/go test ./... -count=1` PASS; compile-only package sweep PASS; `go test -vet=all ./... -run '^$' -count=1` PASS. Literal `make check`/`go build ./...` was not executed exactly, so do not relabel it PASS.
+- QUICK fused-meta and prompt-only OLD→NEW semantics remain **CONDITIONAL** pending real-provider product-level acceptance. The 241-line deterministic semantic fallback remains **DO NOT PRESERVE YET**.
+- Existing `go/test/e2e/run.sh` is a plumbing/orchestration harness only: its `test/mockcli` reviewer synthesizes scenario findings, so it cannot prove real defect recall/false-positive behavior.
+- Reuse-before-build inventory is exhausted for the current registered DEV set: exact-source targets do not expose a real `aforge`/`opencode` harness or a callable shell-validation path. The temporary real-provider harness-mode spike was fully reverted to `run.sh` SHA-256 `34e5361308795bb3890a6515d90ea303a0566a1e193fa0cbff6afb15ceb335a9` after validation/capture could not be proven.
+- CURRENT operator remains self-protected with `active_approvals=0`; deployment fingerprint is still conflicted: loaded/source coordinator `9cf1f189e02df1827440494bc536c2deb23d3ea7` vs configured `1571f8525af160d890805271e23cbf574ca8d101`, `source_conflict=true`. Do not patch the operator from PR-AF scope.
+- Next product-quality evidence requires NEW auxiliary-runtime scope (or an operator-native equivalent): exact PR-AF source + real supported harness + shell/script validation + `GH_TOKEN=""` + `dry_run=true`. Paid model execution also needs an explicit spend ceiling before the four ATDD cases run.
+
 ## Operating contract
 
 `OBSERVE → LOCALIZE → PATCH IN /src/pr-af → TARGETED VERIFY → FULL VERIFY → PR-AF-ONLY RELOAD → RUNTIME PROOF → CANONICALIZE → VERIFY SHA → WRITE-BACK`
