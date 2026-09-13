@@ -908,9 +908,35 @@ Both writes were read-back verified. No redeploy/debug loop was used.
 
 Current interpretation: **Architecture Functional Bring-Up is closed for internal orchestration + original node binding + real external harness-subprocess wiring.** What remains unproven is specifically real-model semantic behavior and live control-plane registration/network lifecycle; neither is needed to claim the architecture itself is wired and executable. Quality benchmarking should now follow only where it answers a preservation/quality decision.
 
+## Architecture contract audit — output modes gap — 2026-09-14
+
+`bmad-help` was re-activated and the current batch used the adversarial/code-review path against the actual architecture contract rather than reopening already-proven pipeline wiring. The highest-value deterministic gap found is in Phase 7 output handling.
+
+Fresh source evidence:
+- `docs/ARCHITECTURE.md` explicitly defines four output modes: **GitHub PR Review**, **Structured JSON**, **SARIF**, and **Markdown**.
+- `schemas.ReviewInput.OutputFormat` explicitly advertises `github | json | sarif | markdown` and defaults to `github`.
+- Runtime code currently has **no consumer of `OutputFormat`**: live search finds the field only in `schemas/input.go`, defaults/schema tests, and the node input schema. `reviewHandler` always returns `schemas.ReviewResult`; `generateOutput` always builds the GitHub review payload and posts it when `dry_run=false` + `pr_url` is present. Therefore `json`, `sarif`, and `markdown` are declared architecture functions but are currently inert.
+- `post_pr_number` is not part of this gap: it is already consumed in `orch/phases.go` when local-repo mode needs a PR number.
+
+This changes the immediate priority. Real-model semantic quality is still unproven, but the architecture-completeness objective has a concrete local defect that can be fixed and fully verified without an external provider. Under the North Star, closing a declared-but-inert architecture feature has higher information/value than waiting on unavailable model tooling.
+
+Bounded implementation DoD for the next live patch:
+1. `output_format=github` preserves current behavior and existing return contract.
+2. `output_format=json` returns the structured `ReviewResult` and never posts to GitHub solely because of format selection.
+3. `output_format=markdown` returns the generated standalone review Markdown (`result.review.body`) and suppresses GitHub posting.
+4. `output_format=sarif` returns SARIF 2.1.0 with each scored finding mapped to rule/message/file/region and severity mapped to SARIF level; GitHub posting is suppressed.
+5. Unknown `output_format` is rejected as a client error before pipeline execution.
+6. Non-GitHub modes force the orchestrator call into dry-run output behavior so a caller cannot accidentally post a review while requesting JSON/SARIF/Markdown.
+7. Focused output-mode tests PASS, existing node tests PASS, then `go test ./... -count=1` PASS.
+8. Only after live validation is the exact source delta canonicalized and this PLAN updated with evidence.
+
+CURRENT environment note: both exact-source DEV targets were rechecked and still expose none of `aforge`, `opencode`, `codex`, or `claude`, so a genuine model-backed review remains unavailable without an environment change. That is no longer the immediate blocker because the output-mode gap is local and deterministic.
+
+Execution caveat for this batch: the DEV operator Required Context service degraded while preparing the live test/patch (`context_check_unavailable`, later `PARTIAL` with `capability_provider_unavailable`). Per operator safety guidance, no product mutation was retried after that gate. Only read-only audit/evidence work and this SoT update were performed. The intended live patch remains the next bounded task once the operator mutation context is healthy again.
+
 ## ONE next move
 
-Move from functional bring-up to the smallest real-semantic proof: find/use a CURRENT supported real harness/model path for the existing node without changing architecture, run one `review` with `dry_run=true` on a tiny seeded repo, and compare its result/trace to the now-proven node+harness contract. If no real provider executable/credential path is available in CURRENT runtime, record that as the remaining environment capability gap and do not invent new infrastructure or reopen already-proven architecture work.
+When the DEV operator mutation context returns healthy, implement the missing Phase 7 `output_format` dispatch **directly in `/src/pr-af/go`**, starting with RED tests for JSON/Markdown/SARIF/invalid-format behavior, then patch the node/output adapter, run focused tests + full `go test ./... -count=1`, and canonicalize only the validated bytes. Do not wait on a real model provider and do not edit application code GitHub-first. After this architecture gap closes, resume the real-semantic provider proof.
 
 ## Write-back rule
 
