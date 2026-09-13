@@ -934,9 +934,34 @@ CURRENT environment note: both exact-source DEV targets were rechecked and still
 
 Execution caveat for this batch: the DEV operator Required Context service degraded while preparing the live test/patch (`context_check_unavailable`, later `PARTIAL` with `capability_provider_unavailable`). Per operator safety guidance, no product mutation was retried after that gate. Only read-only audit/evidence work and this SoT update were performed. The intended live patch remains the next bounded task once the operator mutation context is healthy again.
 
+## Phase 7 output modes implemented — 2026-09-14
+
+`bmad-help` + brownfield `bmad-quick-dev` were used for the declared-but-inert Phase 7 output contract. Work followed RED → direct live patch → focused verify → full verify → canonicalize.
+
+Execution/evidence on exact live `/src/pr-af/go`:
+- Added `go/internal/node/output_format_test.go` first. Initial focused run was RED for all three non-GitHub modes because `reviewHandler` did not force dry-run, and invalid `output_format=xml` still entered the pipeline.
+- Added `go/internal/node/output_format.go` and patched `go/internal/node/register.go` directly in the container.
+- Accepted formats are now normalized/validated: `github`, `json`, `sarif`, `markdown`; unknown values fail with HTTP 400 before review execution.
+- Non-GitHub formats force `in.DryRun=true`, so selecting JSON/SARIF/Markdown cannot post a GitHub review.
+- `github` and `json` preserve the structured `ReviewResult`; `markdown` returns `result.review.body`; `sarif` returns SARIF 2.1.0 with PR-AF severity mapped to SARIF level and finding file/region/message preserved.
+- Focused RED tests turned GREEN: `go test ./internal/node -run 'TestReviewHandlerOutputFormats|TestReviewHandlerRejectsUnknownOutputFormat' -count=1 -v` PASS.
+- `go test ./internal/node -count=1` PASS.
+- `go test ./... -count=1` PASS across the maintained Go module.
+- `go test -vet=all ./... -run '^$' -count=1` PASS.
+- `gofmt -w` itself was blocked by operator mediation as an opaque mutation, so the new test file was manually normalized to Go formatting style and re-tested; no PASS is claimed for the blocked command.
+
+Canonicalization happened only after live verification:
+- `739b3367b779db756fba58f029df1f5af39ce47a` — `feat: add PR-AF output format adapters` (`go/internal/node/output_format.go`).
+- `27a5dd84baaa3fc96926265275486960b9acbb7c` — `test: cover PR-AF output formats` (`go/internal/node/output_format_test.go`).
+- `9e8fbb13e386f1d333df1a1edd0fbcbc57d4dca7`, `5e6406b3a236e41480a3f9abc887c3e80a83bdbb`, `ec5c958e2afdfca3532bc63ac08745309a120743` — staged canonical updates to `go/internal/node/register.go`; each reread-verified.
+
+Anti-drift: canonical `dev` now contains `ERRORS.md`, while the detached live workspace still does not. That is documentation/source-state drift only; it did not affect the tested Go module. Do not reset/checkout the live worktree merely to align docs. Product code for this batch was developed and validated live first, then written back canonically.
+
+Current interpretation: the Phase 7 output-mode architecture gap is **CLOSED**. Functional architecture bring-up now covers internal orchestration, node binding, external harness subprocess wiring, and all four declared output modes. The remaining North-Star gap is real semantic review quality with a real supported model/provider path; exact-source DEV targets still expose none of `aforge`, `opencode`, `codex`, or `claude` executables.
+
 ## ONE next move
 
-When the DEV operator mutation context returns healthy, implement the missing Phase 7 `output_format` dispatch **directly in `/src/pr-af/go`**, starting with RED tests for JSON/Markdown/SARIF/invalid-format behavior, then patch the node/output adapter, run focused tests + full `go test ./... -count=1`, and canonicalize only the validated bytes. Do not wait on a real model provider and do not edit application code GitHub-first. After this architecture gap closes, resume the real-semantic provider proof.
+Resume the smallest real-semantic proof without reopening closed architecture work: use an existing CURRENT supported real harness/model path if one becomes available, run one tiny `dry_run=true` review through the already-proven node/harness pipeline, and inspect the semantic result. If no real provider path is callable, keep that as an environment capability gap and continue auditing declared architecture features for deterministic missing behavior rather than creating new infrastructure by default.
 
 ## Write-back rule
 
