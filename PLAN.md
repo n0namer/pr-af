@@ -868,9 +868,27 @@ External agent-evaluation skill research reinforces the sequencing rather than a
 
 Batch DoD: architecture source re-read; phase-focused executable batch PASS; canonical functional suite invoked and its skip reason proven; no product source mutation; no GitHub-first programming; no new runtime/container/network created.
 
+## In-process full-pipeline analogue — 2026-09-13
+
+User explicitly chose the 80/20 alternative to the Docker functional stack: add an in-process architecture analogue inside the maintained Go codebase so the original orchestration can be exercised as one run without a nested container/control plane.
+
+Implementation was done **directly in the live container** at `go/internal/orch/full_pipeline_inprocess_test.go`, not by GitHub-first editing. The first RED showed the analogue was too weak: evidence verification did not fire because the test had no `repo_path`/evidence package. The test was then corrected to use a temporary repo path and a real diff/changed-file preimage; the next RED exposed that consistency verification also needs diff patches. After wiring those inputs, the test passed.
+
+`TestFullPipelineInProcess` now drives the real `Orchestrator.Run` and the real `runReviewPhases` control flow in one process while replacing only external model/provider calls with deterministic reasoner seams. It proves a single review execution reaches: intake, anatomy, semantic/mechanical/systemic planning, reviewer execution, evidence verification, adversary, coverage, consistency/obligation extraction, and output. It therefore closes the immediate architecture-wiring question without Docker, while still not claiming real-model semantic quality or control-plane registration behavior.
+
+Verification on the exact live source:
+- `go test ./internal/orch -run TestFullPipelineInProcess -count=1 -v` → PASS.
+- `go test ./internal/orch -count=1` → PASS.
+- `go test ./... -count=1` → PASS across the maintained Go module.
+- Final live test-file SHA-256: `7afda3e07bc3cf645b29db2c536ef15b76597cf9abe64fd01d4da6a15242509a`.
+
+Canonical write-back happened only **after** live validation: `go/internal/orch/full_pipeline_inprocess_test.go` was copied byte-for-byte into `dev` in commit `ecf09771f65dab625b57fe4fd135c6cf6b5bc726` (`test: add in-process full pipeline analogue`). No redeploy/debug loop was used.
+
+Current interpretation: the original architecture's internal end-to-end orchestration is now executable and regression-protected without Docker. The remaining functional gap is narrower: prove a real node/provider invocation path (registration + real external harness/model behavior) rather than the architecture itself. That belongs after this bring-up gate, not before it.
+
 ## ONE next move
 
-Run the repository's existing `go/test/functional` stack on a Docker-capable DEV runner using the exact current `/src/pr-af` candidate, then execute one full `review` with `dry_run=true` and capture which of the 7 architecture responsibilities actually fire. If the canonical functional stack reveals a code/runtime defect, fix it directly in the container and re-run. Creating a new Docker-capable auxiliary runner or mounting the exact live source into one is a new runtime scope; until that is explicitly approved or an existing operator-native Docker-capable route appears, keep the proven source steady rather than substituting mock results for end-to-end evidence.
+Use the new in-process analogue as the architecture bring-up gate and stop treating Docker as required for that question. The next bounded task is to run the original PR-AF node with the best CURRENT available real provider/runtime path and execute one `review` with `dry_run=true`; compare the runtime trace/result against the now-proven in-process responsibilities. If a real-runtime-only gap appears, fix that exact gap directly in the container and re-run. Do not expand infrastructure unless the real node/provider path specifically requires it.
 
 ## Write-back rule
 
