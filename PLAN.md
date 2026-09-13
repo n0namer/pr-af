@@ -47,6 +47,44 @@ This block is authoritative over older chronological checkpoints below when they
 - CURRENT operator remains self-protected with `active_approvals=0`; deployment fingerprint is still conflicted: loaded/source coordinator `9cf1f189e02df1827440494bc536c2deb23d3ea7` vs configured `1571f8525af160d890805271e23cbf574ca8d101`, `source_conflict=true`. Do not patch the operator from PR-AF scope.
 - Next product-quality evidence requires NEW auxiliary-runtime scope (or an operator-native equivalent): exact PR-AF source + real supported harness + shell/script validation + `GH_TOKEN=""` + `dry_run=true`. Paid model execution also needs an explicit spend ceiling before the four ATDD cases run.
 
+## BMAD course correction — acceptance boundary (2026-09-13)
+
+`bmad-help` was re-activated from the canonical `BMAD-MNNZ` repository and routed the current situation to `bmad-correct-course`: the project intent/North Star is unchanged, but execution has crossed from source reconciliation into a capability-gated product-acceptance boundary.
+
+### Trigger and current stage
+
+The trigger is not a new product defect. The deterministic reconciliation work is substantially complete: five preservation contracts have direct RED→exact-restore→GREEN evidence and the restored Go module has fresh test/compile/vet evidence. The unresolved decisions (QUICK fusion and prompt-only OLD→NEW semantics) now require real-provider behavioral evidence. Existing registered DEV routes cannot provide exact source + real supported harness + shell validation, and the current mock E2E cannot answer recall/false-positive questions. Therefore the current stage is **B4 / PRODUCT ACCEPTANCE BOUNDARY**, not further speculative implementation.
+
+### Impact analysis
+
+- **North Star:** unchanged — maximize real PR-review quality with measurable recall/precision and no false-safe behavior.
+- **Phase Goal:** unchanged — preserve only fork delta that earns measurable value over upstream.
+- **Product source:** hold steady; no new production-logic change is justified before behavioral evidence.
+- **Existing earned contracts:** frozen and retained unless later product-level evidence contradicts them.
+- **QUICK fusion / prompt-only semantics:** remain conditional; evaluate with the causal protocol already defined below.
+- **241-line semantic fallback:** remains `DO NOT PRESERVE YET`; no acceptance budget is spent on it unless the smaller prompt-only candidate fails S1.
+- **Mock E2E:** remains plumbing-only; must not be used as recall proof.
+
+### Smallest safe change proposal
+
+If explicitly approved as NEW auxiliary-runtime scope, create one **DEV-only, ephemeral acceptance runtime** whose sole purpose is real-provider evaluation of the exact current PR-AF source. Required bounds: exact source snapshot/mount from the persistent DEV working tree; one real supported harness (`aforge` or real `opencode`) with version recorded; callable shell/script validation; `GH_TOKEN=""`; `dry_run=true`; no persistent product data; no PROD/shared-workforce mutation; owner=PR-AF acceptance; short TTL with cleanup after evidence capture. Do not install the harness into the shared workforce merely to avoid this boundary.
+
+Financial boundary is separate from runtime approval. No external model call may start without an explicit spend ceiling. The 80/20 sequence remains: S1 semantic + C0 clean smoke first; only if both are credible add M1 and Y1; only then run the minimum QUICK-vs-STANDARD / prompt-rule A/B comparisons needed for a preservation decision.
+
+### DoD for the next executable batch
+
+1. Approved bounded DEV acceptance runtime exists and readback proves exact PR-AF source identity plus real harness version.
+2. Script/harness preflight passes on that runtime before any paid run.
+3. Safety readback proves `GH_TOKEN=""`, local `repo_path`, and `dry_run=true`; credentials are checked presence-only and never printed.
+4. Explicit model-spend ceiling is recorded before first call.
+5. Run S1 + C0; capture native `ReviewResult`, source/fixture/model/provider identities, cost, duration, and invocation counts.
+6. Continue to M1/Y1 or causal comparisons only if the preceding gate earns it; otherwise diagnose the smallest failing layer.
+7. Cleanup the auxiliary runtime after evidence is captured; write back only earned product decisions/deltas.
+
+### Course-correction decision
+
+Do **not** broaden product code, keep probing arbitrary containers, or create another planning artifact. The existing `PLAN.md` remains the sole project execution SoT. The only justified scope expansion is the bounded acceptance runtime above, and it requires explicit approval because it is new auxiliary infrastructure; paid model execution requires its own explicit budget ceiling. Until those approvals exist, the project is correctly `PARTIAL / SCOPE_BOUNDARY`, not blocked by unresolved engineering design.
+
 ## Operating contract
 
 `OBSERVE → LOCALIZE → PATCH IN /src/pr-af → TARGETED VERIFY → FULL VERIFY → PR-AF-ONLY RELOAD → RUNTIME PROOF → CANONICALIZE → VERIFY SHA → WRITE-BACK`
