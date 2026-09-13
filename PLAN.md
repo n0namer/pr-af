@@ -886,9 +886,31 @@ Canonical write-back happened only **after** live validation: `go/internal/orch/
 
 Current interpretation: the original architecture's internal end-to-end orchestration is now executable and regression-protected without Docker. The remaining functional gap is narrower: prove a real node/provider invocation path (registration + real external harness/model behavior) rather than the architecture itself. That belongs after this bring-up gate, not before it.
 
+## Node + external harness bring-up — 2026-09-13
+
+The next brownfield bring-up step was executed directly in the live container without Docker/control-plane infrastructure. A new `go/internal/node/full_review_inprocess_test.go` builds the repository's existing `test/mockcli` as an actual external `opencode` subprocess, constructs the original node through `BuildAgent`, registers the full 17-reasoner surface, and calls the original `reviewHandler` on a local two-commit repo with `dry_run=true`, empty `GH_TOKEN`, and no external model credentials. This exercises the real AgentField SDK harness subprocess path plus the original node binding and real orchestrator, not just direct orchestration seams.
+
+The first run produced a useful RED: `meta_semantic` failed structured-output validation. Diagnosis localized a real test-harness drift: production `runMetaLens` now validates against private `metaDraftResult/metaDraftDimension`, while `test/mockcli.roleMeta` still emitted the larger public `schemas.MetaDimensionResult/ReviewDimension` shape. The mock therefore included fields (`id`, context/budget/priority) not accepted by the live private draft schema. This was a bring-up harness defect, not a product-architecture defect.
+
+The drift was fixed directly in the container by giving mockcli an exact private-compatible meta output shape (`name`, `review_prompt`, `target_files` for each draft dimension). After the fix, `TestReviewHandlerWithExternalMockHarness` PASSed. Runtime logs showed real SDK local dispatch through intake, anatomy, all three meta lenses, review dimension, evidence verifier, adversary, compound finder, coverage gate, and obligation extraction. The coverage `.ai()` seam safely fell back to the harness because no OpenAI-compatible config was present; merge-gate AI calls were skipped as designed rather than blocking the review.
+
+Fresh verification after the fix:
+- `go test ./internal/node -run TestReviewHandlerWithExternalMockHarness -count=1 -v` → PASS.
+- `go test ./internal/node ./test/mockcli -count=1` → PASS.
+- `go test ./... -count=1` → PASS across the maintained Go module.
+- Live test SHA-256: `fff9d08aa26e044f55f96dd82a3be4a8d7fb4be1814c71ccbfbef4d1e2b5ae41`.
+- Live mock roles SHA-256: `c87f99331b1f9b4186a6f4968571195aeac1b706215502c133cb8fe15c1cbe2e`.
+
+Canonical write-back occurred only after those live PASSes:
+- `82659fa6b0e31ed6bcf6cd3204cd1f961c67a625` — `test: align mock meta output with live schema` (`go/test/mockcli/roles.go`).
+- `62370efa31fa32a1c538f648229364f112194586` — `test: exercise review handler with external harness` (`go/internal/node/full_review_inprocess_test.go`).
+Both writes were read-back verified. No redeploy/debug loop was used.
+
+Current interpretation: **Architecture Functional Bring-Up is closed for internal orchestration + original node binding + real external harness-subprocess wiring.** What remains unproven is specifically real-model semantic behavior and live control-plane registration/network lifecycle; neither is needed to claim the architecture itself is wired and executable. Quality benchmarking should now follow only where it answers a preservation/quality decision.
+
 ## ONE next move
 
-Use the new in-process analogue as the architecture bring-up gate and stop treating Docker as required for that question. The next bounded task is to run the original PR-AF node with the best CURRENT available real provider/runtime path and execute one `review` with `dry_run=true`; compare the runtime trace/result against the now-proven in-process responsibilities. If a real-runtime-only gap appears, fix that exact gap directly in the container and re-run. Do not expand infrastructure unless the real node/provider path specifically requires it.
+Move from functional bring-up to the smallest real-semantic proof: find/use a CURRENT supported real harness/model path for the existing node without changing architecture, run one `review` with `dry_run=true` on a tiny seeded repo, and compare its result/trace to the now-proven node+harness contract. If no real provider executable/credential path is available in CURRENT runtime, record that as the remaining environment capability gap and do not invent new infrastructure or reopen already-proven architecture work.
 
 ## Write-back rule
 
