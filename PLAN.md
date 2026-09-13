@@ -509,9 +509,26 @@ BMAD ATDD/test-design plus the selected mutation-testing/verification guidance n
 | Quick-meta fusion | `orch/phases.go` + prompt/tests | paired full-review quality + latency, no intended-function loss | CONDITIONAL |
 | 241-line deterministic semantic-delta fallback | `reasoners/reviewdim.go` + mixed tests | non-operator seeded recall + clean negatives + full-review differential | DO NOT PRESERVE YET |
 
+## Test-oracle readiness checkpoint — 2026-09-13
+
+Fresh source-only BMAD ATDD/trace review confirms the first preservation tests are not equally strong. `TestPrimaryReviewBudgetExhaustionFailsClosed` asserts the exact fail-closed error at the primary-review boundary, and `TestConsistencyVerifyDoesNotFanOutAfterExtractionExhaustsBudget` asserts both zero verifier fan-out and the exhausted-budget flag; these are suitable first mutation targets once execution is callable. `TestEvidenceVerificationCoversSuggestionsAndDropsUnverified` is a strong unit oracle for the all-findings/drop-unverified mechanism, but by itself does not prove real PR causality because its fake verifier already returns the desired `verified=false`; it therefore remains necessary but insufficient until paired with seeded/clean full-`review` cases. The causality prompt delta is only +13 lines across `prompts/reviewdim.go` and `prompts/verify.go`, and path anchoring is +9 lines in `reasoners/meta.go`, strengthening the Pareto case for testing/preserving these compact contracts before any larger heuristic.
+
+No production mutation is justified in this checkpoint. The current blocker remains external to PR-AF deterministic validation: operator deployment identity is conflicted and no trustworthy exact Go verification route is CURRENT-callable. Continue to treat historical green Go runs as historical only.
+
+### First executable RED→GREEN order
+
+1. Budget fail-closed: remove/bypass the pre-review budget error in a controlled reversible mutant; owning regression must RED; restore exact preimage; regression GREEN.
+2. Post-extraction fan-out: remove the second budget guard; call-count regression must RED; restore; GREEN.
+3. Evidence filtering: allow `verified=false` findings through or stop sending suggestions; unit regression must RED; restore; GREEN.
+4. Repository path anchoring: remove the repository-root resolution paragraph; path regression must RED; restore; GREEN.
+5. Causality: prompt/unit checks are only structural support; acceptance requires at least one seeded pre-existing/unrelated issue that full `review` rejects and one PR-caused issue it retains.
+6. Only after 1–5: canonical `make check`, then quick-meta/proposed-diff differential acceptance.
+
+This order follows BMAD test-design risk prioritization and the external mutation-testing guidance: mutate only a single high-risk boundary at a time, use the narrow owning test first, and never substitute mutation score or line coverage for product-level acceptance.
+
 ## ONE next move
 
-Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. Then execute the preservation table top-down: B/D budget boundaries first, then causality and path anchoring, with discriminating RED→restore→GREEN evidence, followed by canonical `make check`; only then run full `review` paired acceptance for causality/quick-meta/proposed-diff semantics. Do not preserve an entire dirty file merely because one contained behavior is valuable, and do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
+Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. As soon as that route is CURRENT-callable, execute the RED→restore→GREEN sequence above without changing product behavior, then canonical `make check`; only after deterministic evidence is GREEN may full `review` acceptance decide causality, quick-meta fusion, and proposed-diff semantics. Do not preserve an entire dirty file merely because one contained behavior is valuable, and do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
 
 ## Write-back rule
 
