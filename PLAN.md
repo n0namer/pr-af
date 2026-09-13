@@ -681,9 +681,26 @@ Acceptance rule stays intentionally small: Tier-1 deterministic contracts must p
 
 Current E2E harness live SHA-256 is `34e5361308795bb3890a6515d90ea303a0566a1e193fa0cbff6afb15ceb335a9`. No harness or product source was changed in this batch; this is test-design/write-back only.
 
+## Deterministic preservation gate executed — 2026-09-13
+
+BMAD `bmad-testarch-trace` / test-review gate was executed on the exact live `/src/pr-af/go` source once the typed absolute-Go `test` route became CURRENT-callable. All temporary mutants were applied directly in the DEV container, each was restored to the exact preimage SHA before the next mutation, and the original source identities were verified by readback.
+
+Evidence summary:
+- Primary review budget fail-closed: baseline owning test GREEN; representative behavioral mutant removed both redundant review-budget guards and produced RED via unexpected harness execution/panic; exact restore returned `phases.go` to SHA-256 `7c73b05f18ba796212bc30f1bbcdd4f5d05d0e86ff939244f2d5ace9d6f3da11`; rerun GREEN.
+- Post-obligation budget re-check: removing the re-check produced RED with `verify_obligation calls = 1, want 0`; exact restore to the same `phases.go` SHA; rerun GREEN.
+- Evidence filtering / PR-causality sink: bypassing the `verified=false` drop produced RED because both the pre-existing and PR-caused findings survived instead of only the PR-caused finding; exact restore to the same `phases.go` SHA; rerun GREEN.
+- Repository-path anchoring: removing the repository-root prompt block produced RED because the expected repository-root guidance disappeared; exact restore returned `meta.go` to SHA-256 `c3d26d5f521d62d3e249e15aeabf5172bb93067c170a8d4e6834fec5750c062a`; rerun GREEN.
+- Provider pair regression: removing the partial-pair guard produced RED in `base_without_key`; exact restore returned `node.go` to SHA-256 `df7c1369a00d2009c7f812215754e1158d96519d4dbbf8e431ef248c3164e27d`; rerun GREEN.
+
+The five requirement-level oracles therefore now have direct mutation evidence and are **earned preservation contracts**. This does not yet earn QUICK fusion, prompt-only semantic recall, or the 241-line fallback; those still require product-level full-review evidence.
+
+Fresh package verification after all restores: `/usr/local/go/bin/go test ./... -count=1` PASS across the full module. The canonical Makefile gate is `go build ./... && go vet ./... && go test ./...`; however `make check` still fails at its first step because bare `go` is absent from PATH, while direct absolute `go build ./...` and `go vet ./...` remain blocked by operator mediation. Therefore the current validation state is: **all Go tests fresh PASS; build/vet canonical sub-gates EVIDENCE_MISSING due transport policy, not source failure**. Do not call the canonical gate PASS yet.
+
+This materially changes the project state: the previous instruction to remain entirely source-only is obsolete. The deterministic preservation slice is now proven and restored cleanly; the next value-bearing work is to close build/vet transport and then run the already-designed 4-case full-review acceptance matrix. No GitHub-first product coding or redeploy loop is needed.
+
 ## ONE next move
 
-Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. When CURRENT-callable, execute the four Tier-1 RED→restore→GREEN mutants in the fixed order above, then provider regression, targeted packages, and canonical `make check`; only then run paired full-`review` acceptance. Preserve contracts independently, not whole dirty files; quick-meta fusion and the 241-line semantic fallback remain unearned. Do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
+Close the remaining validation-transport gap for canonical build/vet on the exact live `/src/pr-af/go` source (typed fixed-PATH or equivalent operator-approved route), then immediately run `go build ./...`, `go vet ./...`, and re-run `go test ./... -count=1` as the canonical local gate equivalent. If all three pass, proceed directly to the existing full-review acceptance matrix (semantic, mechanical, systemic, clean control) to decide prompt-only semantics and QUICK fusion. The 241-line semantic fallback remains frozen unless the smaller prompt-only candidate fails the seeded semantic case.
 
 ## Write-back rule
 
