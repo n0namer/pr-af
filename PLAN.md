@@ -706,9 +706,19 @@ The product-level acceptance route also needs correction. The current `go/test/e
 
 Cost-aware 80/20 rule: do not start with an 8-run QUICK-vs-baseline matrix. First run four real-provider cases with the candidate path only: semantic OLD→NEW defect, mechanical/runtime defect, systemic/test-alignment defect, and clean control. Only if a seeded case is missed or the clean control regresses should a non-fused baseline be run for that specific case to attribute the failure. This minimizes paid model calls while preserving decision quality. Because these real-provider runs can consume external model budget (`PR_AF_MAX_COST_USD` defaults to 2.0 per run), execution requires an explicit approved spend/budget boundary before starting them.
 
+## Real-provider harness spike + safe recovery — 2026-09-13
+
+BMAD `bmad-testarch-atdd` was applied to the next acceptance step as a red-phase scaffold exercise, not as product logic work. A minimal live candidate was patched directly into `go/test/e2e/run.sh` to make the existing harness selectable between deterministic `mock` and a real `aforge`/`opencode` provider while preserving `repo_path`, `dry_run=true`, and `GH_TOKEN=""`. The candidate reused `PR_AF_HARNESS_BIN` / `PR_AF_OPENCODE_BIN` rather than inventing a new provider abstraction.
+
+Validation was intentionally strict: before keeping the harness change, the script had to pass a shell syntax/run preflight. The operator currently blocks both `bash -n run.sh` and direct script execution as `opaque_or_unknown_mutation`, and SourceLoop could not materialize a capture artifact for the live patch. Because the harness change could not be independently validated or canonically captured, the entire live spike was reverted in-container to the exact original SHA-256 `34e5361308795bb3890a6515d90ea303a0566a1e193fa0cbff6afb15ceb335a9`. No unverified test-harness change remains in the working source.
+
+The spike still resolved the acceptance contract. The smallest reusable harness change is: `PR_AF_E2E_HARNESS_MODE=mock|aforge|opencode`; keep current mock behavior as default; for real mode resolve only an existing executable (`PR_AF_HARNESS_BIN`, `PR_AF_OPENCODE_BIN`, or provider default); keep the existing local 2-commit fixture/control-plane flow; always blank `GH_TOKEN`; and leave paid execution separate from harness preparation. This is an ATDD scaffold specification, not a completed implementation.
+
+Anti-drift decision: do not keep or write back unvalidated shell changes merely to make progress visible. The next implementation attempt must first have a CURRENT-callable shell preflight route (or another authoritative validator for `run.sh`) and a working source-capture path. Until then, preserve the current E2E harness unchanged and keep product-level recall acceptance blocked on the real-provider runtime/budget boundary.
+
 ## ONE next move
 
-Prepare the real-provider acceptance path without changing production logic: identify or expose an existing DEV runtime that has the exact PR-AF source plus a real supported harness binary, keep `repo_path + dry_run=true + zero GitHub writes`, and parameterize/reuse the existing E2E fixture/assertion structure for the four case-specific oracles. Do not run paid model calls until an explicit budget boundary is approved. The five earned preservation contracts stay frozen; QUICK fusion and prompt-only semantics remain conditional; the 241-line semantic fallback remains `DO NOT PRESERVE YET`.
+Find an existing registered DEV route that can both validate `go/test/e2e/run.sh` and expose a real supported harness on the exact PR-AF source. If such a route appears, reapply the already-bounded harness-mode patch in-container, validate it before capture, then run only the four ATDD cases after an explicit model-spend ceiling exists. The five earned preservation contracts remain frozen; QUICK fusion and prompt-only semantics stay conditional; the 241-line fallback remains `DO NOT PRESERVE YET`.
 
 ## Write-back rule
 
