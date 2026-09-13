@@ -588,6 +588,10 @@ The other Tier-1 anchors are already discriminating by source inspection: removi
 
 This refines, but does not reorder, the executable gate. One mutant means one behavioral requirement; a single requirement may require changing more than one redundant guard when both independently enforce the same outcome. Capture exact preimages/SHA-256 before every live mutant and restore them before the next.
 
+## Validation-route elimination — 2026-09-13
+
+One remaining reuse-before-build route was checked before stopping on the capability gap: the existing `agentfield-dev-runtime-capture` target sees the same persistent `/src/pr-af/go` source, but fresh read-only probes found no Go binary at `/usr/local/go/bin/go`, `/usr/bin/go`, `/usr/local/bin/go`, or `/opt/go/bin/go`. Existing `coding-runtime`, `workbench`, `universal-solver-runtime-dev`, and `agentfield-dev-deep-research` do not expose `/src/pr-af/go`. Therefore no already-registered adjacent DEV target currently provides both the exact dirty source and an observed Go toolchain. Creating/copying a new validation runtime would expand scope; modifying PR-AF source merely to smuggle an absolute Go path would weaken the evidence contract. Neither is justified here.
+
 ## ONE next move
 
 Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. When CURRENT-callable, execute the four Tier-1 RED→restore→GREEN mutants in the fixed order above, then provider regression, targeted packages, and canonical `make check`; only then run paired full-`review` acceptance. Preserve contracts independently, not whole dirty files; quick-meta fusion and the 241-line semantic fallback remain unearned. Do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
