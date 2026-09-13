@@ -661,6 +661,16 @@ BMAD status/code-review pass inspected the remaining QUICK-mode optimization dir
 
 No product source changed in this batch. Live source identities remain `phases.go` SHA-256 `7c73b05f18ba796212bc30f1bbcdd4f5d05d0e86ff939244f2d5ace9d6f3da11`, `prompts/meta.go` SHA-256 `f6825f7866da5ed46441d11a997c95abd09c0d50d4bb4def6f4e0f8bad087d76`, and `streaming_test.go` SHA-256 `645e4c29ad552aeca76a5f4949b3a68acb8fed3a171dec0ff8f443495134bcbd`. Validation transport remains the blocking dependency, so no stale test retry was performed.
 
+## Provider-pair regression packet — 2026-09-13
+
+BMAD `bmad-testarch-trace` was applied to the provider regression that follows the four Tier-1 mutants. The live contract is small and independently testable: `BuildAgent` must reject a partial OpenAI-compatible provider pair (`OPENAI_API_KEY` without `OPENAI_BASE_URL`, or the reverse) so boot cannot silently select a malformed provider path. The owning oracle already covers both asymmetric cases in `TestBuildAgentRejectsPartialOpenAICompatibleConfig`; current live identities are `go/internal/node/node.go` SHA-256 `df7c1369a00d2009c7f812215754e1158d96519d4dbbf8e431ef248c3164e27d` and `go/internal/node/node_test.go` SHA-256 `323f7d7b5229c7b54e38dd92b5e015e621b019de18c3b293d6d7100779d9686c`.
+
+The representative fail-open mutant is exact and minimal: remove only the XOR-style partial-pair guard in `BuildAgent` while leaving the later `if openAIKey != ""` configuration path unchanged. Source inspection shows why this is a discriminating requirement-level mutant: the `base without key` case would bypass AIConfig attachment entirely and proceed toward `agent.New` instead of being rejected by PR-AF's provider contract; the test requires an error for that case. The `key without base` case provides a second asymmetric oracle. No PASS/RED claim is made until Go executes.
+
+The stale-safe live-patch preview for this packet could not be completed in this batch because the DEV target-control path itself lost its Docker sockguard socket (`/var/run/sockguard/sockguard.sock: no such file or directory`) on two identical preview attempts. Per retry policy the mutation was not attempted again. This is a transport/tooling failure, not evidence about PR-AF code, and no product source changed. When target mediation is healthy again, re-read `node.go` SHA first, preview/apply the one guard-removal mutant, require the owning test RED, restore exact preimage SHA, then require GREEN before proceeding to targeted packages.
+
+80/20 decision: keep this provider-pair regression as the only provider-specific deterministic gate before package-wide checks. Do not expand into a provider matrix unless this oracle fails or later full-review acceptance exposes a provider-routing defect.
+
 ## ONE next move
 
 Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. When CURRENT-callable, execute the four Tier-1 RED→restore→GREEN mutants in the fixed order above, then provider regression, targeted packages, and canonical `make check`; only then run paired full-`review` acceptance. Preserve contracts independently, not whole dirty files; quick-meta fusion and the 241-line semantic fallback remain unearned. Do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
