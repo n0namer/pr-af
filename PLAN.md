@@ -478,6 +478,18 @@ No PR-AF product file was mutated in this batch. Validation remains blocked by t
 
 ## Validation-capability + preservation-surface checkpoint — 2026-09-13
 
+### Pareto preservation decomposition — 2026-09-13
+
+A fresh source-only BMAD quick-dev + testarch-trace/test-design pass decomposed the accepted-baseline delta into independently testable obligations. Against `1967bb...`, the inspected live delta is concentrated in seven files: `budget_test.go` +62, `degradation_test.go` +33, `phases.go` +53/-40, `prompts/reviewdim.go` +9, `prompts/verify.go` +4, `reasoners/meta.go` +9, and `reasoners/reasoners_test.go` +145. Accepted provider/node files have no live delta from `1967bb...`; provider compatibility is therefore an accepted-baseline regression obligation, not a new preservation delta.
+
+`orch/phases.go` splits into four obligations: quick-meta fusion remains CONDITIONAL on measured full-review quality/latency; primary-review budget exhaustion is a KEEP candidate with explicit fail-closed error oracle; all-finding evidence verification/drop of `verified=false` is a KEEP candidate for PR-causality precision; post-obligation-extraction budget re-check is a KEEP candidate with zero verifier-call oracle. Coverage-reviewer failure preservation remains a separate KEEP candidate.
+
+The smallest semantic-quality preservation units remain PR change-causality (+13 prompt lines across `prompts/reviewdim.go` and `prompts/verify.go`) and repository-path anchoring (+9 lines in `reasoners/meta.go`). Prefer these compact rules plus discriminating tests over the 241-line deterministic semantic-delta fallback, which remains `DO NOT PRESERVE YET` until paired full-`review` cases prove prompt-only reasoning insufficient.
+
+BMAD ATDD red-phase contract is now explicit: each KEEP candidate must name its invariant and actual failure-boundary oracle, be GREEN on candidate source, and where practical kill one bounded controlled mutant before exact revert. Passing commands without discriminating RED evidence prove conformance only, not defect-detection power. Do not add a mutation-testing dependency or helper infrastructure; once Go validation is callable, use bounded temporary source mutations with stale-safe preimage/readback and immediate revert.
+
+Anti-drift: no PR-AF product source was changed in this checkpoint. Runtime validation remains externally blocked by the operator-owned DEV gateway source-identity conflict plus absent executable typed fixed-Go-PATH `make check` route; do not work around it by weakening mediation or changing PR-AF build tooling.
+
 Fresh anti-drift observation confirms the product worktree remains detached at `5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f` with the same 17 tracked dirty files plus excluded runtime/test artifacts; repository `AGENTS.md` was reread and still requires container-first editing and canonical `make check` from `go/`. No PR-AF product file was mutated.
 
 CURRENT operator discovery still exposes no executable route for the missing Go validation transport. Self-protection is enabled with zero active approvals. Operator guidance ALLOWs capability discovery but returns `execution_authority=NONE` and `routes=[]`; lesson lookup has no verified `validation_transport` match. The DEV gateway itself is healthy enough to report mediation/validator/scenario planes READY, but its deployment fingerprint is now explicitly conflicted: loaded/source coordinator `7ed1daa...` versus configured coordinator `1571f852...`, `source_conflict=true`. This is additional reason not to patch the protected operator from this PR-AF workstream: operator source identity must first be reconciled by its owner before any typed validation route can be trusted.
