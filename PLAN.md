@@ -572,6 +572,14 @@ BMAD routing remains `bmad-help` → `bmad-quick-dev` + `bmad-testarch-trace`, w
 
 Batch DoD result: anti-drift identity readback PASS; canonical plan freshness re-established; operator validation-route recheck PASS as a blocker diagnosis; product-code mutation intentionally NOT STARTED because the required deterministic verification capability is still unavailable. The first executable Tier-1 order is unchanged.
 
+## Contract-minimization checkpoint — 2026-09-13
+
+Fresh live `git diff --numstat` against accepted baseline `1967bb2275855d8f7626806169b2a274b379c9e0` re-confirms the smallest independently reviewable correctness contracts: `prompts/reviewdim.go` +9, `prompts/verify.go` +4, and `reasoners/meta.go` +9, while `orch/phases.go` remains mixed at +53/-40. Direct diff readback shows the first two deltas are narrowly scoped PR change-causality instructions and the third is narrowly scoped repository-relative path resolution. This is stronger evidence for contract-level preservation than for whole-file carry-forward.
+
+BMAD quick-dev + testarch-trace/test-design decision: treat these three tiny contracts as Tier-1 preservation candidates, but do not mark them accepted until discriminating regressions execute. `orch/phases.go` must continue to be decomposed by invariant/test boundary because its mixed delta combines quick-meta efficiency work with fail-closed correctness work. This preserves the 20/80 route: prove the small high-risk invariants first, leave QUICK fusion and the 241-line semantic fallback outside the correctness bundle unless full-review evidence makes them earn inclusion.
+
+Anti-drift note: the canonical `dev` plan advanced during this workstream; latest observed `dev` HEAD is `4f4dc861319a94cbcf806f99945ddce1f820e86d`, while the live product worktree remains detached at `5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f`. This is expected design/runtime divergence for the docs-only SoT stream and is not permission to checkout/reset the dirty runtime source.
+
 ## ONE next move
 
 Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. When CURRENT-callable, execute the four Tier-1 RED→restore→GREEN mutants in the fixed order above, then provider regression, targeted packages, and canonical `make check`; only then run paired full-`review` acceptance. Preserve contracts independently, not whole dirty files; quick-meta fusion and the 241-line semantic fallback remain unearned. Do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
