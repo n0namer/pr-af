@@ -486,9 +486,32 @@ Source-only BMAD quick-dev + testarch-trace/test-design refinement narrowed the 
 
 Fresh external-skill research reinforces the gate rather than changing it. BMAD's current public `bmad-code-review` workflow is explicitly adversarial/no-noise; current `qa-methodology` guidance recommends risk-based independent verification and mutation-guided hardening; Go mutation-testing guidance recommends package-scoped/dry-run mutation and warns that broad runs can take hours; another current mutation-testing skill marks mutation evidence advisory rather than a merge gate. Apply these only as support for BMAD ATDD/trace: each preservation regression must name the protected failure boundary and, where safe and bounded, kill one representative controlled mutant. Do not install a mutation framework or create a mutation-score release gate while the canonical Go execution route is blocked.
 
+## Operator/source anti-drift + preservation decomposition — 2026-09-13
+
+Fresh BMAD quick-dev + testarch-trace observation found a **SOURCE_CONFLICT inside the operator evidence itself**. The DEV gateway runtime still reports loaded `/app/gateway/operation-mediation.mjs` SHA-256 `990ffaa7...`; direct source read of that exact loaded file already contains typed PR-AF lifecycle and quality routes (`INSTALL_PR_AF_PACKAGE`, `START/STOP_PR_AF`, callback-aware start, runtime/quality probes, execution read) that the older PLAN narrative had described as missing during earlier checkpoints. The current mediation source still recognizes bare `make check` but does not contain the proposed exact fixed-Go-PATH `make check` recognizer. Therefore do not treat the historical "no PR-AF lifecycle route" diagnosis as CURRENT, and do not patch this protected operator from PR-AF while its deployment fingerprint remains conflicted (`source_conflict=true`).
+
+Fresh source decomposition also corrects the preservation arithmetic. Exact `git diff --numstat 1967bb...` over the eight high-value live files is **+556/-40**, not the earlier +337/-45 summary. The split is: budget tests +62; degradation/evidence-verifier test +33; orchestration +53/-40; causality prompts +9/+4; path anchoring +9; mixed reasoner tests +145; deterministic semantic-delta production +241. This matters for 80/20: the compact production contracts outside `reasoners/reviewdim.go` are small, while most line volume is tests plus the unproven 241-line semantic fallback.
+
+`orch/phases.go` is not one preservation unit. It contains four independently gated behaviors: (A) quick-meta fusion, conditional on full-review quality/latency evidence; (B) primary-review budget exhaustion fail-closed, high-priority preservation; (C) evidence verification widened to all findings plus drop of `verified=false`, tied to causality/precision; and (D) post-obligation-extraction deadline re-check, high-priority preservation. Canonicalization must split/trace these requirements rather than carrying the whole file because one behavior passed.
+
+BMAD ATDD/test-design plus the selected mutation-testing/verification guidance now defines the first executable batch once Go validation is callable: one regression per preserved boundary, then one controlled representative mutant for B/C/D and causality/path anchoring where the mutation is safe and trivially reversible. A mutant must make the owning regression RED and the exact restored preimage must return GREEN before the result counts as discriminating evidence. Mutation score is advisory; no new framework/dependency or broad mutation sweep is justified.
+
+### Preservation gate table
+
+| Requirement | Current production surface | Deterministic evidence needed before canonicalization | Decision |
+|---|---|---|---|
+| Generic OpenAI-compatible provider pair | already in accepted `1967bb...` baseline | existing pair/partial-config regression + canonical gate | KEEP BASELINE |
+| Coverage-added reviewer failure preserves primary findings | accepted baseline + regression | targeted regression + canonical gate | KEEP BASELINE |
+| Primary-review budget exhaustion is fail-closed | `orch/phases.go` + `budget_test.go` | regression must kill fail-open mutant | PRESERVE CANDIDATE |
+| Deadline after obligation extraction prevents verifier fan-out | `orch/phases.go` + `budget_test.go` | call-count regression must kill removed-guard mutant | PRESERVE CANDIDATE |
+| PR change causality / unsupported finding rejection | prompt rules + all-finding evidence verification/drop | clean-negative + seeded causality regression; full `review` acceptance | PRESERVE CANDIDATE |
+| Repository-relative path anchoring | `reasoners/meta.go` + mixed `reasoners_test.go` | path regression + controlled removed-anchor mutant | PRESERVE CANDIDATE |
+| Quick-meta fusion | `orch/phases.go` + prompt/tests | paired full-review quality + latency, no intended-function loss | CONDITIONAL |
+| 241-line deterministic semantic-delta fallback | `reasoners/reviewdim.go` + mixed tests | non-operator seeded recall + clean negatives + full-review differential | DO NOT PRESERVE YET |
+
 ## ONE next move
 
-Operator-owning project first reconciles the DEV gateway `source_conflict` and exposes one exact typed DEV verification capability for fixed-Go-PATH `make check` with adversarial mediation regression. Once CURRENT callability is proven, run one bounded preservation batch: targeted regressions for budget fail-closed, post-extraction fan-out, coverage preservation, causality rejection, provider pair/partial config, and repo-path anchoring; then controlled red/mutation proof for the highest-risk boundaries; then canonical `make check`. Only after that deterministic gate is GREEN run paired clean/seeded full-`review` acceptance and decide whether the compact proposed-diff prompt rule is sufficient. Do not bypass mediation, mutate PR-AF tooling for validation, touch PROD, or restart shared AgentField infrastructure.
+Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. Then execute the preservation table top-down: B/D budget boundaries first, then causality and path anchoring, with discriminating RED→restore→GREEN evidence, followed by canonical `make check`; only then run full `review` paired acceptance for causality/quick-meta/proposed-diff semantics. Do not preserve an entire dirty file merely because one contained behavior is valuable, and do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
 
 ## Write-back rule
 
