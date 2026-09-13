@@ -844,9 +844,33 @@ Important distinction: mockcli may prove plumbing/wiring but cannot prove semant
 
 Batch DoD: architecture source re-read; live `Orchestrator.Run` and `runReviewPhases` re-read on the exact source; current project objective corrected in the SoT; no product/runtime mutation performed in this correction batch.
 
+## Architecture bring-up evidence — 2026-09-13
+
+`bmad-help` routed this batch to brownfield quick-dev / implementation verification. The source architecture and exact live Go implementation were re-read before execution. A focused architecture-responsibility test batch was then run on the exact `/src/pr-af/go` source using the CURRENT-callable Go test route.
+
+Fresh executable evidence:
+- Intake confident path and harness fallback: PASS (`TestIntakePhaseConfidentGate`, `TestIntakePhaseFallbackParsed`).
+- Anatomy semantic/structural contract: PASS (`TestAnatomyPhaseHappyPath`).
+- Dynamic planning: PASS (`TestPlanningPhaseHappyPath`).
+- Review dimension execution + bounded child/sub-review behavior: PASS (`TestReviewDimensionHappyPath`, `TestReviewDimensionAtMaxDepthDropsSubReviews`).
+- Evidence verification: PASS (`TestEvidenceVerifierHappyPath`).
+- Adversary layer: PASS (`TestAdversaryPhaseHappyPath`).
+- Coverage gate: PASS (`TestCoverageGate`).
+- Streaming overlap between reviewer production and review-layer consumption: PASS (`TestStreamingLayerConsumesWhileReviewersRun`).
+- Local phase routing names across intake/anatomy/meta/review/worthiness/evidence/adversary/compound/coverage/obligation reasoners: PASS (`TestCallLocalSeamsRouteEveryPhase`).
+- Output/HITL direct path and structured result key parity: PASS (`TestHITLOffPostsDirectly`, `TestReviewResultKeySetParity`).
+
+This means the architecture is not merely present statically: the core phase implementations and their internal wiring execute successfully in-process on the live candidate. It still does **not** prove a full black-box node/control-plane review lifecycle.
+
+The repository already contains the canonical black-box bring-up suite under `go/test/functional`, which is explicitly designed to launch a self-contained control plane + Go node, verify health, exact reasoner registration parity, and review API error-shape contracts. Running that suite on the exact-source DEV target produced a clean environmental SKIP: `docker (with a running daemon) is not available`. Direct `docker info` confirms the exact-source targets `agentfield-dev-workforce` and `agentfield-dev-runtime-capture` do not even contain a Docker client. Hostinger Docker Manager is also unavailable for this VPS OS. Therefore the remaining bring-up blocker is now precise: **there is no CURRENT exact-source runner capable of executing the repository's own self-contained functional stack**.
+
+External agent-evaluation skill research reinforces the sequencing rather than adding tooling: evaluate through the real CLI/harness, separate deterministic code correctness from agent behavior, start with 1–2 core cases, and only broaden after the end-to-end path is alive. Applied decision: do not benchmark recall yet and do not introduce another eval framework before the original functional stack can run.
+
+Batch DoD: architecture source re-read; phase-focused executable batch PASS; canonical functional suite invoked and its skip reason proven; no product source mutation; no GitHub-first programming; no new runtime/container/network created.
+
 ## ONE next move
 
-Bring up and execute the original PR-AF 7-phase review path end-to-end on the exact live candidate, using the best CURRENT available provider/runtime route and `dry_run=true`. Treat the run as a functional architecture check first: prove every intended phase/responsibility executes, fix any real implementation/runtime gaps directly in the container, and only then move to quality benchmarking. Do not use the previous `$4` figure as a blocker or milestone.
+Run the repository's existing `go/test/functional` stack on a Docker-capable DEV runner using the exact current `/src/pr-af` candidate, then execute one full `review` with `dry_run=true` and capture which of the 7 architecture responsibilities actually fire. If the canonical functional stack reveals a code/runtime defect, fix it directly in the container and re-run. Creating a new Docker-capable auxiliary runner or mounting the exact live source into one is a new runtime scope; until that is explicitly approved or an existing operator-native Docker-capable route appears, keep the proven source steady rather than substituting mock results for end-to-end evidence.
 
 ## Write-back rule
 
