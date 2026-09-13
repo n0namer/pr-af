@@ -109,6 +109,20 @@ func (n *Node) reviewHandler(ctx context.Context, input map[string]any) (any, er
 	// ReviewConfig.FromInput (config.go); both are reproduced.
 	in.MaxReviewDepth = min(in.MaxReviewDepth, 3)
 
+	format := strings.ToLower(strings.TrimSpace(in.OutputFormat))
+	if format == "" {
+		format = "github"
+	}
+	switch format {
+	case "github", "json", "sarif", "markdown":
+	default:
+		return nil, &agent.ExecuteError{StatusCode: http.StatusBadRequest, Message: "unsupported output_format: " + in.OutputFormat}
+	}
+	in.OutputFormat = format
+	if format != "github" {
+		in.DryRun = true
+	}
+
 	// Resolve the repo path (app.py:231, called OUTSIDE the mapped try). Empty
 	// strings stand in for Python's None.
 	resolved, err := orch.ResolveRepo(ctx, strp(in.RepoPath), strp(in.PrURL))
