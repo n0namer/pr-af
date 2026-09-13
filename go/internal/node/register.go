@@ -169,10 +169,9 @@ func (n *Node) reviewHandler(ctx context.Context, input map[string]any) (any, er
 		}
 	}
 
-	// Python returns result.model_dump(); the ReviewResult struct marshals to the
-	// identical snake_case key set (no omitempty), so returning it directly yields
-	// the same JSON the async status callback / sync response carries.
-	return result, nil
+	// GitHub/json preserve the structured result; markdown/SARIF adapt only the
+	// transport representation after the full review pipeline has completed.
+	return formatReviewResult(format, result), nil
 }
 
 // strp dereferences a *string (nil -> "").
