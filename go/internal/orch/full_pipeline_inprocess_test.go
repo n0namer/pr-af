@@ -14,7 +14,7 @@ func TestFullPipelineInProcess(t *testing.T) {
 	cfg := config.DefaultReviewConfig()
 	cfg.Comments.PolishEnabled = false
 	cfg.Comments.MergeGateEnabled = false
-	o := New(Deps{App: &fakeApp{}}, schemas.ReviewInput{DryRun: true}, cfg)
+	o := New(Deps{App: &fakeApp{}}, schemas.ReviewInput{RepoPath: strPtr(t.TempDir()), DryRun: true}, cfg)
 	o.cleanupFn = func() {}
 
 	var mu sync.Mutex
@@ -27,6 +27,8 @@ func TestFullPipelineInProcess(t *testing.T) {
 
 	o.runIntakeFn = func(context.Context) (schemas.IntakeResult, error) {
 		mark("intake")
+		patch := "@@ -1 +1 @@\n-old\n+new\n"
+		o.prData = &schemas.GitHubPRData{Diff: patch, ChangedFiles: []schemas.ChangedFile{{Path: "app.go", Status: "modified", Patch: patch}}}
 		return schemas.IntakeResult{PrSummary: "change app", ReviewDepth: "standard"}, nil
 	}
 	o.runAnatomyFn = func(context.Context, schemas.IntakeResult) (schemas.AnatomyResult, error) {
