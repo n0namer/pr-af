@@ -647,6 +647,12 @@ Adversarial/edge review found several independent reasons the fallback must earn
 
 Batch DoD: current source/SoT identity rechecked; mixed semantic test ownership localized; fallback edge risks traced to exact source branches; preservation decision tightened without product mutation; validation-transport blocker unchanged and no stale execution retry performed.
 
+## Prompt-only oracle dry-run — 2026-09-13
+
+The ownership split above was converted into an exact stale-safe dry-run on the live test file, still without writing product source. Against `go/internal/reasoners/reasoners_test.go` preimage SHA-256 `3a6564b7c087c2bd7cbe104e796191f2ab283fcd7c28226610d0359495cabc61`, a preview removes only the four deterministic-hint/truth-table expectations from `TestReviewDimensionDiffRequiresOldNewSemanticVerification` while retaining the five assertions that define the prompt-only contract: proposed-diff rule present, proposed diff authoritative, OLD versus NEW semantics, representative truth cases, and stale checkout must not dismiss an added-line regression. Preview succeeded and would produce candidate SHA-256 `f0ae4bc71f0c58104d52a071697b417bf5cbcc75e147a75b1ad56ec0729d9fb0`; the live file remains at the preimage SHA.
+
+This is a preparation artifact only, not a test PASS: the current implementation still executes the semantic fallback on the fixture and Go validation remains unavailable. When the validation route returns, the prompt-only candidate must be implemented and tested as one coherent source change so the structural oracle no longer depends on fallback behavior; dedicated operator/fallback tests are then either retained only with independently earned fallback code or removed with it. This makes the future diff smaller and prevents a mixed test from silently preserving an unearned mechanism.
+
 ## ONE next move
 
 Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. When CURRENT-callable, execute the four Tier-1 RED→restore→GREEN mutants in the fixed order above, then provider regression, targeted packages, and canonical `make check`; only then run paired full-`review` acceptance. Preserve contracts independently, not whole dirty files; quick-meta fusion and the 241-line semantic fallback remain unearned. Do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
