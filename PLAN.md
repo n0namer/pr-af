@@ -526,9 +526,17 @@ No production mutation is justified in this checkpoint. The current blocker rema
 
 This order follows BMAD test-design risk prioritization and the external mutation-testing guidance: mutate only a single high-risk boundary at a time, use the narrow owning test first, and never substitute mutation score or line coverage for product-level acceptance.
 
+## Preservation-contract decomposition checkpoint — 2026-09-13
+
+Fresh source diff against accepted baseline `1967bb...` sharpens the BMAD trace from requirement → oracle → mechanism. The currently inspected preservation slice is 7 changed files (`+315/-40`): `budget_test.go` +62, `degradation_test.go` +33, `phases.go` +53/-40, `prompts/reviewdim.go` +9, `prompts/verify.go` +4, `reasoners/meta.go` +9, and mixed `reasoners_test.go` +145. Provider/bootstrap files are unchanged from that accepted baseline and are not new live preservation work in this phase.
+
+The contract/oracle split is now explicit: PR causality is a compact +13 prompt contract but its current unit oracle is only partial because the fake verifier supplies `verified=false`; repository-path anchoring is a compact +9 mechanism; the two budget regressions are strong direct boundary oracles; evidence filtering is a strong unit oracle for sending suggestions and dropping unverified findings. Therefore the 145-line mixed reasoner-test delta must not be treated as one indivisible proof unit: path/causality tests can earn preservation independently from semantic-delta fallback tests.
+
+Anti-drift rule for the next executable batch: preserve behavior only after its owning oracle demonstrates discriminating power. A passing colocated or aggregate test does not earn preservation for unrelated mechanisms in the same file. Manual one-boundary mutants remain preferred over adding a mutation-testing dependency; product-level causality still requires seeded/clean full-`review` acceptance after deterministic gates.
+
 ## ONE next move
 
-Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. As soon as that route is CURRENT-callable, execute the RED→restore→GREEN sequence above without changing product behavior, then canonical `make check`; only after deterministic evidence is GREEN may full `review` acceptance decide causality, quick-meta fusion, and proposed-diff semantics. Do not preserve an entire dirty file merely because one contained behavior is valuable, and do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
+Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. As soon as that route is CURRENT-callable, execute the ranked RED→restore→GREEN sequence already defined above, treating each contract independently; then targeted packages and canonical `make check`; only after deterministic GREEN run paired full-`review` acceptance. Do not preserve the 241-line semantic fallback merely because its colocated tests pass, do not preserve whole dirty files because one contained behavior is valuable, and do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
 
 ## Write-back rule
 
