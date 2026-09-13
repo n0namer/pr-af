@@ -75,6 +75,13 @@ func roleAnatomy(prompt string) any {
 
 // ---- meta_semantic / meta_mechanical / meta_systemic ----
 
+type mockMetaDimensionResult struct {
+	Rationale  string                    `json:"rationale"`
+	Lens       string                    `json:"lens"`
+	Dimensions []schemas.ReviewDimension `json:"dimensions"`
+	Confidence float64                   `json:"confidence"`
+}
+
 // roleMeta emits one review dimension for the given lens, targeting the changed
 // files parsed from the meta context blob, so the orchestrator has a concrete
 // dimension to fan out to review_dimension.
@@ -92,11 +99,11 @@ func roleMeta(prompt, lens string) any {
 		Priority:     5,
 		Budget:       defaultBudget(),
 	}
-	return schemas.MetaDimensionResult{
+	return mockMetaDimensionResult{
+		Rationale:  "Mock " + lens + " lens: one focused dimension over the changed files.",
 		Lens:       lens,
 		Dimensions: []schemas.ReviewDimension{dim},
 		Confidence: 0.8,
-		Rationale:  "Mock " + lens + " lens: one focused dimension over the changed files.",
 	}
 }
 
