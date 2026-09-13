@@ -580,6 +580,14 @@ BMAD quick-dev + testarch-trace/test-design decision: treat these three tiny con
 
 Anti-drift note: the canonical `dev` plan advanced during this workstream; latest observed `dev` HEAD is `4f4dc861319a94cbcf806f99945ddce1f820e86d`, while the live product worktree remains detached at `5a0f3b2b2c6c37d5cecab140cd2a0938c1715b7f`. This is expected design/runtime divergence for the docs-only SoT stream and is not permission to checkout/reset the dirty runtime source.
 
+## Tier-1 mutant preflight — 2026-09-13
+
+A source-only preflight of the exact dirty DEV files made the first mutation recipe more precise without changing product code. `runParallelReview` currently has two redundant fail-closed review-budget checks: an entry check before fan-out and a second check inside each dimension goroutine. `TestPrimaryReviewBudgetExhaustionFailsClosed` fixes the clock beyond budget and asserts the resulting fail-closed error. Therefore removing only the entry check is not a valid discriminating mutant: the per-dimension check can still return the same error and leave the test GREEN. For requirement-level mutation evidence, the representative fail-open mutant must temporarily bypass both review-budget checks in `runParallelReview` as one behavioral mutation; RED then proves the test protects the overall primary-review fail-closed boundary rather than one duplicate guard line.
+
+The other Tier-1 anchors are already discriminating by source inspection: removing the post-obligation budget re-check should cause verifier fan-out and violate the zero-call oracle; allowing `verified=false` findings through should violate the evidence-filtering oracle; removing the repository-root prompt append should violate both repository-root/path-example assertions. These are preflight expectations only — no RED/GREEN claim is made until the exact Go tests execute fresh.
+
+This refines, but does not reorder, the executable gate. One mutant means one behavioral requirement; a single requirement may require changing more than one redundant guard when both independently enforce the same outcome. Capture exact preimages/SHA-256 before every live mutant and restore them before the next.
+
 ## ONE next move
 
 Stay source-only in PR-AF until the operator owner reconciles its conflicted deployment identity and exposes a trustworthy exact Go verification route. When CURRENT-callable, execute the four Tier-1 RED→restore→GREEN mutants in the fixed order above, then provider regression, targeted packages, and canonical `make check`; only then run paired full-`review` acceptance. Preserve contracts independently, not whole dirty files; quick-meta fusion and the 241-line semantic fallback remain unearned. Do not bypass mediation, touch PROD, or restart shared AgentField infrastructure.
