@@ -804,6 +804,29 @@ Decision sequence is intentionally asymmetric for cost: (1) real-provider S1 + C
 
 No paid run, source mutation, auxiliary runtime, or new file was created in this batch. This is the exact acceptance contract to execute once the already-recorded runtime/spend boundary is authorized.
 
+## BMAD traceability gate — 2026-09-13
+
+`bmad-help` was re-activated first, then `bmad-testarch-trace` was selected as the specialized workflow because the decisive question is now which North-Star requirements are already backed by executable evidence and which still lack product-level proof.
+
+| Requirement / decision | Current evidence | Gate state |
+| --- | --- | --- |
+| Primary review fails closed when review budget is exhausted | Behavioral mutant removed both review-budget guards; owning test RED; exact restore; GREEN | **COVERED / earned** |
+| No verifier fan-out after extraction consumes remaining budget | Guard-removal mutant produced `verify_obligation calls = 1, want 0`; restore; GREEN | **COVERED / earned** |
+| Only PR-caused, evidence-verified findings survive | `verified=false` bypass mutant made the focused oracle RED; restore; GREEN | **COVERED / earned** |
+| Meta reviewers resolve repository-relative paths under the actual repo root | Repository-root prompt removal made the path oracle RED; restore; GREEN | **COVERED / earned** |
+| Partial OpenAI-compatible provider configuration is rejected | Pair-guard removal made `base_without_key` RED; restore; GREEN | **COVERED / earned** |
+| Maintained Go source remains compilable/static-checkable/testable after restore | Full `go test ./... -count=1` PASS; compile-only sweep PASS; `go test -vet=all ./... -run '^$' -count=1` PASS. Literal `make check` was not executed exactly | **COVERED with exact-command caveat** |
+| QUICK fused meta preserves semantic/mechanical/systemic recall while reducing calls | Structural tests prove one fused meta call and prompt coverage only; no real-provider recall/FP evidence | **GAP / conditional** |
+| Proposed-diff OLD→NEW prompt rule materially improves semantic recall | Prompt-only source mutant is localized and stale-safe previewed, but no paired real-provider S1 result exists | **GAP / conditional** |
+| 241-line deterministic semantic fallback is worth preserving | No product-level evidence that prompt-only semantics is insufficient; source review found extra complexity/risk | **NOT EARNED / excluded by default** |
+| Full reviewer meets real defect-recall / clean-control precision contract | Frozen S1/M1/Y1/C0 oracles are specified, but no exact-source registered DEV target currently has a real `aforge`/`opencode` harness plus callable script validation | **EVIDENCE_MISSING** |
+
+**BMAD quality-gate decision: CONCERNS / not North-Star-complete.** Deterministic preservation coverage is strong enough to freeze the five earned contracts, but semantic/product acceptance is still unproven. This is not a code-failure signal and does not justify weakening the oracle or preserving extra fallback logic.
+
+The nearest mandatory step is therefore the already-recorded acceptance-boundary expansion: an explicitly approved bounded real-provider route on the exact PR-AF source, with script validation, `GH_TOKEN=""`, `dry_run=true`, cleanup/TTL, plus an explicit model-spend ceiling before paid calls. Until that boundary is approved or an operator-native equivalent appears, keep source steady and do not manufacture PASS evidence from mockcli.
+
+Batch DoD: current SoT HEAD and live detached source state rechecked; root `ERRORS.md` confirmed absent; `AGENTS.md` engineering contract re-read; CURRENT operator conflict re-read as loaded `9cf1f189e02df1827440494bc536c2deb23d3ea7` vs configured `1571f8525af160d890805271e23cbf574ca8d101`, `source_conflict=true`; requirements-to-evidence matrix completed; gate decision recorded; no product/runtime mutation performed.
+
 ## ONE next move
 
 Hold the five earned preservation contracts and current source steady. The next executable product-quality step is a bounded real-provider acceptance runtime on the exact PR-AF source, with shell validation available and `GH_TOKEN=""` / `dry_run=true`. Once that route and a model-spend ceiling are explicitly approved, reapply the already-bounded harness-mode patch in-container, validate/capture it, then run the four ATDD cases. QUICK fusion and prompt-only semantics stay conditional; the 241-line fallback remains `DO NOT PRESERVE YET`.
