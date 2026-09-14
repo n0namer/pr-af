@@ -959,9 +959,35 @@ Anti-drift: canonical `dev` now contains `ERRORS.md`, while the detached live wo
 
 Current interpretation: the Phase 7 output-mode architecture gap is **CLOSED**. Functional architecture bring-up now covers internal orchestration, node binding, external harness subprocess wiring, and all four declared output modes. The remaining North-Star gap is real semantic review quality with a real supported model/provider path; exact-source DEV targets still expose none of `aforge`, `opencode`, `codex`, or `claude` executables.
 
+## BMAD public-contract traceability matrix — 2026-09-14
+
+`bmad-help` routed this batch to `bmad-testarch-trace`: the highest-value next check is not another random code review but a complete pass from public review inputs to runtime consumers and executable evidence. The matrix below is intentionally narrow and risk-ranked so it can drive 30-minute batches.
+
+| Public contract | Runtime consumer / evidence | State |
+| --- | --- | --- |
+| `pr_url` / `diff_text` / `repo_path` (+ `base_ref` / `head_ref`) | Input resolution and repo/diff acquisition paths are implemented and covered by node/orchestrator resolution tests | **COVERED** |
+| `depth` | Node/orchestrator depth resolution; QUICK/STANDARD/DEEP paths and depth bounds have tests | **COVERED** |
+| `max_cost_usd` / `max_duration_seconds` | `config.ResolveBudgetCaps` → review budget; budget exhaustion/fail-closed behavior has earned mutant evidence | **COVERED / earned** |
+| `max_concurrent_reviewers` / `max_coverage_iterations` / `max_review_depth` | `ReviewConfig.FromInput` → budget/concurrency/depth; clamp and orchestration behavior covered by config/orch tests | **COVERED** |
+| `models` | `ReviewConfig.FromInput` → per-role `ModelConfig.setByJSONName`; unknown names deliberately ignored for parity | **COVERED** |
+| `ignore_paths` | `ReviewConfig.FromInput` unions request paths with defaults; diff filtering path exists and legacy Python has dedicated ignore-path tests | **COVERED, Go behavior should remain regression-protected** |
+| `hints` | `ReviewConfig.FromInput` replaces config hints; hints propagate into review context/prompts | **COVERED** |
+| `suggestion_mode` | `ReviewConfig.FromInput` → comment config; comment formatting path consumes it | **COVERED** |
+| `dry_run` / `post_pr_number` | Output/posting and local-repo PR-number paths consume them | **COVERED** |
+| `output_format` | `github/json/sarif/markdown` now normalized, validated, non-GitHub forced dry-run, handler tests RED→GREEN | **COVERED / closed 2026-09-14** |
+| `focus` (`auto | security | correctness | performance | tests`) | Declared in `ReviewInput`, but fresh canonical source audit finds no runtime consumer in Go config/orchestrator/reasoner flow. Legacy Python search likewise shows declaration/binding but no downstream behavioral use. | **GAP / declared-but-inert** |
+
+Quality gate from this matrix: **CONCERNS**, not because the pipeline is broken, but because at least one public behavior (`focus`) is still advertised without changing execution. This is exactly the failure class that produced the earlier `output_format` gap, so it is higher-value to close before declaring architecture completeness.
+
+Pareto decision: do not build a large new framework. The next implementation batch should make `focus` minimally but observably functional by steering planning/review prompts and/or dimension selection toward the requested concern while preserving `auto` behavior. Acceptance must prove behavior changes for at least `security`, `correctness`, `performance`, and `tests`; unknown focus values should fail before review execution. The cheapest useful design is to carry normalized focus into review config/context and inject one explicit focus directive into planning/meta/review prompts, then verify it through prompt/handler tests plus full module regression. Do not hard-code provider-specific behavior.
+
+External-skill guidance already researched remains applicable: use Standards-vs-Spec review, real runtime consumers rather than schema-only checks, deterministic assertions first, then agent/model quality evaluation only after contract completeness. No extra eval framework is justified yet.
+
+CURRENT execution state: the exact live target `agentfield-dev-workforce` became unavailable during this batch (`target_container_unavailable`), so no product mutation was attempted. Canonical GitHub `dev` was used read-only to complete the trace matrix and identify `focus` as the next deterministic gap. This is not authorization to program application code in GitHub first.
+
 ## ONE next move
 
-Resume the smallest real-semantic proof without reopening closed architecture work: use an existing CURRENT supported real harness/model path if one becomes available, run one tiny `dry_run=true` review through the already-proven node/harness pipeline, and inspect the semantic result. If no real provider path is callable, keep that as an environment capability gap and continue auditing declared architecture features for deterministic missing behavior rather than creating new infrastructure by default.
+When the exact live PR-AF target is available again, implement `focus` **directly in `/src/pr-af/go`** with RED tests first: normalize/validate `auto|security|correctness|performance|tests`, prove each non-auto value reaches planning/review context and changes the generated review guidance, preserve `auto` behavior, run focused tests + `go test ./... -count=1`, then canonicalize only the verified bytes. After `focus` closes, rerun this trace matrix for remaining public/config contracts; if no deterministic gap remains, return to the real-semantic provider proof.
 
 ## Write-back rule
 
