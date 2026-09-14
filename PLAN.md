@@ -1039,9 +1039,32 @@ Recovery boundary for G1:
 
 BMAD interpretation: this is a **VALIDATION_BLOCKER / DESIGN_RUNTIME_DRIFT**, not an application defect and not a reason to weaken the Golden PR gate. The evidence-based evaluation strategy remains unchanged: deterministic G1 proves full-product wiring/behavior; stochastic G2 proves real semantic usefulness on the same frozen fixture.
 
+## Runtime recovery correction — frozen source vs current dev — 2026-09-14
+
+`bmad-correct-course` was applied because fresh owner evidence changes the diagnosis of the workforce bootstrap failure. The previous wording "reconcile the stale `swe-af` source pin to current `origin/dev`" was too strong and would risk violating the owning project's own Source of Truth.
+
+Fresh cross-owner evidence:
+- `n0namer/swe-af@dev` currently points to `3716b28d61de9730af22c459b6252b9ab8f3a8a9`, but that commit changes only `PLAN.md` (1 line added / 1 deleted).
+- The latest `swe-af/PLAN.md` explicitly says the durable runtime must preserve the **frozen SWE source** `6f5b4382e6231721f60be7045b9d91fd85e34fb5` together with AgentField `c0923acdfca043c2c07e3d34daaa09e2a7e41d38` for the next countable FB-0 attempt. Therefore `6f5b...` is not automatically an obsolete application SHA merely because `dev` advanced in documentation.
+- The deployed `universal-solver` workforce Compose also intentionally pins `ensure_exact swe-af 6f5b4382... /src`.
+- The actual bootstrap failure is caused by `reconcile_dev_workspace.sh`, which first fetches `origin/dev` and **hard-requires `target == current origin/dev`** before it will reconcile. That policy is incompatible with a topology that intentionally materializes a frozen accepted SHA after `dev` advances for coordination/docs.
+- `universal-solver`'s own runtime-evidence/runbook already documents this class of conflict for frozen component SHAs and states there is no debug override; the canonical fleet promotion/reconciliation path is the owner of the fix.
+
+Corrected diagnosis: this is a **SOURCE_CONFLICT + DESIGN_RUNTIME_DRIFT in the topology/reconcile contract**, not simply a stale `swe-af` pin. Blindly changing the Compose pin from `6f5b...` to `3716b...` would change the frozen SWE runtime identity without evidence that the owning SWE acceptance gate permits it. The safe owner-level repair is to make the topology and reconcile policy agree on the accepted exact component SHA (or advance the accepted SHA through the owner's normal fleet-promotion mechanism), then verify the workforce starts with exact provenance.
+
+Recovery DoD before PR-AF work resumes:
+1. `universal-solver` owner selects/records the accepted SWE runtime SHA using its own canonical promotion/lock mechanism; no ad-hoc PR-AF-side override.
+2. Workforce startup no longer rejects the accepted frozen SHA merely because `origin/dev` contains later coordination/docs commits.
+3. Workforce reaches healthy state and provenance readback reports exact AgentField/SWE/PR-AF source identities.
+4. Re-read `/src/pr-af` HEAD + dirty state; preserve the existing live candidate and do not reset/checkout it blindly.
+5. Fresh `go test ./... -count=1` on exact PR-AF source PASSes before adding G1.
+6. Then execute **G1 deterministic full-product Golden PR** as already specified; any product failure found by G1 becomes the next PR-AF fix.
+
+Anti-drift decision: do **not** update `swe-af` to current `dev` from this PR-AF workstream, and do not weaken the reconcile guard locally. Both are cross-owner design decisions. PR-AF remains blocked on owner-level runtime recovery, but the blocker is now accurately characterized.
+
 ## ONE next move
 
-Restore the canonical permanent DEV workforce through its owning `universal-solver` topology by reconciling the stale `swe-af` source pin, then immediately execute the already-defined **G1 deterministic full-product Golden PR** in the recovered `/src/pr-af/go` runtime. PR-AF itself should remain unchanged until that external runtime drift is cleared. If topology-owner repair is not authorized in this workstream, status remains BLOCKED at runtime recovery rather than substituting GitHub-first coding or a weaker test path.
+Have the owning `universal-solver`/SWE runtime lane reconcile the frozen-runtime contract with `reconcile_dev_workspace.sh` so the canonical workforce can boot the accepted exact SWE SHA without silently substituting current `origin/dev`. Once the workforce is healthy, immediately run a fresh full PR-AF Go suite and then the already-defined **G1 deterministic full-product Golden PR**. Until that owner-level recovery is authorized/completed, do not change PR-AF product code or replace G1 with a weaker path.
 
 ## Write-back rule
 
