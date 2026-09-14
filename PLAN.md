@@ -985,9 +985,46 @@ External-skill guidance already researched remains applicable: use Standards-vs-
 
 CURRENT execution state: the exact live target `agentfield-dev-workforce` became unavailable during this batch (`target_container_unavailable`), so no product mutation was attempted. Canonical GitHub `dev` was used read-only to complete the trace matrix and identify `focus` as the next deterministic gap. This is not authorization to program application code in GitHub first.
 
+## Golden PR acceptance strategy — 2026-09-14
+
+User clarified the acceptance question: not merely "are unit tests green?", but "if PR-AF is given one realistic pull-request job, does the intended product behavior actually work end-to-end?" `bmad-testarch-test-design` + `bmad-testarch-trace` now make that the primary acceptance gate.
+
+### Current test truth
+
+- Last exact-live maintained-Go verification after the Phase 7 output-mode implementation: focused output tests PASS, `go test ./internal/node -count=1` PASS, `go test ./... -count=1` PASS, and `go test -vet=all ./... -run '^$' -count=1` PASS.
+- No product Go code changed after that PASS; subsequent `dev` commits are documentation/SoT only. Therefore the last green Go result still applies to the current Go source content, but it is **not a fresh current-runtime rerun**.
+- Repository CI is not evidence for `dev`: `.github/workflows/ci.yml` triggers only on pushes/PRs to `main`, and there are no workflow runs for current `dev` HEAD.
+- We have run an in-process full-orchestrator analogue and a node→AgentField SDK→external mock-harness full review; both passed. These prove architecture/node/harness plumbing, not real-model semantic quality.
+- The repository's shell E2E (`go/test/e2e/run.sh`) is a real control-plane/node job over a seeded two-commit repo, but its review reasoners are mockcli-driven and the script still requires a real AgentField CLI/control plane plus OpenRouter for direct `.ai()` gates. It has **not** been executed successfully on the current exact-source environment. So we cannot honestly say "all repository/E2E tests are green" yet.
+
+### Two-layer Golden PR gate
+
+A single "golden" test should not mix deterministic wiring correctness with stochastic model quality. Use two complementary gates:
+
+**G1 — deterministic full-product Golden PR (required on every meaningful change).** One realistic local repo with 2–4 files and a two-commit PR that contains three independent seeded obligations: (a) semantic OLD→NEW contract regression, (b) mechanical/runtime bug such as a retry/termination defect, (c) systemic source↔test mismatch, plus one unchanged/clean area. Run the original `review` entrypoint with `dry_run=true`, standard depth, full repo context, external deterministic harness, and zero GitHub writes. Assert: execution succeeds; all architecture responsibilities fire; findings are non-empty and localized to the seeded files; evidence verification/adversary/coverage/consistency run; final structured output is valid; output modes remain usable; no finding appears in the clean control. This is the closest cheap analogue of "give PR-AF a real PR job" and must remain deterministic.
+
+**G2 — real-semantic Golden PR (decision gate, not every commit).** Run the same frozen PR fixture through a supported real model/provider with the exact original node/harness path. Oracle is issue-level, not exact wording: each seeded defect must be covered by a causal finding on the correct file/region; clean control must remain clean; blocking severity must prevent false `APPROVE`; record provider/model/version, source SHA, depth, cost, duration, agent invocations and raw final result. Because model behavior is stochastic, repeat only decision-critical/unstable cases and report pass-rate/pass@k rather than trusting one lucky run.
+
+Why this split: architecture-based testing literature recommends architecture-derived traceable coverage criteria rather than treating line/unit coverage as architectural adequacy; modern code-review research emphasizes understanding change and repository context; PR-centric LLM review benchmarks show that diff-only/unit-like benchmarks miss realistic project complexity. External agent-evaluation skills previously reviewed converge on the same practice: use the real harness, deterministic state assertions, baseline/negative controls, and repeated runs for stochastic agents.
+
+### Golden PR DoD
+
+1. Freeze one canonical PR fixture and expected issue inventory; do not tune the fixture to the implementation after failures.
+2. G1 executes the full original `review` entrypoint, not individual reasoners, and proves phase/role coverage from runtime evidence.
+3. G1 has at least one semantic, one mechanical/runtime, one systemic/test-alignment defect and one negative control.
+4. Assertions use native `ReviewResult`: correct files/regions, non-empty causal body/evidence, blocking/event behavior, no false finding on the control, and required phase/role trace.
+5. Run the normal Go suite before/after G1; any regression blocks canonicalization.
+6. G2 uses the same frozen fixture and same production node/harness path with a real provider; no mock-derived finding may count as semantic evidence.
+7. G2 records reproducibility metadata and is repeated only enough to distinguish stable behavior from one-shot luck.
+8. Public-contract gaps such as inert `focus` are still defects, but they no longer postpone G1: Golden PR first tells us whether the product as a whole completes a realistic job; contract fixes then become targeted improvements against a stable product-level gate.
+
+Pareto priority: **G1 before more contract-by-contract polishing.** It gives the highest information per unit effort: one realistic job simultaneously exercises source resolution, architecture phases, evidence/consistency, synthesis, output, safety, and false-positive control. Then implement `focus` and any other deterministic gap under that golden regression guard. G2 follows as soon as a real provider path is CURRENT-callable.
+
+CURRENT blocker: `agentfield-dev-workforce` is still unavailable (`target_container_unavailable`), so this batch cannot honestly rerun the full suite or create/execute G1 directly in the container. No GitHub-first application code change is authorized; only this SoT/test-strategy correction is being written now.
+
 ## ONE next move
 
-When the exact live PR-AF target is available again, implement `focus` **directly in `/src/pr-af/go`** with RED tests first: normalize/validate `auto|security|correctness|performance|tests`, prove each non-auto value reaches planning/review context and changes the generated review guidance, preserve `auto` behavior, run focused tests + `go test ./... -count=1`, then canonicalize only the verified bytes. After `focus` closes, rerun this trace matrix for remaining public/config contracts; if no deterministic gap remains, return to the real-semantic provider proof.
+As soon as the exact live target returns, make **G1 deterministic full-product Golden PR** the first 30-minute implementation batch: add the realistic frozen multi-defect PR fixture/test directly in `/src/pr-af/go`, run it through the original `review` entrypoint with the external deterministic harness, require phase/role/output/negative-control assertions, then run `go test ./... -count=1`. If G1 exposes a real gap, fix that exact gap before `focus`. Once G1 is green, implement the inert `focus` contract under the golden guard, then move to G2 real-semantic evaluation when a supported provider is callable.
 
 ## Write-back rule
 
