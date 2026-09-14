@@ -1022,9 +1022,26 @@ Pareto priority: **G1 before more contract-by-contract polishing.** It gives the
 
 CURRENT blocker: `agentfield-dev-workforce` is still unavailable (`target_container_unavailable`), so this batch cannot honestly rerun the full suite or create/execute G1 directly in the container. No GitHub-first application code change is authorized; only this SoT/test-strategy correction is being written now.
 
+## Golden PR runtime recovery checkpoint — 2026-09-14
+
+Fresh anti-drift observation found the exact reason the live PR-AF workforce disappeared. The Coolify application `universal-solver-agentfield-exact-dev-git-20260825` is still the canonical permanent AgentField DEV topology owner, but its `workforce` container is exited with code **31** after three retries. Container logs show startup reconciliation stops before PR-AF/node bootstrap because an unrelated `swe-af` source pin is stale: startup requests `swe-af@6f5b4382e6231721f60be7045b9d91fd85e34fb5`, while the current `origin/dev` is `3716b28d61de9730af22c459b6252b9ab8f3a8a9`; the reconcile script intentionally fails closed with `target is not current origin/dev`.
+
+This is **not a PR-AF code failure**. It is a permanent-DEV topology/source-pin drift owned by `n0namer/universal-solver`, and PR-AF project scope must not silently patch that owner. The exact-source persistent `/src` volume still exists and is visible from the healthy `agentfield-dev-runtime-capture` container, but that container intentionally lacks the Go toolchain (`/usr/local/go/bin/go: not found`) and its live-patch root does not authorize `/src/pr-af`, so it cannot be used as a backdoor mutation runner.
+
+Additional environment evidence materially improves the later G2 route: the Coolify application already has configured PR-AF/OpenRouter/Gonka model/provider environment entries (verified by key presence only; values were not exposed). Therefore the remaining real-semantic blocker is currently **workforce bootstrap availability**, not proof that provider credentials/config are absent.
+
+Recovery boundary for G1:
+1. Do not edit PR-AF application code through GitHub to work around the missing workforce.
+2. Do not mutate `universal-solver` topology from the PR-AF workstream without explicit owner/scope authorization; the stale `swe-af` pin is external infrastructure drift.
+3. Once the canonical topology owner restores the workforce, re-read `/src/pr-af` identity and dirty state, then run a fresh full Go suite before adding G1.
+4. G1 remains the first product-code batch: realistic frozen multi-defect PR, original `review` entrypoint, deterministic external harness, phase/role/output/negative-control assertions, then full regression.
+5. After G1 is green, close the already-identified inert `focus` contract under that golden guard; then G2 can use the already-configured real-provider path.
+
+BMAD interpretation: this is a **VALIDATION_BLOCKER / DESIGN_RUNTIME_DRIFT**, not an application defect and not a reason to weaken the Golden PR gate. The evidence-based evaluation strategy remains unchanged: deterministic G1 proves full-product wiring/behavior; stochastic G2 proves real semantic usefulness on the same frozen fixture.
+
 ## ONE next move
 
-As soon as the exact live target returns, make **G1 deterministic full-product Golden PR** the first 30-minute implementation batch: add the realistic frozen multi-defect PR fixture/test directly in `/src/pr-af/go`, run it through the original `review` entrypoint with the external deterministic harness, require phase/role/output/negative-control assertions, then run `go test ./... -count=1`. If G1 exposes a real gap, fix that exact gap before `focus`. Once G1 is green, implement the inert `focus` contract under the golden guard, then move to G2 real-semantic evaluation when a supported provider is callable.
+Restore the canonical permanent DEV workforce through its owning `universal-solver` topology by reconciling the stale `swe-af` source pin, then immediately execute the already-defined **G1 deterministic full-product Golden PR** in the recovered `/src/pr-af/go` runtime. PR-AF itself should remain unchanged until that external runtime drift is cleared. If topology-owner repair is not authorized in this workstream, status remains BLOCKED at runtime recovery rather than substituting GitHub-first coding or a weaker test path.
 
 ## Write-back rule
 
