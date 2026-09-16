@@ -82,8 +82,12 @@ func TestFullPipelineInProcess(t *testing.T) {
 		return schemas.ReviewResult{Summary: schemas.ReviewSummary{TotalFindings: len(scored)}}, nil
 	}
 
-	if _, err := o.Run(context.Background()); err != nil {
+	result, err := o.Run(context.Background())
+	if err != nil {
 		t.Fatal(err)
+	}
+	if result.Summary.TotalFindings == 0 {
+		t.Fatal("full pipeline returned no findings")
 	}
 	for _, name := range []string{
 		"intake", "anatomy", "meta_semantic", "meta_mechanical",
