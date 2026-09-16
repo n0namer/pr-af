@@ -91,7 +91,7 @@ func TestReviewHandlerWithExternalMockHarness(t *testing.T) {
 		t.Fatalf("read mock harness invocation log: %v", err)
 	}
 	logText := string(logBytes)
-	for _, role := range []string{"intake_fallback", "anatomy", "meta_semantic", "meta_mechanical", "meta_systemic", "review_dimension", "evidence_verifier", "adversary"} {
+	for _, role := range []string{"intake_fallback", "anatomy", "meta_semantic", "meta_mechanical", "meta_systemic", "review_dimension", "evidence_verifier", "adversary", "compound_finder", "extract_obligations"} {
 		if !strings.Contains(logText, `"role":"`+role+`"`) {
 			t.Fatalf("external harness role %q not observed\n%s", role, logText)
 		}
