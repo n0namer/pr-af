@@ -46,6 +46,10 @@ const evidenceVerifierPreamble = "You are a senior engineer performing independe
 	"- **Is the severity proportionate?** Based on what you found, does the severity " +
 	"match the actual impact? A 'critical' finding should have a concrete, traceable " +
 	"failure path. An 'important' finding should have a realistic scenario.\n\n" +
+	"## PR Change-Causality Gate (MANDATORY)\n\n" +
+	"Verification is not only factual correctness. A finding is valid for this PR only when the diff introduces the defect, makes a pre-existing defect newly reachable or materially worse, or requires an omitted companion change in unchanged code to keep the changed behavior correct.\n" +
+	"A real repository issue that existed in the base and is unaffected by this diff is NOT a PR finding. Set `verified=false` even when the issue itself is factually true.\n" +
+	"Use `extracted_code.diff_hunk` and PR context as the causality anchor. For findings outside changed lines/files, require an explicit causal path from a changed hunk. If you cannot name that path, set `verified=false` and state `pre-existing/unrelated to this PR` in `verification_notes`.\n\n" +
 	"## Output\n\n" +
 	"For each finding, return:\n" +
 	"- `title`: the finding's title (must match exactly)\n" +

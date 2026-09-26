@@ -1,6 +1,7 @@
 package prompts
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/Agent-Field/pr-af/go/internal/schemas"
@@ -68,6 +69,48 @@ func TestMetaGolden(t *testing.T) {
 	bigPatches := []StrPair{{Key: "client.py", Val: bigFiller("patch", 9000)}}
 	ctxC := MetaContext(intakeFix(nil), anatA(), bigPatches, "focus on auth")
 	assertGolden(t, "meta_semantic_C", MetaSemanticPrompt(ctxC, fixtureRepo, "deep"))
+}
+
+func TestMetaSemanticQuickPromptIsFusedAndBounded(t *testing.T) {
+	prompt := MetaSemanticPrompt(`{"file_paths":["go/internal/node/node.go"],"diff_patches":{"go/internal/node/node.go":"diff"}}`, "/src/pr-af", "quick")
+	for _, want := range []string{
+		"QUICK FUSED review dimensions",
+		"SEMANTIC, MECHANICAL, and SYSTEMIC risk",
+		"Use ONE bounded repository investigation",
+		"at most ONE directly relevant caller, test, configuration, or nearby comparison file",
+		"Return 1-3 specific fused dimensions total",
+		"substantive primary review executes",
+		"Do NOT inspect git history, git status, branches, old commits",
+		"Always complete lens, dimensions, confidence, and rationale before stopping",
+	} {
+		if !strings.Contains(prompt, want) {
+			t.Fatalf("quick fused prompt missing %q: %s", want, prompt)
+		}
+	}
+	if strings.Contains(prompt, "Then find their callers. Trace how data flows through them") {
+		t.Fatalf("quick fused prompt must not include broad recursive investigation protocol: %s", prompt)
+	}
+}
+
+func TestMetaQuickPromptsAreBoundedAcrossLenses(t *testing.T) {
+	ctx := `{"file_paths":["go/internal/node/node.go"],"diff_patches":{"go/internal/node/node.go":"diff"}}`
+	cases := []struct {
+		name   string
+		prompt string
+		want   string
+		forbid string
+	}{
+		{"mechanical", MetaMechanicalPrompt(ctx, "/src/pr-af", "quick"), "at most ONE directly relevant caller/test/import site", "search for all callers"},
+		{"systemic", MetaSystemicPrompt(ctx, "/src/pr-af", "quick"), "at most ONE nearby comparison file or test", "Browse similar files in the same directories"},
+	}
+	for _, tc := range cases {
+		if !strings.Contains(tc.prompt, tc.want) {
+			t.Fatalf("quick %s prompt missing %q: %s", tc.name, tc.want, tc.prompt)
+		}
+		if strings.Contains(tc.prompt, tc.forbid) {
+			t.Fatalf("quick %s prompt contains broad investigation text %q: %s", tc.name, tc.forbid, tc.prompt)
+		}
+	}
 }
 
 func TestCoverageGolden(t *testing.T) {

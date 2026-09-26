@@ -79,6 +79,34 @@ func metaResultMap(lens, dimID, target string) map[string]any {
 	}
 }
 
+func TestMetaSelectorQuickModeUsesSingleFusedPlannerCall(t *testing.T) {
+	o := New(Deps{App: &fakeApp{}}, schemas.ReviewInput{}, config.DefaultReviewConfig())
+	calls := map[string]int{}
+	o.rfns.metaSemantic = func(context.Context, reasoners.Deps, reasoners.MetaInput) (map[string]any, error) {
+		calls["semantic"]++
+		return metaResultMap("semantic", "fused", "fa"), nil
+	}
+	o.rfns.metaMechanical = func(context.Context, reasoners.Deps, reasoners.MetaInput) (map[string]any, error) {
+		calls["mechanical"]++
+		return metaResultMap("mechanical", "b", "fb"), nil
+	}
+	o.rfns.metaSystemic = func(context.Context, reasoners.Deps, reasoners.MetaInput) (map[string]any, error) {
+		calls["systemic"]++
+		return metaResultMap("systemic", "c", "fc"), nil
+	}
+
+	plan, err := o.runMetaSelectors(context.Background(), schemas.IntakeResult{}, schemas.AnatomyResult{}, "quick", "")
+	if err != nil {
+		t.Fatalf("runMetaSelectors: %v", err)
+	}
+	if calls["semantic"] != 1 || calls["mechanical"] != 0 || calls["systemic"] != 0 {
+		t.Fatalf("quick meta calls = %#v, want exactly one fused semantic entrypoint", calls)
+	}
+	if len(plan.Dimensions) != 1 || plan.Dimensions[0].ID != "semantic_fused" {
+		t.Fatalf("quick fused plan = %#v, want semantic_fused", plan.Dimensions)
+	}
+}
+
 func TestMetaSelectorOrderPreservedUnderAdversarialScheduling(t *testing.T) {
 	for iter := 0; iter < 8; iter++ {
 		o := New(Deps{App: &fakeApp{}}, schemas.ReviewInput{}, config.DefaultReviewConfig())

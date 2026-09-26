@@ -274,6 +274,13 @@ func (o *Orchestrator) runMetaSelectors(
 	}
 	jobs := make([]lensJob, 0, len(enabledLenses))
 	for _, lens := range enabledLenses {
+		// Quick mode uses one bounded fused planner call. The semantic entrypoint's
+		// quick prompt explicitly covers semantic, mechanical, and systemic risk,
+		// removing two expensive harness/model round trips while standard/deep
+		// retain the independent three-lens fan-out.
+		if strings.EqualFold(strings.TrimSpace(reviewDepth), "quick") && lens != "semantic" {
+			continue
+		}
 		if fn, ok := lensFns[lens]; ok {
 			jobs = append(jobs, lensJob{lens: lens, fn: fn})
 		}
@@ -281,29 +288,39 @@ func (o *Orchestrator) runMetaSelectors(
 	results := make([]schemas.MetaDimensionResult, len(jobs))
 	diffPatches := reasoners.OrderedPatches(o.filePatches())
 
-	g, gctx := errgroup.WithContext(ctx)
-	for i := range jobs {
-		i := i
-		g.Go(func() error {
-			raw, err := jobs[i].fn(gctx, o.reasonerDeps(), reasoners.MetaInput{
-				Intake:           intake,
-				Anatomy:          anatomy,
-				Depth:            reviewDepth,
-				RepoPath:         strp(o.input.RepoPath),
-				DiffPatches:      diffPatches,
-				ReviewerFeedback: reviewerFeedback,
-			})
-			if err != nil {
-				return err
-			}
-			o.incInvocations(1)
-			o.registerCost("meta_selectors", raw)
-			results[i] = mapToStruct[schemas.MetaDimensionResult](raw)
-			return nil
+	runJob := func(jobCtx context.Context, i int) error {
+		raw, err := jobs[i].fn(jobCtx, o.reasonerDeps(), reasoners.MetaInput{
+			Intake:           intake,
+			Anatomy:          anatomy,
+			Depth:            reviewDepth,
+			RepoPath:         strp(o.input.RepoPath),
+			DiffPatches:      diffPatches,
+			ReviewerFeedback: reviewerFeedback,
 		})
+		if err != nil {
+			return err
+		}
+		o.incInvocations(1)
+		o.registerCost("meta_selectors", raw)
+		results[i] = mapToStruct[schemas.MetaDimensionResult](raw)
+		return nil
 	}
-	if err := g.Wait(); err != nil {
-		return schemas.ReviewPlan{}, err
+
+	if strings.EqualFold(strings.TrimSpace(reviewDepth), "quick") {
+		for i := range jobs {
+			if err := runJob(ctx, i); err != nil {
+				return schemas.ReviewPlan{}, err
+			}
+		}
+	} else {
+		g, gctx := errgroup.WithContext(ctx)
+		for i := range jobs {
+			i := i
+			g.Go(func() error { return runJob(gctx, i) })
+		}
+		if err := g.Wait(); err != nil {
+			return schemas.ReviewPlan{}, err
+		}
 	}
 
 	o.metaSelectorResults = results
@@ -424,6 +441,9 @@ func (o *Orchestrator) runParallelReview(
 	feedback string,
 	stats *dimensionParseStats,
 ) error {
+	if o.budgetOrTimeoutExhausted("review") {
+		return budgetExhaustedErr(o.budgetExhaustedMessage("review"))
+	}
 	maxDepth := o.config.Budget.MaxReviewDepth
 	sem := semaphore.NewWeighted(int64(o.config.Budget.MaxConcurrentReviewers))
 	g, gctx := errgroup.WithContext(ctx)
@@ -436,7 +456,7 @@ func (o *Orchestrator) runParallelReview(
 	runDim = func(dim schemas.ReviewDimension, depth int) {
 		g.Go(func() error {
 			if o.budgetOrTimeoutExhausted("review") {
-				return nil
+				return budgetExhaustedErr(o.budgetExhaustedMessage("review"))
 			}
 			if err := sem.Acquire(gctx, 1); err != nil {
 				return err
@@ -657,7 +677,7 @@ func (o *Orchestrator) runReviewLayer(
 	}
 
 	verificationMap := map[string]map[string]any{}
-	if hasHighPriority(allFindings) && len(evidenceMap) > 0 && !o.budgetOrTimeoutExhausted("adversary") {
+	if len(allFindings) > 0 && len(evidenceMap) > 0 && !o.budgetOrTimeoutExhausted("adversary") {
 		updated, vmap, err := o.runEvidenceVerification(ctx, allFindings, evidenceMap)
 		if err != nil {
 			return nil, nil, err
@@ -697,18 +717,13 @@ func (o *Orchestrator) runEvidenceVerification(
 	findings []schemas.ReviewFinding,
 	evidenceMap map[string]evidence.EvidencePackage,
 ) ([]schemas.ReviewFinding, map[string]map[string]any, error) {
-	var highPriority []schemas.ReviewFinding
-	for _, f := range findings {
-		if f.Severity == "critical" || f.Severity == "important" {
-			highPriority = append(highPriority, f)
-		}
-	}
-	if len(highPriority) == 0 {
+	candidates := append([]schemas.ReviewFinding(nil), findings...)
+	if len(candidates) == 0 {
 		return findings, map[string]map[string]any{}, nil
 	}
 
 	evPackages := map[string]map[string]any{}
-	for _, f := range highPriority {
+	for _, f := range candidates {
 		if pkg, ok := evidenceMap[f.Title]; ok {
 			evPackages[f.Title] = evidencePackToMap(pkg)
 		}
@@ -719,7 +734,7 @@ func (o *Orchestrator) runEvidenceVerification(
 	}
 
 	raw, err := o.rfns.evidenceVerify(ctx, o.reasonerDeps(), reasoners.EvidenceVerifierInput{
-		Findings:         highPriority,
+		Findings:         candidates,
 		EvidencePackages: evArg,
 		PrContext:        o.buildPRContextString(),
 		RepoPath:         strp(o.input.RepoPath),
@@ -748,14 +763,6 @@ func (o *Orchestrator) runEvidenceVerification(
 		}
 		verified := getBoolDefault(vf, "verified", true)
 		if !verified {
-			nf := f
-			conf := getFloatOr(vf, "revised_confidence", 0.3)
-			if conf < 0.1 {
-				conf = 0.1
-			}
-			nf.Confidence = conf
-			nf.Severity = schemas.NormalizeSeverity(vf["revised_severity"], schemas.DefaultSeverity)
-			updated = append(updated, nf)
 			continue
 		}
 		nf := f
@@ -1048,6 +1055,12 @@ func (o *Orchestrator) runConsistencyVerify(ctx context.Context, allFindings []s
 		obligations = obligations[:12]
 	}
 	if len(obligations) == 0 {
+		return allFindings, nil
+	}
+	// Extraction can itself consume the remaining wall-clock budget. Re-check
+	// before scheduling the verifier fan-out so an expired review does not
+	// launch up to twelve additional model calls after the deadline.
+	if o.budgetOrTimeoutExhausted("review") {
 		return allFindings, nil
 	}
 
