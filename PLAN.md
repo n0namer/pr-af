@@ -276,14 +276,23 @@ A SourceLoop capture is NOT semantic acceptance by itself.
 ## Acceptance gates
 
 ### G0 — CURRENT implementation/runtime identity
-Status: OPEN
+Status: BLOCKED — authorized CURRENT AgentField DEV readback is unavailable in this session (2026-10-20).
 
-- Python vs Go implementation proven
-- exact source/worktree proven
-- exact process/artifact proven
-- health proven
-- registration/reasoner surface proven
-- callback/public URL routing proven
+Evidence recorded for this attempt:
+
+- FACT: No AgentField DEV/runtime connector is exposed in the available tool inventory, and `Get-Command af` returned no installed `af` command in this execution environment. Therefore no authorized DEV readback was possible.
+- FACT: Repository manifests and deployment notes establish only static behavior: a Git URL install selects Go, while installing `/src/pr-af` as a local path selects the root Python package. They do not identify the currently installed or running DEV implementation.
+- FACT: No runtime endpoint, credentials, process listing, callback URI, or discovery response was available to independently verify. Exact CURRENT source/SHA, node implementation, callback URI, installed reasoner count/surface, process identity, health, and SourceLoop state remain UNAVAILABLE / UNVERIFIED_CURRENT.
+- SUPPORTING CHECK: `go test ./internal/config -count=1` under `go/` passed (2026-10-20) with `GOCACHE` redirected to the temporary directory after the default cache path denied access. This offline package test does not establish any CURRENT DEV runtime identity.
+- DECISION: No AgentField DEV, production, callback, or source mutation was attempted. Offline tests, if run, are supporting code evidence only and cannot satisfy G0.
+- NEXT: An authorized AgentField DEV read-only interface/operator must provide the minimum readback set above. Resume G0 from that CURRENT evidence before any source or runtime change.
+
+- Python vs Go implementation: UNAVAILABLE / UNVERIFIED_CURRENT
+- exact source/worktree: UNAVAILABLE / UNVERIFIED_CURRENT
+- exact process/artifact: UNAVAILABLE / UNVERIFIED_CURRENT
+- health: UNAVAILABLE / UNVERIFIED_CURRENT
+- registration/reasoner surface and real installed count: UNAVAILABLE / UNVERIFIED_CURRENT
+- callback/public URL routing: UNAVAILABLE / UNVERIFIED_CURRENT
 
 ### G1 — reproducible failure localization
 Status: BLOCKED_BY_G0
