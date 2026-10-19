@@ -280,10 +280,10 @@ Status: BLOCKED — authorized CURRENT AgentField DEV readback is unavailable in
 
 Evidence recorded for this attempt:
 
-- FACT: No AgentField DEV/runtime connector is exposed in the available tool inventory, and `Get-Command af` returned no installed `af` command in this execution environment. Therefore no authorized DEV readback was possible.
+- FACT (2026-10-20): The available tool inventory contains no AgentField DEV/runtime connector, and `Get-Command af -ErrorAction SilentlyContinue` returned `AF_COMMAND=UNAVAILABLE` in this execution environment. Therefore no authorized DEV readback was possible.
 - FACT: Repository manifests and deployment notes establish only static behavior: a Git URL install selects Go, while installing `/src/pr-af` as a local path selects the root Python package. They do not identify the currently installed or running DEV implementation.
 - FACT: No runtime endpoint, credentials, process listing, callback URI, or discovery response was available to independently verify. Exact CURRENT source/SHA, node implementation, callback URI, installed reasoner count/surface, process identity, health, and SourceLoop state remain UNAVAILABLE / UNVERIFIED_CURRENT.
-- SUPPORTING CHECK: `go test ./internal/config -count=1` under `go/` passed (2026-10-20) with `GOCACHE` redirected to the temporary directory after the default cache path denied access. This offline package test does not establish any CURRENT DEV runtime identity.
+- SUPPORTING CHECK: `go test ./internal/config -count=1` under `go/` passed (2026-10-20; 3.308s) with `GOCACHE` redirected to `%TEMP%\\pr-af-g0-gocache`. This offline package test does not establish any CURRENT DEV runtime identity.
 - DECISION: No AgentField DEV, production, callback, or source mutation was attempted. Offline tests, if run, are supporting code evidence only and cannot satisfy G0.
 - NEXT: An authorized AgentField DEV read-only interface/operator must provide the minimum readback set above. Resume G0 from that CURRENT evidence before any source or runtime change.
 
@@ -293,6 +293,20 @@ Evidence recorded for this attempt:
 - health: UNAVAILABLE / UNVERIFIED_CURRENT
 - registration/reasoner surface and real installed count: UNAVAILABLE / UNVERIFIED_CURRENT
 - callback/public URL routing: UNAVAILABLE / UNVERIFIED_CURRENT
+
+### G0 attempt handoff — 2026-10-20
+
+- Phase goal: Establish exact CURRENT permanent DEV runtime identity before any source or runtime change.
+- Observed exact source/runtime state: CURRENT DEV source/SHA, implementation, process/artifact, health, discovery/reasoner surface, and callback URI remain unavailable; no authorized DEV read-only interface is exposed in this execution environment.
+- Actions performed: Inspected the existing G0 evidence and static install contracts; checked the available tool inventory and local `af` command; ran the offline Go config package check.
+- Evidence/tests/canaries: No runtime readback or canary. `Get-Command af -ErrorAction SilentlyContinue` returned unavailable. `go test ./internal/config -count=1` passed under `go/` with a temporary Go cache; this is supporting evidence only.
+- Metric/variance: No runtime or callback mutation; no source-code change.
+- Verified cause or remaining hypotheses: G0 remains blocked by unavailable authorized runtime access. Static manifests do not resolve the Python-vs-Go or exact-source ambiguity.
+- Decision: stop at G0; do not mutate AgentField DEV, production, callbacks, or source.
+- Changed files: `PLAN.md` only.
+- Durable commit/SHA if any: none.
+- Current constraint: G0 requires direct, authorized CURRENT AgentField DEV readback.
+- One next bounded move: Obtain the read-only runtime evidence listed in G0, then update this gate before authorizing any mutation.
 
 ### G1 — reproducible failure localization
 Status: BLOCKED_BY_G0
