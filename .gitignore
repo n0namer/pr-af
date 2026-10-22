@@ -14,3 +14,6 @@ agentfield-sdk/
 _glm52_bench/
 _minimax_bench/
 .sisyphus/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

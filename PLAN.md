@@ -304,9 +304,21 @@ Evidence recorded for this attempt:
 - Verified cause or remaining hypotheses: G0 remains blocked by unavailable authorized runtime access. Static manifests do not resolve the Python-vs-Go or exact-source ambiguity.
 - Decision: stop at G0; do not mutate AgentField DEV, production, callbacks, or source.
 - Changed files: `PLAN.md` only.
-- Durable commit/SHA if any: none.
+- Durable commit/SHA for this handoff snapshot: none at the time this entry was written; the documentation-only handoff was later committed as `ee7467243a39891595a8c5e61812dbb16864256b`. No accepted runtime delta or runtime identity evidence is associated with that commit.
 - Current constraint: G0 requires direct, authorized CURRENT AgentField DEV readback.
 - One next bounded move: Obtain the read-only runtime evidence listed in G0, then update this gate before authorizing any mutation.
+
+### G0 independent QA — 2026-10-20
+
+- FACT: Candidate commit `ee7467243a39891595a8c5e61812dbb16864256b` changes only `PLAN.md`; no product source or callback configuration is part of that commit. QA preserved pre-existing worktree changes.
+- FACT: `Get-Command af` remains unavailable and the QA tool inventory exposes no AgentField DEV runtime connector. No runtime readback, remote mutation, callback request, or canary was performed by QA.
+- FACT: Added `tests/test_g0_blocked_evidence.py`; `py -m unittest discover -s tests -p test_g0_blocked_evidence.py -v` passed all 10 tests. Coverage checks explicit BLOCKED/unavailable identity, the candidate commit's documentation-only scope, canonical gate, and rejection of empty/None records, missing/duplicate gates, missing identity fields, assumed counts, false PASS, and missing offline/mutation disclaimers. Sandbox Python launch failed initially; the same command passed with approved interpreter access.
+- SUPPORTING CHECK: `go test ./internal/config -count=1 -v` passed all 16 top-level tests (4.400s) with temporary `GOCACHE`. This is offline evidence only.
+- LIMITATION / NEXT: Documentation checks and Git scope do not audit historical remote effects or prove installed runtime identity. G0 remains BLOCKED pending authorized CURRENT DEV readback; no duplicate plan was created.
+- FACT (QA recheck): Preserved the existing QA edits and extended `tests/test_g0_blocked_evidence.py` with committed-plan validation, missing access/recovery evidence, and evidence outside the G0 boundary. `py -m unittest discover -s tests -p test_g0_blocked_evidence.py -v` passed all 13 tests (0.772s) with approved interpreter access after the sandbox launcher failed. All four ACs have documentation/scope checks; live identity and historical remote non-mutation remain outside their proof.
+- SUPPORTING CHECK (QA recheck): `go test ./internal/config -count=1 -v` passed all 16 top-level tests (2.519s), with `GOCACHE` set to `%TEMP%\pr-af-g0-qa-gocache`. No runtime identity claim follows from this offline result. Next move remains authorized CURRENT DEV readback.
+- FACT (handoff clarification QA): Extended the existing `tests/test_g0_blocked_evidence.py` with `test_handoff_sha_is_historical_documentation_not_runtime_evidence` and `test_blocked_record_accepts_windows_line_endings_and_final_gate_boundary`. The focused unittest command passed all 15 tests (0.233s, exit 0) using approved interpreter access after the sandbox Python launcher failed. The four AC checks remain documentation/Git-scope evidence; historical remote non-mutation is not independently audited.
+- SUPPORTING CHECK (handoff clarification QA): `go test ./internal/config -count=1 -v` passed all 16 top-level tests (1.427s, exit 0), with temporary `GOCACHE` at `%TEMP%\pr-af-g0-review-gocache`. `af` remains unavailable and no authorized AgentField DEV runtime connector is exposed. No runtime, production, or callback operation was attempted; no product source was changed. G0 remains BLOCKED; next move is authorized CURRENT DEV readback.
 
 ### G1 — reproducible failure localization
 Status: BLOCKED_BY_G0
